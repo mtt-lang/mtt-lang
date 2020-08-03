@@ -12,8 +12,9 @@ let rec check_open delta gamma expr typ =
   | Pair (e1, e2) ->
       begin match typ with
       | Type.Prod (t1, t2) ->
-          let%bind () = check_open delta gamma e1 t1 in
-          check_open delta gamma e2 t2
+          let%map () = check_open delta gamma e1 t1
+          and     () = check_open delta gamma e2 t2 in
+          ()
       | _ -> Result.fail "Expected product type"
       end
   | Fst pe ->
@@ -70,9 +71,9 @@ and infer_open delta gamma expr =
   | Unit ->
       return Type.Unit
   | Pair (e1, e2) ->
-      let%bind t1 = infer_open delta gamma e1 in
-      let%bind t2 = infer_open delta gamma e2 in
-      return @@ Type.Prod (t1, t2)
+      let%map t1 = infer_open delta gamma e1
+      and     t2 = infer_open delta gamma e2 in
+      Type.Prod (t1, t2)
   | Fst pe ->
       let%bind t = infer_open delta gamma pe in
       begin match t with
@@ -90,8 +91,8 @@ and infer_open delta gamma expr =
   | VarG idg ->
       Env.lookup_g delta idg
   | Fun (idl, dom, body) ->
-      let%bind cod = infer_open delta (Env.extend_l gamma idl dom) body in
-      return @@ Type.Arr (dom, cod)
+      let%map cod = infer_open delta (Env.extend_l gamma idl dom) body in
+      Type.Arr (dom, cod)
   | App (fe, arge) ->
       let%bind t = infer_open delta gamma fe in
       begin match t with
@@ -101,8 +102,8 @@ and infer_open delta gamma expr =
       | _ -> Result.fail "Inferred type is not an arrow type"
       end
   | Box e ->
-      let%bind t = infer_open delta Env.emp_l e in
-      return @@ Type.Box t
+      let%map t = infer_open delta Env.emp_l e in
+      Type.Box t
   | Letbox (idg, boxed_e, body) ->
       let%bind ty = infer_open delta gamma boxed_e in
       begin match ty with

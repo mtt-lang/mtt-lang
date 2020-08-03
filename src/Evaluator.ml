@@ -58,9 +58,9 @@ let rec eval_open gamma expr =
   | Unit ->
       return Lit.Unit
   | Pair (e1, e2) ->
-      let%bind v1 = eval_open gamma e1 in
-      let%bind v2 = eval_open gamma e2 in
-      return @@ Lit.Pair (v1, v2)
+      let%map v1 = eval_open gamma e1
+      and     v2 = eval_open gamma e2 in
+      Lit.Pair (v1, v2)
   | Fst pe ->
       let%bind pv = eval_open gamma pe in
       begin match pv with
