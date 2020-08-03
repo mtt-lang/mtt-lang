@@ -17,10 +17,11 @@
  (description "
 Based on Modal Type Theory as given by F. Pfenning et al.")
  (depends
-  (base (and (>= v0.12.0) (< v0.13.0)))
+  (base (and (>= v0.12.2) (< v0.15.0)))
   core
   (dune (>= 2.0))
   menhir
+  (ocaml (>= 4.07.0))
   pprint
   ppx_compare
   ppx_let
