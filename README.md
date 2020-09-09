@@ -22,6 +22,11 @@ omissions is the lack of support for source code comments, regular
 [DP2001]: https://www.cs.cmu.edu/~fp/papers/jacm00.pdf
 [course]: https://www.cs.cmu.edu/~fp/courses/15816-s10
 
+
+## Contributing
+
+Your contribution is very welcome. Please check the details in [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## How to use
 
 - Typechecking a term:
