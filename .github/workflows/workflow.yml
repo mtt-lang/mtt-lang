@@ -13,7 +13,8 @@ jobs:
           - macos-latest
           - ubuntu-latest
         ocaml-version:
-          - 4.10.0
+          - 4.11.1
+          - 4.10.1
           - 4.09.1
           - 4.08.1
           - 4.07.1
@@ -23,6 +24,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Try to restore opam cache
+        if: runner.os != 'Windows'
+        id: opam-cache
+        uses: actions/cache@v2
+        with:
+          path: "~/.opam"
+          key: ${{ matrix.os }}-${{ matrix.ocaml-version }}
 
       - name: Use OCaml ${{ matrix.ocaml-version }}
         uses: avsm/setup-ocaml@v1
@@ -36,3 +45,4 @@ jobs:
       - run: opam exec -- dune build
 
       - run: opam exec -- dune runtest
+
