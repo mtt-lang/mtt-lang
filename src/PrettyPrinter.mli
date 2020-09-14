@@ -10,7 +10,7 @@ val of_type : Type.t -> PPrint.document
 val of_expr : Expr.t -> PPrint.document
 
 (** Pretty-print literals (performs substitutions of literals for closures) *)
-val of_lit : Lit.t -> PPrint.document
+val of_lit : Val.t -> PPrint.document
 end
 
 module Doc : DOC

@@ -56,21 +56,21 @@ let rec eval_open gamma expr =
   let open Expr in
   match expr with
   | Unit ->
-      return Lit.Unit
+      return Val.Unit
   | Pair (e1, e2) ->
       let%map v1 = eval_open gamma e1
       and     v2 = eval_open gamma e2 in
-      Lit.Pair (v1, v2)
+      Val.Pair (v1, v2)
   | Fst pe ->
       let%bind pv = eval_open gamma pe in
       begin match pv with
-      | Lit.Pair (v1, _v2) -> return v1
+      | Val.Pair (v1, _v2) -> return v1
       | _ -> Result.fail "fst is stuck"
       end
   | Snd pe ->
       let%bind pv = eval_open gamma pe in
       begin match pv with
-      | Lit.Pair (_v1, v2) -> return v2
+      | Val.Pair (_v1, v2) -> return v2
       | _ -> Result.fail "snd is stuck"
       end
   | VarL idl ->
@@ -78,20 +78,20 @@ let rec eval_open gamma expr =
   | VarG _idg ->
       Result.fail "Global variable access is not possible in a well-typed term"
   | Fun (idl, _t_of_id, body) ->
-      return @@ Lit.Clos (idl, body, gamma)
+      return @@ Val.Clos (idl, body, gamma)
   | App (fe, arge) ->
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
       begin match fv with
-      | Lit.Clos (idl, body, c_gamma) -> eval_open (Env.extend_l c_gamma idl argv) body
+      | Val.Clos (idl, body, c_gamma) -> eval_open (Env.extend_l c_gamma idl argv) body
       | _ -> Result.fail "Trying to apply an argument to a non-function"
       end
   | Box e ->
-      return @@ Lit.Box e
+      return @@ Val.Box e
   | Letbox (idg, boxed_e, body) ->
       let%bind boxed_v = eval_open gamma boxed_e in
       begin match boxed_v with
-        | Lit.Box e -> eval_open gamma (subst_m e idg body)
+        | Val.Box e -> eval_open gamma (subst_m e idg body)
       | _ -> Result.fail "Trying to unbox a non-box expression"
       end
 

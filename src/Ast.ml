@@ -46,8 +46,8 @@ type t =
 [@@deriving sexp]
 end
 
-(** Literals *)
-module Lit = struct
+(** Values *)
+module Val = struct
 type t =
   | Unit
     (** [unit] literal *)

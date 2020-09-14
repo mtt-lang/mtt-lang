@@ -6,7 +6,7 @@ open Ast
 module type DOC = sig
 val of_type : Type.t -> PPrint.document
 val of_expr : Expr.t -> PPrint.document
-val of_lit : Lit.t -> PPrint.document
+val of_lit : Val.t -> PPrint.document
 end
 
 
@@ -70,14 +70,14 @@ let rec of_expr_with_free_vars_l bound_vars lenv expr =
 and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.L)) Env.emp_l e
 
 and of_lit = function
-  | Lit.Unit -> unit_term
-  | Lit.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
-  | Lit.Clos (idl, body, lenv) ->
+  | Val.Unit -> unit_term
+  | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
+  | Val.Clos (idl, body, lenv) ->
       fun_kwd ^^ !^(Id.L.to_string idl) ^^ dot ^^^
       (* when print out closures, substitute the free vars in its body with
          the corresponding literals from the closures' local environment *)
       let bound_vars = Set.singleton (module Id.L) idl in
       of_expr_with_free_vars_l bound_vars lenv body
-  | Lit.Box e -> of_expr e
+  | Val.Box e -> of_expr e
 
 end

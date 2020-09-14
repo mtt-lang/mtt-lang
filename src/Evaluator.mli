@@ -17,7 +17,7 @@ val refresh_g : Id.G.t -> (Id.G.t, Id.G.comparator_witness) Set.t -> Id.G.t opti
 val subst_m : Expr.t -> Id.G.t -> Expr.t -> Expr.t
 
 (** Evaluate a possibly open term in a local context *)
-val eval_open : Lit.t Env.l -> Expr.t -> (Lit.t, error) Result.t
+val eval_open : Val.t Env.l -> Expr.t -> (Val.t, error) Result.t
 
 (** Evaluate a closed term *)
-val eval : Expr.t -> (Lit.t, error) Result.t
+val eval : Expr.t -> (Val.t, error) Result.t
