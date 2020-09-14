@@ -12,6 +12,6 @@ in the root of the project.
 
 - Commit messages style: https://www.conventionalcommits.org/en/v1.0.0/#summary.
 - Document the changes: https://keepachangelog.com/en/1.0.0/.
-- Format the OCaml source code using the [ocamlformat](ocamlformat) tool.
+- Format the OCaml source code using the [ocamlformat][ocamlformat] tool.
 
 [ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
