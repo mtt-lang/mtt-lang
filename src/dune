@@ -5,6 +5,7 @@
 ;; Generate ParserErrors module (to make parsing messages more user-friendly)
 ;; The stub for ParserErrors.messages file is generated using the following command:
 ;; menhir --list-errors src/Parser.mly > src/ParserErrors.messages
+
 (rule
  (targets ParserErrors.ml)
  (deps ParserErrors.messages Parser.mly)
@@ -22,4 +23,3 @@
  (preprocess
   (pps ppx_let ppx_compare ppx_sexp_conv ppx_string_interpolation sedlex.ppx))
  (synopsis "Modal Type Theory Library"))
-

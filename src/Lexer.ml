@@ -20,20 +20,15 @@ let upper_case_letter = [%sedlex.regexp? 'A' .. 'Z']
 
 let letter = [%sedlex.regexp? lower_case_letter | upper_case_letter]
 
-let alphanum = [%sedlex.regexp? lower_case_letter | digit | '_' ]
+let alphanum = [%sedlex.regexp? lower_case_letter | digit | '_']
 
 let regular_ident = [%sedlex.regexp? lower_case_letter, Star alphanum]
 
-let modal_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'' ]
+let modal_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'']
 
 let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum | '_']
 
-
-
-let rec nom buf =
-  match%sedlex buf with
-  | Plus any_blank -> nom buf
-  | _ -> ()
+let rec nom buf = match%sedlex buf with Plus any_blank -> nom buf | _ -> ()
 
 let token buf =
   nom buf;
@@ -62,9 +57,8 @@ let token buf =
   | modal_ident -> IDM (Utf8.lexeme buf)
   | type_ident -> IDT (Utf8.lexeme buf)
   | _ ->
-    let position = fst @@ lexing_positions buf in
-    let tok = Utf8.lexeme buf in
-    raise @@ LexError (position, Printf.sprintf "unexpected character %S" tok)
+      let position = fst @@ lexing_positions buf in
+      let tok = Utf8.lexeme buf in
+      raise @@ LexError (position, Printf.sprintf "unexpected character %S" tok)
 
-let lexer buf =
-  Sedlexing.with_tokenizer token buf
+let lexer buf = Sedlexing.with_tokenizer token buf
