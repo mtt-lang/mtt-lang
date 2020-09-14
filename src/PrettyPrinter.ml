@@ -39,7 +39,7 @@ let rec of_type = function
   | Type.Box t -> box_type ^^ (of_type t)
 
 (** Pretty-print expressions with free vars substituited with
-    their corresponding values from a local environment *)
+    their corresponding values from a regular environment *)
 let rec of_expr_with_free_vars_l bound_vars lenv expr =
   let open Expr in
   let rec walk bvs = function
@@ -48,35 +48,35 @@ let rec of_expr_with_free_vars_l bound_vars lenv expr =
     | Fst pe -> group (parens (fst_kwd ^^ walk bvs pe))
     | Snd pe -> group (parens (snd_kwd ^^ walk bvs pe))
     | VarL idl ->
-        (* To print free local variables we use a local environment with literals *)
-        if Set.mem bvs idl then !^(Id.L.to_string idl)
+        (* To print free regular variables we use a regular environment with literals *)
+        if Set.mem bvs idl then !^(Id.R.to_string idl)
         else begin match Env.lookup_l lenv idl with
              | Ok literal -> parens (of_lit literal)
              | Error _msg -> failwith "The precondition for calling Doc.of_expr_with_free_vars_l function is violated"
              end
-    | VarG idg -> !^(Id.G.to_string idg)
+    | VarG idg -> !^(Id.M.to_string idg)
     | Fun (idl, t_of_id, body) ->
-        parens (fun_kwd ^^ !^(Id.L.to_string idl) ^^ colon ^^ (of_type t_of_id) ^^ dot ^^ space ^^
+        parens (fun_kwd ^^ !^(Id.R.to_string idl) ^^ colon ^^ (of_type t_of_id) ^^ dot ^^ space ^^
           walk (Set.add bvs idl) body)
     | App (fe, arge) -> group (parens (walk bvs fe ^/^ walk bvs arge))
     | Box e -> group (parens (box_kwd ^^ space ^^ walk bvs e))
     | Letbox (idg, boxed_e, body) ->
-        parens (group (letbox_kwd ^^^ !^(Id.G.to_string idg) ^^^ equals ^^^
+        parens (group (letbox_kwd ^^^ !^(Id.M.to_string idg) ^^^ equals ^^^
           walk bvs boxed_e ^^^ in_kwd ^/^
           walk bvs body))
   in walk bound_vars expr
 
 (* This prints an expression as-is, i.e. no substitutions for free vars *)
-and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.L)) Env.emp_l e
+and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.R)) Env.emp_l e
 
 and of_lit = function
   | Val.Unit -> unit_term
   | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
   | Val.Clos (idl, body, lenv) ->
-      fun_kwd ^^ !^(Id.L.to_string idl) ^^ dot ^^^
+      fun_kwd ^^ !^(Id.R.to_string idl) ^^ dot ^^^
       (* when print out closures, substitute the free vars in its body with
-         the corresponding literals from the closures' local environment *)
-      let bound_vars = Set.singleton (module Id.L) idl in
+         the corresponding literals from the closures' regular environment *)
+      let bound_vars = Set.singleton (module Id.R) idl in
       of_expr_with_free_vars_l bound_vars lenv body
   | Val.Box e -> of_expr e
 

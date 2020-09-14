@@ -10,8 +10,8 @@ val to_string : t -> string
 include Comparable.S with type t := t
 end
 
-(** Local context (\Gamma) identifiers *)
-module L : ID = struct
+(** Regular context (\Gamma) identifiers *)
+module R : ID = struct
   module T = struct
     type t = string [@@deriving equal, compare, sexp]
     let mk = Fn.id
@@ -21,8 +21,8 @@ module L : ID = struct
   include Comparable.Make(T)
 end
 
-(** Global context (\Delta) identifiers *)
-module G : ID = struct
+(** Modal context (\Delta) identifiers *)
+module M : ID = struct
   module T = struct
     type t = string [@@deriving equal, compare, sexp]
     let mk = Fn.id

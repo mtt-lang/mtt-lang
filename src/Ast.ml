@@ -30,18 +30,18 @@ type t =
     (** first projection of a pair *)
   | Snd of t
     (** second projection of a pair *)
-  | VarL of Id.L.t
-    (** variables of the local context *)
-  | VarG of Id.G.t
-    (** variables of the global context (or "valid variables"),
-        these are syntactically distinct from the local (ordinary) variables *)
-  | Fun of Id.L.t * Type.t * t
+  | VarL of Id.R.t
+    (** variables of the regular context *)
+  | VarG of Id.M.t
+    (** variables of the modal context (or "valid variables"),
+        these are syntactically distinct from the regular (ordinary) variables *)
+  | Fun of Id.R.t * Type.t * t
     (** anonymous functions: [fun (x : T) => expr] *)
   | App of t * t
     (** function application: [f x] *)
   | Box of t
     (** term-level box: [box expr1] *)
-  | Letbox of Id.G.t * t * t
+  | Letbox of Id.M.t * t * t
     (** [letbox u = expr1 in expr2] *)
 [@@deriving sexp]
 end
@@ -53,7 +53,7 @@ type t =
     (** [unit] literal *)
   | Pair of t * t
     (** [(lit1, lit2)] -- a pair of literals is a literal *)
-  | Clos of Id.L.t * Expr.t * t Env.l
+  | Clos of Id.R.t * Expr.t * t Env.l
     (** Deeply embedded closures *)
   | Box of Expr.t
     (** [box] literal, basically it's an unevaluated expression *)

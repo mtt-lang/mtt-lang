@@ -22,7 +22,7 @@ expr_eof: FST TBOX
 
 An expression after fst is expected. This primitive can be only used fully applied.
 
-expr_eof: FUN IDL COLON LPAREN SND
+expr_eof: FUN IDR COLON LPAREN SND
 ##
 ## Ends in an error in state: 16.
 ##
@@ -34,7 +34,7 @@ expr_eof: FUN IDL COLON LPAREN SND
 
 Valid type is expected after opening parenthesis
 
-expr_eof: FUN IDL COLON LPAREN UNIT UNIT
+expr_eof: FUN IDR COLON LPAREN UNIT UNIT
 ##
 ## Ends in an error in state: 18.
 ##
@@ -48,19 +48,19 @@ expr_eof: FUN IDL COLON LPAREN UNIT UNIT
 
 Missing closing parenthesis at type level. Or unexpected lexeme, like => is used instead of ->
 
-expr_eof: FUN IDL COLON SND
+expr_eof: FUN IDR COLON SND
 ##
 ## Ends in an error in state: 37.
 ##
-## expr -> FUN IDL COLON . typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> FUN IDR COLON . typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDL COLON
+## FUN IDR COLON
 ##
 
 Valid type expected. Make sure uninterpreted type identifiers are capitalized and there are no unbalanced parentheses
 
-expr_eof: FUN IDL COLON TBOX SND
+expr_eof: FUN IDR COLON TBOX SND
 ##
 ## Ends in an error in state: 15.
 ##
@@ -72,7 +72,7 @@ expr_eof: FUN IDL COLON TBOX SND
 
 Type-level box must be followed by a type
 
-expr_eof: FUN IDL COLON UNIT ARROW SND
+expr_eof: FUN IDR COLON UNIT ARROW SND
 ##
 ## Ends in an error in state: 22.
 ##
@@ -84,7 +84,7 @@ expr_eof: FUN IDL COLON UNIT ARROW SND
 
 Valid codomain type is expected. Sometimes this happens if -> is used instead of =>
 
-expr_eof: FUN IDL COLON UNIT ARROW UNIT UNIT
+expr_eof: FUN IDR COLON UNIT ARROW UNIT UNIT
 ##
 ## Ends in an error in state: 23.
 ##
@@ -98,7 +98,7 @@ expr_eof: FUN IDL COLON UNIT ARROW UNIT UNIT
 
 Please report your example, producing this parsing error
 
-expr_eof: FUN IDL COLON UNIT CROSS SND
+expr_eof: FUN IDR COLON UNIT CROSS SND
 ##
 ## Ends in an error in state: 20.
 ##
@@ -110,40 +110,40 @@ expr_eof: FUN IDL COLON UNIT CROSS SND
 
 Second component of product type is expected
 
-expr_eof: FUN IDL COLON UNIT DARROW TBOX
+expr_eof: FUN IDR COLON UNIT DARROW TBOX
 ##
 ## Ends in an error in state: 39.
 ##
-## expr -> FUN IDL COLON typ DARROW . expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> FUN IDR COLON typ DARROW . expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDL COLON typ DARROW
+## FUN IDR COLON typ DARROW
 ##
 
 Error when parsing lambda function body: missing body or unexpected lexeme
 
-expr_eof: FUN IDL COLON UNIT UNIT
+expr_eof: FUN IDR COLON UNIT UNIT
 ##
 ## Ends in an error in state: 38.
 ##
-## expr -> FUN IDL COLON typ . DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> FUN IDR COLON typ . DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
 ## typ -> typ . ARROW typ [ DARROW CROSS ARROW ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDL COLON typ
+## FUN IDR COLON typ
 ##
 
 Separator between bound variable and lambda body is missing. Use e.g. => or .
 
-expr_eof: FUN IDL UNIT
+expr_eof: FUN IDR UNIT
 ##
 ## Ends in an error in state: 36.
 ##
-## expr -> FUN IDL . COLON typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> FUN IDR . COLON typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDL
+## FUN IDR
 ##
 
 Bound variable is missing type annotation
@@ -152,20 +152,20 @@ expr_eof: FUN UNIT
 ##
 ## Ends in an error in state: 10.
 ##
-## expr -> FUN . IDL COLON typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
-## expr -> FUN . LPAREN IDL COLON typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> FUN . IDR COLON typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> FUN . LPAREN IDR COLON typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN
 ##
 
-A local identifier expected. This happens, when e.g. a global identifier is used fun (x' : T). ...
+A regular identifier expected. This happens, when e.g. a modal identifier is used fun (x' : T). ...
 
 expr_eof: LANGLE TBOX
 ##
 ## Ends in an error in state: 7.
 ##
-## parceled_expr -> LANGLE . expr COMMA expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDL IDG EOF COMMA ]
+## parceled_expr -> LANGLE . expr COMMA expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE
@@ -177,7 +177,7 @@ expr_eof: LANGLE UNIT COMMA TBOX
 ##
 ## Ends in an error in state: 42.
 ##
-## parceled_expr -> LANGLE expr COMMA . expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDL IDG EOF COMMA ]
+## parceled_expr -> LANGLE expr COMMA . expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE expr COMMA
@@ -189,7 +189,7 @@ expr_eof: LANGLE UNIT COMMA UNIT RPAREN
 ##
 ## Ends in an error in state: 43.
 ##
-## parceled_expr -> LANGLE expr COMMA expr . RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDL IDG EOF COMMA ]
+## parceled_expr -> LANGLE expr COMMA expr . RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE expr COMMA expr
@@ -207,7 +207,7 @@ expr_eof: LANGLE UNIT RPAREN
 ##
 ## Ends in an error in state: 41.
 ##
-## parceled_expr -> LANGLE expr . COMMA expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDL IDG EOF COMMA ]
+## parceled_expr -> LANGLE expr . COMMA expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE expr
@@ -221,38 +221,38 @@ expr_eof: LANGLE UNIT RPAREN
 
 Missing comma which separates components of pair expression
 
-expr_eof: LETBOX IDG EQ TBOX
+expr_eof: LETBOX IDM EQ TBOX
 ##
 ## Ends in an error in state: 6.
 ##
-## expr -> LETBOX IDG EQ . expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> LETBOX IDM EQ . expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## LETBOX IDG EQ
+## LETBOX IDM EQ
 ##
 
 Right-hand side of lexbox expression is expected
 
-expr_eof: LETBOX IDG EQ UNIT IN TBOX
+expr_eof: LETBOX IDM EQ UNIT IN TBOX
 ##
 ## Ends in an error in state: 46.
 ##
-## expr -> LETBOX IDG EQ expr IN . expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> LETBOX IDM EQ expr IN . expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## LETBOX IDG EQ expr IN
+## LETBOX IDM EQ expr IN
 ##
 
 Body of letbox expression is expected
 
-expr_eof: LETBOX IDG EQ UNIT RPAREN
+expr_eof: LETBOX IDM EQ UNIT RPAREN
 ##
 ## Ends in an error in state: 45.
 ##
-## expr -> LETBOX IDG EQ expr . IN expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> LETBOX IDM EQ expr . IN expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## LETBOX IDG EQ expr
+## LETBOX IDM EQ expr
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -263,14 +263,14 @@ expr_eof: LETBOX IDG EQ UNIT RPAREN
 
 Missing "in" keyword in letbox expression
 
-expr_eof: LETBOX IDG UNIT
+expr_eof: LETBOX IDM UNIT
 ##
 ## Ends in an error in state: 5.
 ##
-## expr -> LETBOX IDG . EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> LETBOX IDM . EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## LETBOX IDG
+## LETBOX IDM
 ##
 
 Missing "=" after identifier in letbox expression
@@ -279,19 +279,19 @@ expr_eof: LETBOX UNIT
 ##
 ## Ends in an error in state: 4.
 ##
-## expr -> LETBOX . IDG EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
+## expr -> LETBOX . IDM EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LETBOX
 ##
 
-A global identifier is expected. It should start with a lowercase letter and end with an apostrophe (').
+A modal identifier is expected. It should start with a lowercase letter and end with an apostrophe (').
 
 expr_eof: LPAREN TBOX
 ##
 ## Ends in an error in state: 3.
 ##
-## parceled_expr -> LPAREN . expr RPAREN [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDL IDG EOF COMMA ]
+## parceled_expr -> LPAREN . expr RPAREN [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -303,7 +303,7 @@ expr_eof: LPAREN UNIT RANGLE
 ##
 ## Ends in an error in state: 48.
 ##
-## parceled_expr -> LPAREN expr . RPAREN [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDL IDG EOF COMMA ]
+## parceled_expr -> LPAREN expr . RPAREN [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN expr

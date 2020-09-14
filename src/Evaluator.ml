@@ -7,26 +7,26 @@ type error = string
 let rec free_vars_g term =
   let open Expr in
   match term with
-  | Unit -> Set.empty (module Id.G)
+  | Unit -> Set.empty (module Id.M)
   | Pair (e1, e2) -> Set.union (free_vars_g e1) (free_vars_g e2)
   | Fst pe | Snd pe -> free_vars_g pe
-  | VarL _i -> Set.empty (module Id.G)
-  | VarG i -> Set.singleton (module Id.G) i
+  | VarL _i -> Set.empty (module Id.M)
+  | VarG i -> Set.singleton (module Id.M) i
   | Fun (_i, _t_of_id, body) -> free_vars_g body
   | App (fe, arge) -> Set.union (free_vars_g fe) (free_vars_g arge)
   | Box e -> free_vars_g e
   | Letbox (i, boxed_e, body) ->
       Set.union (free_vars_g boxed_e)
-                (Set.diff (free_vars_g body) (Set.singleton (module Id.G) i))
+                (Set.diff (free_vars_g body) (Set.singleton (module Id.M) i))
 
 let refresh_g idg fvs =
-  let rec loop (idg : Id.G.t) =
-    if Set.mem fvs idg then loop (Id.G.mk (Id.G.to_string idg ^ "'"))
+  let rec loop (idg : Id.M.t) =
+    if Set.mem fvs idg then loop (Id.M.mk (Id.M.to_string idg ^ "'"))
     else idg (* it's fresh enough already :) *)
   in
   if Set.mem fvs idg then Some (loop idg) else None
 
-(* modal (global) substitution *)
+(* modal (modal) substitution *)
 let rec subst_m term idg body =
   let open Expr in
   match body with
@@ -35,12 +35,12 @@ let rec subst_m term idg body =
   | Fst pe -> Fst (subst_m term idg pe)
   | Snd pe -> Snd (subst_m term idg pe)
   | VarL _i -> body
-  | VarG i -> if [%equal: Id.G.t] idg i then term else body
+  | VarG i -> if [%equal: Id.M.t] idg i then term else body
   | Fun (idl, t_of_id, body) -> Fun (idl, t_of_id, subst_m term idg body)
   | App (fe, arge) -> App (subst_m term idg fe, subst_m term idg arge)
   | Box e -> Box (subst_m term idg e)
   | Letbox (i, boxed_e, body) ->
-    if [%equal: Id.G.t] idg i then
+    if [%equal: Id.M.t] idg i then
         Letbox (i, subst_m term idg boxed_e, body)
     else
       begin match refresh_g i (free_vars_g term) with
@@ -76,7 +76,7 @@ let rec eval_open gamma expr =
   | VarL idl ->
       Env.lookup_l gamma idl
   | VarG _idg ->
-      Result.fail "Global variable access is not possible in a well-typed term"
+      Result.fail "Modal variable access is not possible in a well-typed term"
   | Fun (idl, _t_of_id, body) ->
       return @@ Val.Clos (idl, body, gamma)
   | App (fe, arge) ->

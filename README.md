@@ -45,11 +45,11 @@ Your contribution is very welcome. Please check the details in [CONTRIBUTING.md]
   Yes, Unicode is allowed.
 
   Here is an example which must not typecheck because a box tries to capture a
-  local variable:
+  regular variable:
 
   ```
   $ mtt infer -e "λf:B -> []A. λy:B. (λx:[]A. box x) (f y)"
-  Type inference error: Variable x is not found in the local context!
+  Type inference error: Variable x is not found in the regular context!
   ```
 
 - Evaluating a term from a file ([examples/eval-apply.mtt](./examples/eval-apply.mtt)):
@@ -129,11 +129,11 @@ opam install ./mtt.opam --with-test --deps-only
 
 ### Identifiers
 
-- The regular lambda calculus identifiers (*Lid*) called *local* start with a
+- The regular lambda calculus identifiers (*Lid*) called *regular* start with a
   lowercase letter followed by any number of alphanumeric characters or
   underscores (`_`).
-- The valid, or *global*, identifiers (*Gid*) are syntactically the same as the
-  local ones except that they *must* end with an apostrophe (`'`).
+- The valid, or *modal*, identifiers (*Gid*) are syntactically the same as the
+  regular ones except that they *must* end with an apostrophe (`'`).
 - *Uninterpreted type* identifiers (*Tid*) start with a capital letter followed
   by any number of alphanumeric characters or underscores (`_`).
 
@@ -146,7 +146,7 @@ Here are the keywords `fun`, `in`, `box`, `letbox`, `fst`, `snd`. The keywords
 
 Pairs are denoted with angle brackets `<`, `>` separated with a comma (`,`).
 Parentheses (`)` and `(`) are used as usual for syntactical disambiguation both
-at the type and term levels and to optionally parenthesize bound local variables
+at the type and term levels and to optionally parenthesize bound regular variables
 and their type annotations. The unit type and its only value are both denoted
 with `()`. The dot (`.`) or the double arrow (`=>`) is used to separate bound
 variables from abstractions' bodies. The equals sign (`=`) is used as a
@@ -185,13 +185,13 @@ the Unicode ones.
 | *t* ::= |                                   | Meaning                                                 |
 |:-------:|:---------------------------------:|:-------------------------------------------------------:|
 |         | `()`                              | the only inhabitant of the unit type                    |
-|         | *Lid*                             | Local (regular) variable                                |
-|         | *Gid*                             | Global (valid) variable                                 |
+|         | *Lid*                             | Regular variable                                        |
+|         | *Gid*                             | Modal (valid) variable                                  |
 |         | `<` *t* `,` *t* `>`               | Pair expression                                         |
 |         | `π₁` *t*                          | First projection from a pair                            |
 |         | `π₂` *t*                          | Second projection from a pair                           |
-|         | `λ` *Lid* `:` *T* `.` *t*         | Lambda abstraction with explicitly typed local variable |
-|         | `λ` `(` *Lid* `:` *T* `)` `.` *t* | Lambda abstraction with explicitly typed local variable |
+|         | `λ` *Lid* `:` *T* `.` *t*         | Lambda abstraction with explicitly typed variable       |
+|         | `λ` `(` *Lid* `:` *T* `)` `.` *t* | Lambda abstraction with explicitly typed modal variable |
 |         | *t* *t*                           | Function application                                    |
 |         | `box` *t*                         | Staged computations                                     |
 |         | `letbox` *Gid* `=` *t* `in` *t*   | Running staged computations                             |

@@ -22,9 +22,9 @@ let letter = [%sedlex.regexp? lower_case_letter | upper_case_letter]
 
 let alphanum = [%sedlex.regexp? lower_case_letter | digit | '_' ]
 
-let local_ident = [%sedlex.regexp? lower_case_letter, Star alphanum]
+let regular_ident = [%sedlex.regexp? lower_case_letter, Star alphanum]
 
-let global_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'' ]
+let modal_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'' ]
 
 let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum | '_']
 
@@ -58,8 +58,8 @@ let token buf =
   | "fun" | 0x03BB -> FUN
   | "box" -> BOX
   | "letbox" -> LETBOX
-  | local_ident -> IDL (Utf8.lexeme buf)
-  | global_ident -> IDG (Utf8.lexeme buf)
+  | regular_ident -> IDR (Utf8.lexeme buf)
+  | modal_ident -> IDM (Utf8.lexeme buf)
   | type_ident -> IDT (Utf8.lexeme buf)
   | _ ->
     let position = fst @@ lexing_positions buf in

@@ -4,7 +4,7 @@ open Ast
 type error = string
 
 (** [check_open delta gamma term type] typechecks a possibly open term [term]
-    in global (valid) typing context [delta] and local typing context [gamma].
+    in modal (valid) typing context [delta] and regular typing context [gamma].
  *)
 val check_open : Type.t Env.g -> Type.t Env.l -> Expr.t -> Type.t -> (unit, error) Result.t
 
@@ -12,7 +12,7 @@ val check_open : Type.t Env.g -> Type.t Env.l -> Expr.t -> Type.t -> (unit, erro
 val check : Expr.t -> Type.t -> (unit, error) Result.t
 
 (** [infer_open delta gamma term] infers the type of a possibly open term [term]
-    in global (valid) typing context [delta] and local typing context [gamma].
+    in modal (valid) typing context [delta] and regular typing context [gamma].
  *)
 val infer_open : Type.t Env.g -> Type.t Env.l -> Expr.t -> (Type.t, error) Result.t
 

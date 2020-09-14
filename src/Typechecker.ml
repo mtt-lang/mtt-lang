@@ -33,10 +33,10 @@ let rec check_open delta gamma expr typ =
       end
   | VarL idl ->
       let%bind t = Env.lookup_l gamma idl in
-      Result.ok_if_true ([%equal: Type.t] typ t) ~error:"Unexpected local variable type"
+      Result.ok_if_true ([%equal: Type.t] typ t) ~error:"Unexpected regular variable type"
   | VarG idg ->
       let%bind t = Env.lookup_g delta idg in
-      Result.ok_if_true ([%equal: Type.t] typ t) ~error:"Unexpected global variable type"
+      Result.ok_if_true ([%equal: Type.t] typ t) ~error:"Unexpected modal variable type"
   | Fun (idl, t_of_id, body) ->
       begin match typ with
       | Type.Arr (dom, cod) ->

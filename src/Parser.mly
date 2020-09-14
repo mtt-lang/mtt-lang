@@ -1,8 +1,8 @@
 %token EOF
 
 (* Identifiers *)
-%token <string> IDL
-%token <string> IDG
+%token <string> IDR
+%token <string> IDM
 %token <string> IDT
 
 (* Parentheses *)
@@ -68,13 +68,13 @@ typ:
     { t }
 
 ident:
-    (* Local variables *)
-  | name = IDL
-    { VarL (Id.L.mk name) }
+    (* Regular variables *)
+  | name = IDR
+    { VarL (Id.R.mk name) }
 
-    (* Global (i.e. valid) variables *)
-  | name = IDG
-    { VarG (Id.G.mk name) }
+    (* Modal (i.e. valid) variables *)
+  | name = IDM
+    { VarG (Id.M.mk name) }
 
 expr:
     (* First projection *)
@@ -86,12 +86,12 @@ expr:
     { Snd (e) }
 
     (* anonymous function (lambda) *)
-  | FUN; idl = IDL; COLON; t = typ; DARROW; e = expr
-    { Fun (Id.L.mk idl, t, e) }
+  | FUN; idl = IDR; COLON; t = typ; DARROW; e = expr
+    { Fun (Id.R.mk idl, t, e) }
 
     (* allow parenthesizing of the bound variable for lambdas *)
-  | FUN; LPAREN; idl = IDL; COLON; t = typ; RPAREN; DARROW; e = expr
-    { Fun (Id.L.mk idl, t, e) }
+  | FUN; LPAREN; idl = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
+    { Fun (Id.R.mk idl, t, e) }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr
@@ -102,8 +102,8 @@ expr:
     { Box e }
 
     (* letbox idg = expr in expr *)
-  | LETBOX; idg = IDG; EQ; e = expr; IN; body = expr
-    { Letbox (Id.G.mk idg, e, body) }
+  | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr
+    { Letbox (Id.M.mk idg, e, body) }
 
   | e = parceled_expr
     { e }
