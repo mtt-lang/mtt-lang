@@ -22,6 +22,7 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   (dune (>= 2.0))
   menhir
   (ocaml (>= 4.07.0))
+  (ocamlformat (and :with-test (= 0.15.0)))
   pprint
   ppx_compare
   ppx_let
