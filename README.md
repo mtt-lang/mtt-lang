@@ -7,11 +7,11 @@
 This is a *work-in-progress* simple implementation of (a part of) the modal type
 theory by Davies and Pfenning described in their [A Modal Analysis of Staged
 Computation(2001)][DP2001] paper. For a, perhaps, gentler introduction, see
-Pfenning's lecture notes accopmanying his and Platzer's [course on modal
+Pfenning's lecture notes accompanying his and Platzer's [course on modal
 logic][course].
 
 **Disclaimer 1**: this implementation has not been extensively tested yet, so it
-might contain critial bugs.
+might contain critical bugs.
 
 **Disclaimer 2**: error reporting mechanism does not report locations yet. This
 is easy to add for the parsing phase but requires more work to do e.g. during
