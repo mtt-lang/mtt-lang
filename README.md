@@ -2,7 +2,7 @@
 
 ![GitHub Actions][github-actions-shield]
 
-[github-actions-shield]: https://github.com/anton-trunov/modal-type-theory/workflows/Main%20workflow/badge.svg
+[github-actions-shield]: https://github.com/anton-trunov/modal-type-theory/workflows/Build/badge.svg
 
 This is a *work-in-progress* simple implementation of (a part of) the modal type
 theory by Davies and Pfenning described in their [A Modal Analysis of Staged
