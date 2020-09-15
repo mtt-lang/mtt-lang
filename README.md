@@ -83,8 +83,8 @@ are recorded in the generated [mtt.opam](./mtt.opam) file).
 
 Once you have opam installed, go to the project root directory and execute the
 following command which will create a *local* switch with the specified version
-of OCaml compiler, then it opam will download, compile and install the
-dependencies. Local switch will be by default available *only* inside this
+of OCaml compiler, then opam will download, compile and install the
+dependencies. By default, local switch will be available *only* inside this
 project.
 
 ```shell
