@@ -13,6 +13,7 @@ depends: [
   "base" {>= "v0.12.2" & < "v0.15.0"}
   "core"
   "dune" {>= "2.0"}
+  "mdx" {with-test}
   "menhir"
   "ocaml" {>= "4.07.0"}
   "ocamlformat" {with-test & = "0.15.0"}

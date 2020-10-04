@@ -124,6 +124,11 @@ opam install ./mtt.opam --with-test --deps-only
   $ mtt eval examples/eval-apply.mtt
   ```
 
+## Running/promoting tests
+
+- To run tests execute `make test` or `dune runtest`.
+- To accept changes to the existing tests, e.g. due to a new format of output or
+  new CLI exit codes, run `dune runtest --auto-promote`.
 
 ## Language Syntax
 
