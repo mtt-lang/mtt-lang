@@ -11,7 +11,7 @@ homepage: "https://github.com/anton-trunov/mtt"
 bug-reports: "https://github.com/anton-trunov/mtt/issues"
 depends: [
   "base" {>= "v0.12.2" & < "v0.15.0"}
-  "core"
+  "cmdliner"
   "dune" {>= "2.0"}
   "mdx" {with-test}
   "menhir"

@@ -42,7 +42,9 @@ jobs:
 
       - run: opam install . --deps-only --with-doc --with-test
 
-      - run: opam exec -- make lint
+      - name: 'Lint source files'
+        if: runner.os != 'Windows'
+        run: opam exec -- make lint
 
       - run: opam exec -- dune build
 

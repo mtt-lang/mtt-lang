@@ -29,11 +29,14 @@ Your contribution is very welcome. Please check the details in [CONTRIBUTING.md]
 
 ## How to use
 
+Use `mtt --help` to list all the subcommands `mtt` supports. Each of those
+subcommands also supports `--help` flag. Here are some usage examples:
+
 - Typechecking a term:
 
   ```
-  $ mtt check -e "λx : []A. letbox u' = x in u'" -t "[]A -> A"
-  OK. Term typechecks! 
+  $ mtt check "[]A -> A" -e "λx : []A. letbox u' = x in u'" --verbose
+  OK. Expression typechecks!
   ```
 
 - Inferring the type of a term:
@@ -49,7 +52,18 @@ Your contribution is very welcome. Please check the details in [CONTRIBUTING.md]
 
   ```
   $ mtt infer -e "λf:B -> []A. λy:B. (λx:[]A. box x) (f y)"
-  Type inference error: Variable x is not found in the regular context!
+  mtt: Type inference error: Variable x is not found in the regular context!
+  ```
+
+- Inferring the type of a term from `stdin` using [heredoc](https://en.wikipedia.org/wiki/Here_document) syntax:
+  ```
+  mtt infer << EOF
+  fun x:[]A. fun y:[]B.
+    letbox x' = x in
+    letbox y' = y in
+    box <x', y'>
+  EOF
+  (□A → (□B → □(A×B)))
   ```
 
 - Evaluating a term from a file ([examples/eval-apply.mtt](./examples/eval-apply.mtt)):
@@ -110,11 +124,10 @@ opam install ./mtt.opam --with-test --deps-only
 
 - My workflow is as follows: I modify the source code and play with the
   evaluator or typechecker using [dune](https://dune.build) build system to
-  compile and run the modified CLI-driver `mtt` (note that dune needs the `exe`
-  extension):
+  compile and run the modified CLI-driver `mtt`:
 
   ``` shell
-  $ dune exec bin/mtt.exe -- infer examples/apply.mtt
+  $ dune exec -- mtt infer examples/apply.mtt
   ```
 
 - Another option is to install `mtt` into your switch `opam install ./mtt.opam`
@@ -128,7 +141,7 @@ opam install ./mtt.opam --with-test --deps-only
 
 - To run tests execute `make test` or `dune runtest`.
 - To accept changes to the existing tests, e.g. due to a new format of output or
-  new CLI exit codes, run `dune runtest --auto-promote`.
+  new CLI exit codes, run `dune runtest --auto-promote` or `make gold`.
 
 ## Language Syntax
 

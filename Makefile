@@ -12,6 +12,9 @@ all:
 test:
 	dune runtest
 
+gold:
+	dune runtest --auto-promote
+
 # Autoformat sources inplace (needs ocamlformat installed)
 fmt:
 	dune build @fmt --auto-promote
@@ -27,4 +30,4 @@ dev-deps:
 clean:
 	dune clean || true
 
-.PHONY: all test fmt lint dev-deps clean
+.PHONY: all test gold fmt lint dev-deps clean

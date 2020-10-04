@@ -19,7 +19,7 @@
 Based on Modal Type Theory as given by F. Pfenning et al.")
  (depends
   (base (and (>= v0.12.2) (< v0.15.0)))
-  core
+  cmdliner
   (dune (>= 2.0))
   (mdx :with-test)
   menhir

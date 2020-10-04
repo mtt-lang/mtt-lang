@@ -1,6 +1,6 @@
-open Core
-open Result.Let_syntax
+open Base
 open Stdio
+open Result.Let_syntax
 open Mtt
 open ParserInterface
 
@@ -12,8 +12,8 @@ let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
          [%string "Parse error: $parse_error"])
 
 (* Parsing and typechecking with error handling utilities *)
-let parse_and_typecheck_string expr_str typ_str =
-  let%bind ast = parse_from_e Term (String expr_str) in
+let parse_and_typecheck source typ_str =
+  let%bind ast = parse_from_e Term source in
   let%bind typ = parse_from_e Type (String typ_str) in
   Typechecker.check ast typ
   |> Result.map_error ~f:(fun eval_err ->
@@ -34,127 +34,240 @@ let parse_and_eval source =
   |> Result.map_error ~f:(fun eval_err ->
          [%string "Evaluation error: $eval_err"])
 
-(* Printing results *)
+let osource source_file source_arg =
+  match (source_file, source_arg) with
+  | Some filename, None -> Some (File filename)
+  | None, Some string -> Some (String string)
+  | Some _, Some _ -> None
+  | None, None -> Some Stdin
 
-let print_parsing_result res =
-  match res with
-  | Ok ast ->
-      let document = PrettyPrinter.Doc.of_expr ast in
-      PPrint.ToChannel.pretty 1.0 80 stdout document;
-      Out_channel.newline stdout
-  | Error err_msg ->
-      Out_channel.output_string stderr err_msg;
-      Out_channel.newline stderr
+let parse_expr source_file source_arg =
+  match osource source_file source_arg with
+  | None -> `Error (true, "Please provide exactly one expression to parse")
+  | Some source -> (
+      match parse_from_e Term source with
+      | Ok ast ->
+          let document = PrettyPrinter.Doc.of_expr ast in
+          PPrint.ToChannel.pretty 1.0 80 stdout document;
+          Out_channel.newline stdout;
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg) )
 
-let print_typecheck_result res =
-  match res with
-  | Ok () ->
-      Out_channel.output_string stdout "OK. Term typechecks!";
-      Out_channel.newline stdout
-  | Error err_msg ->
-      Out_channel.output_string stderr err_msg;
-      Out_channel.newline stderr
+let check_expr source_file source_arg typ verbose =
+  match osource source_file source_arg with
+  | None -> `Error (true, "Please provide exactly one expression to typecheck")
+  | Some source -> (
+      match parse_and_typecheck source typ with
+      | Ok () ->
+          if verbose then (
+            Out_channel.output_string stdout "OK. Expression typechecks.";
+            Out_channel.newline stdout );
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg) )
 
-let print_typeinfer_result res =
-  match res with
-  | Ok typ ->
-      let document = PrettyPrinter.Doc.of_type typ in
-      PPrint.ToChannel.pretty 1.0 80 stdout document;
-      Out_channel.newline stdout
-  | Error err_msg ->
-      Out_channel.output_string stderr err_msg;
-      Out_channel.newline stderr
+let infer_type source_file source_arg =
+  match osource source_file source_arg with
+  | None ->
+      `Error (true, "Please provide exactly one expression to infer its type")
+  | Some source -> (
+      match parse_and_typeinfer source with
+      | Ok typ ->
+          let document = PrettyPrinter.Doc.of_type typ in
+          PPrint.ToChannel.pretty 1.0 80 stdout document;
+          Out_channel.newline stdout;
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg) )
 
-let print_eval_result res =
-  match res with
-  | Ok literal ->
-      let document = PrettyPrinter.Doc.of_lit literal in
-      PPrint.ToChannel.pretty 1.0 80 stdout document;
-      Out_channel.newline stdout
-  | Error err_msg ->
-      Out_channel.output_string stderr err_msg;
-      Out_channel.newline stderr
+let eval_expr source_file source_arg =
+  match osource source_file source_arg with
+  | None -> `Error (true, "Please provide exactly one expression to evaluate")
+  | Some source -> (
+      match parse_and_eval source with
+      | Ok literal ->
+          let document = PrettyPrinter.Doc.of_lit literal in
+          PPrint.ToChannel.pretty 1.0 80 stdout document;
+          Out_channel.newline stdout;
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg) )
 
-(* Command-line interface *)
+(* Command line interface *)
 
-let input_kind_of_filename filename =
-  match filename with "-" -> Stdin | filename -> File filename
+open Cmdliner
 
-let parse =
-  Command.basic ~summary:"Parsing and printing back"
-    Command.Let_syntax.(
-      let%map_open expr_opt =
-        flag "-e" (optional string)
-          ~doc:"string Parse and print back the given [expression]"
-      and filename =
-        anon (maybe_with_default "-" ("filename" %: Filename.arg_type))
+let help man_format cmds topic =
+  match topic with
+  | None -> `Help (`Pager, None)
+  | Some topic -> (
+      let topics = "topics" :: "patterns" :: "environment" :: cmds in
+      let conv, _ =
+        Cmdliner.Arg.enum (List.rev_map ~f:(fun s -> (s, s)) topics)
       in
-      fun () ->
-        match expr_opt with
-        | Some expr -> parse_from_e Term (String expr) |> print_parsing_result
-        | None ->
-            filename |> input_kind_of_filename |> parse_from_e Term
-            |> print_parsing_result)
+      match conv topic with
+      | `Error e -> `Error (false, e)
+      | `Ok t when String.( = ) t "topics" ->
+          List.iter topics ~f:print_endline;
+          `Ok ()
+      | `Ok t when List.mem cmds t ~equal:String.( = ) ->
+          `Help (man_format, Some t)
+      | `Ok _t ->
+          let page =
+            ((topic, 7, "", "", ""), [ `S topic; `P "Say something" ])
+          in
+          `Ok (Cmdliner.Manpage.print man_format Caml.Format.std_formatter page)
+      )
 
-let check =
-  Command.basic ~summary:"Typechecking"
-    Command.Let_syntax.(
-      let%map_open expr_opt =
-        flag "-e" (optional string) ~doc:"string [expression] to typecheck"
-      and type_opt =
-        flag "-t" (optional string) ~doc:"string [type] to typecheck"
-      in
-      fun () ->
-        match (expr_opt, type_opt) with
-        | Some expr, Some typ ->
-            parse_and_typecheck_string expr typ |> print_typecheck_result
-        | Some _, None ->
-            Out_channel.output_string stderr
-              "Error: please provide type using -t flag";
-            Out_channel.newline stderr
-        | None, Some _ ->
-            Out_channel.output_string stderr
-              "Error: please provide expression using -e flag";
-            Out_channel.newline stderr
-        | None, None ->
-            Out_channel.output_string stderr
-              "Error: please provide expression and type as CLI flags";
-            Out_channel.newline stderr)
+let help_secs =
+  [
+    `S Manpage.s_common_options;
+    `P "These options are common to all commands.";
+    `S "MORE HELP";
+    `P "Use `$(mname) $(i,COMMAND) --help' for help on a single command.";
+    `Noblank;
+    `S Manpage.s_bugs;
+    `P
+      "Check bug reports at \
+       https://github.com/anton-trunov/modal-type-theory/issues/";
+  ]
 
-let infer =
-  Command.basic ~summary:"Type inference"
-    Command.Let_syntax.(
-      let%map_open expr_opt =
-        flag "-e" (optional string)
-          ~doc:"string Infer the type of the given [expression]"
-      and filename =
-        anon (maybe_with_default "-" ("filename" %: Filename.arg_type))
-      in
-      fun () ->
-        match expr_opt with
-        | Some expr ->
-            parse_and_typeinfer (String expr) |> print_typeinfer_result
-        | None ->
-            filename |> input_kind_of_filename |> parse_and_typeinfer
-            |> print_typeinfer_result)
+let help_cmd =
+  let topic =
+    let doc = "The topic to get help on. `topics' lists the topics." in
+    Arg.(value & pos 0 (some string) None & info [] ~docv:"TOPIC" ~doc)
+  in
+  let doc = "display help about mtt and mtt commands" in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P "Prints help about mtt commands.";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(ret (const help $ Arg.man_format $ Term.choice_names $ topic)),
+    Term.info "help" ~doc ~exits:Term.default_exits ~man )
 
-let eval =
-  Command.basic ~summary:"Expression evaluation"
-    Command.Let_syntax.(
-      let%map_open expr_opt =
-        flag "-e" (optional string) ~doc:"string Evaluate the given expression"
-      and filename =
-        anon (maybe_with_default "-" ("filename" %: Filename.arg_type))
-      in
-      fun () ->
-        match expr_opt with
-        | Some expr -> parse_and_eval (String expr) |> print_eval_result
-        | None ->
-            filename |> input_kind_of_filename |> parse_and_eval
-            |> print_eval_result)
+let parse_cmd =
+  let source_file =
+    let doc = "The file with expression to parse and pretty-print." in
+    Arg.(value & pos 0 (some string) None & info [] ~docv:"FILE" ~doc)
+  in
+  let source_arg =
+    let doc =
+      "The expression to parse and pretty-print given as a CLI argument."
+    in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
+  in
+  let doc = "parse and pretty-print an expression" in
+  let exits = Term.default_exits in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "Parses and pretty-prints an expression either from stdin, a file, or \
+         given as a command-line parameter";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(ret (const parse_expr $ source_file $ source_arg)),
+    Term.info "parse" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
-let command =
-  Command.group ~summary:"Manipulate dates"
-    [ ("parse", parse); ("check", check); ("infer", infer); ("eval", eval) ]
+let check_cmd =
+  let type_arg =
+    let doc = "The expected type given as a CLI argument." in
+    Arg.(required & pos 0 (some string) None & info [] ~docv:"TYPE" ~doc)
+  in
+  let source_file =
+    let doc = "The file with expression to typecheck." in
+    Arg.(value & pos 1 (some string) None & info [] ~docv:"FILE" ~doc)
+  in
+  let source_arg =
+    let doc = "The expression to typecheck given as a CLI argument." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
+  in
+  let verbose_arg =
+    let doc = "Verbose mode." in
+    Arg.(value & flag & info [ "verbose" ] ~doc)
+  in
+  let doc = "typecheck an expression" in
+  let exits = Term.default_exits in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "Typecheck an expression either from stdin, a file, or given as a \
+         command-line parameter";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(
+      ret (const check_expr $ source_file $ source_arg $ type_arg $ verbose_arg)),
+    Term.info "check" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
-let () = Command.run command
+let infer_cmd =
+  let source_file =
+    let doc = "The file with expression to infer its type." in
+    Arg.(value & pos 0 (some string) None & info [] ~docv:"FILE" ~doc)
+  in
+  let source_arg =
+    let doc = "The expression to infer the type of given as a CLI argument." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
+  in
+  let doc = "infer the type of an expression" in
+  let exits = Term.default_exits in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "Infers the type of an expression either from stdin, a file, or given \
+         as a command-line parameter";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(ret (const infer_type $ source_file $ source_arg)),
+    Term.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+
+let eval_cmd =
+  let source_file =
+    let doc = "The file with expression to evaluate." in
+    Arg.(value & pos 0 (some string) None & info [] ~docv:"FILE" ~doc)
+  in
+  let source_arg =
+    let doc = "The expression to evaluate given as a CLI argument." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
+  in
+  let doc = "evaluate an expression" in
+  let exits = Term.default_exits in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "Evaluates an expression either from stdin, a file, or given as a \
+         command-line parameter";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(ret (const eval_expr $ source_file $ source_arg)),
+    Term.info "eval" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+
+let default_cmd =
+  let doc = "a modal type theory implementation" in
+  let sdocs = Manpage.s_common_options in
+  let exits = Term.default_exits in
+  let man = help_secs in
+  ( Term.(ret (const (`Help (`Pager, None)))),
+    Term.info "mtt" ~version:"v0.0.0" ~doc ~sdocs ~exits ~man )
+
+let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
+
+let () = Term.(exit @@ eval_choice default_cmd cmds)
