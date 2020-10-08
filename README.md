@@ -141,7 +141,7 @@ opam install ./mtt.opam --with-test --deps-only
 
 - To run tests execute `make test` or `dune runtest`.
 - To accept changes to the existing tests, e.g. due to a new format of output or
-  new CLI exit codes, run `dune runtest --auto-promote` or `make gold`.
+  new CLI exit codes, run `dune promote` or `make gold`.
 
 ## Language Syntax
 

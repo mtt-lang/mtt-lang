@@ -1,3 +1,2 @@
-(mdx
- (packages mtt)
- (files *.md))
+(cram
+ (deps %{bin:mtt}))

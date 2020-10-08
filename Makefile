@@ -12,8 +12,12 @@ all:
 test:
 	dune runtest
 
+promote:
+	dune promote
+
+# an alias for promoting tests
 gold:
-	dune runtest --auto-promote
+	dune promote
 
 # Autoformat sources inplace (needs ocamlformat installed)
 fmt:

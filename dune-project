@@ -1,5 +1,5 @@
-(lang dune 2.4)
-(using mdx 0.1)
+(lang dune 2.7)
+(cram enable)
 (using menhir 2.0)
 (name mtt)
 
@@ -21,7 +21,6 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   (base (and (>= v0.12.2) (< v0.15.0)))
   cmdliner
   (dune (>= 2.0))
-  (mdx :with-test)
   menhir
   (ocaml (>= 4.07.0))
   (ocamlformat (and :with-test (= 0.15.0)))
