@@ -57,18 +57,11 @@ Exercises from 15-816 Modal Logic, Andre Platzer
   > EOF
   (((A×B) → C) → ((□A×□B) → C))
 
-Content from /examples
-/examples/apply.mtt
-  $ mtt infer <<EOF
-  > (λx:[](() -> ()). λy:[](). letbox u' = x in letbox w' = y in box (u' w'))
-  > EOF
-  (□(() → ()) → (□() → □()))
-
 /examples/boxed-id.mtt
   $ mtt infer <<EOF
-  > (box (λx : () -> (). x))
+  > (box (λx : A -> B. x))
   > EOF
-  □((() → ()) → (() → ()))
+  □((A → B) → (A → B))
 
 /examples/boxed-product-curried.mtt
   $ mtt infer <<EOF
@@ -95,17 +88,3 @@ Content from /examples
   > <box (fst p'), box (snd p')>
   > EOF
   (□(A×B) → (□A×□B))
-
-/examples/eval-apply.mtt
-  $ mtt infer <<EOF
-  > (λx : □(). letbox u' = x in u')
-  > (((λx:□(() → ()). λy:□(). letbox u' = x in letbox w' = y in box (u' w'))
-  >  (box (λx : (). x))) (box ((λx : (). x) ())))
-  > EOF
-  ()
-
-/examples/eval.mtt
-  $ mtt infer <<EOF
-  > (λx : [](). letbox u' = x in u')
-  > EOF
-  (□() → ())
