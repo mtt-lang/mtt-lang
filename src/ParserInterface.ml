@@ -57,15 +57,18 @@ let process parser_driver lexbuf =
 
 let parse_from_stdin ast_kind =
   let lexbuf = Sedlexing.Utf8.from_channel Stdio.stdin in
+  Stdio.print_endline "hello it's me!1";
   process (parser_driver ast_kind) lexbuf
 
 let parse_from_string ast_kind str =
   let lexbuf = Sedlexing.Utf8.from_string str in
+  Stdio.print_endline "hello it's me!2";
   process (parser_driver ast_kind) lexbuf
 
 let parse_from_file ast_kind filename =
   Stdio.In_channel.with_file filename ~f:(fun inchan ->
       let lexbuf = Sedlexing.Utf8.from_channel inchan in
+      Stdio.print_endline "hello it's me!3";
       process (parser_driver ast_kind) lexbuf)
 
 let parse_from ast_kind input_kind =

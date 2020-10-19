@@ -231,6 +231,7 @@ let infer_cmd =
       `Blocks help_secs;
     ]
   in
+  Stdio.print_endline "hello it's me!4";
   ( Term.(ret (const infer_type $ source_file $ source_arg)),
     Term.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
