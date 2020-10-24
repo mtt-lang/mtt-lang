@@ -315,7 +315,7 @@ expr_eof: LPAREN UNIT RANGLE
 ## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-Missing closing parenthesis
+Missing closing parenthesis or missing obligatory parentheses for mutli-arg function application: (f x) y
 
 expr_eof: SND TBOX
 ##
