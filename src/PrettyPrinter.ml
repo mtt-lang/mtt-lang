@@ -39,12 +39,29 @@ module Doc : DOC = struct
 
   let in_kwd = !^"in"
 
+  let enclose = function true -> parens | false -> fun x -> x
+
   let rec of_type = function
     | Type.Unit -> unit_type
     | Type.Base idT -> !^idT
-    | Type.Prod (t1, t2) -> parens (of_type t1 ^^ cross ^^ of_type t2)
-    | Type.Arr (dom, cod) -> parens (of_type dom ^^^ arrow ^^^ of_type cod)
-    | Type.Box t -> box_type ^^ of_type t
+    | Type.Prod (t1, t2) ->
+        let p_t1 = match t1 with Type.Arr (_, _) -> true | _ -> false in
+        let p_t2 =
+          match t2 with
+          | Type.Prod (_, _) | Type.Arr (_, _) -> true
+          | _ -> false
+        in
+        (enclose p_t1) (of_type t1) ^^ cross ^^ (enclose p_t2) (of_type t2)
+    | Type.Arr (dom, cod) ->
+        let p_dom = match dom with Type.Arr (_, _) -> true | _ -> false in
+        (enclose p_dom) (of_type dom) ^^^ arrow ^^^ of_type cod
+    | Type.Box t ->
+        let p_t =
+          match t with
+          | Type.Unit | Type.Base _ | Type.Box _ -> false
+          | _ -> true
+        in
+        box_type ^^ (enclose p_t) (of_type t)
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
