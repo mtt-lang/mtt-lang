@@ -67,9 +67,9 @@ let rec check_open delta gamma expr typ =
       match typ with
       | Type.Box t -> check_open delta Env.emp_l e t
       | _ -> Result.fail "Error: unboxed type" )
-  | Let (idr, binded_e, body) -> (
+  | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
-      check_open delta (Env.extend_l gamma idr ty) body typ )
+      check_open delta (Env.extend_l gamma idr ty) body typ
   | Letbox (idg, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with
@@ -108,9 +108,9 @@ and infer_open delta gamma expr =
   | Box e ->
       let%map t = infer_open delta Env.emp_l e in
       Type.Box t
-  | Let (idr, binded_e, body) -> (
+  | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
-      infer_open delta (Env.extend_l gamma idr ty) body )
+      infer_open delta (Env.extend_l gamma idr ty) body
   | Letbox (idg, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with

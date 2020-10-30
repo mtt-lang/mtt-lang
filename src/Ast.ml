@@ -29,7 +29,7 @@ module Expr = struct
         (** anonymous functions: [fun (x : T) => expr] *)
     | App of t * t  (** function application: [f x] *)
     | Box of t  (** term-level box: [box expr1] *)
-    | Let of Id.R.t * t * t (** [let u = expr1 in expr2] *)
+    | Let of Id.R.t * t * t  (** [let u = expr1 in expr2] *)
     | Letbox of Id.M.t * t * t  (** [letbox u = expr1 in expr2] *)
   [@@deriving sexp]
 end
