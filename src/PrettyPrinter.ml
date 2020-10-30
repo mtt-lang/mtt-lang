@@ -78,13 +78,12 @@ module Doc : DOC = struct
             ^^ walk (Set.add bvs idl) body )
       | App (fe, arge) -> group (parens (walk bvs fe ^/^ walk bvs arge))
       | Box e -> group (parens (box_kwd ^^ space ^^ walk bvs e))
-      (* | Let _ -> unit_term *)
-      | Let (idr, binded_e, body) -> 
+      | Let (idr, binded_e, body) ->
         parens
           (group
             ( let_kwd
             ^^^ !^(Id.R.to_string idr)
-            ^^^ equals ^^^ walk bvs binded_e ^^^ in_kwd ^/^ walk bvs body ))
+            ^^^ equals ^^^ walk bvs binded_e ^^^ in_kwd ^/^ walk (Set.add bvs idr) body ))
       | Letbox (idg, boxed_e, body) ->
           parens
             (group
