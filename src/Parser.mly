@@ -7,6 +7,10 @@
 
 (* Parentheses *)
 %token LPAREN RPAREN
+(* this implementation different from this? :
+%token LPAREN 
+%token RPAREN
+*)
 %token LANGLE RANGLE
 
 (* Type-level syntax *)
@@ -45,27 +49,27 @@
 typ:
     (* Unit type *)
   | UNIT
-    { Type.Unit }
+    { TType.mkType Type.Unit $symbolstartpos $endpos}
 
     (* Uninterpreted base types *)
   | name = IDT
-    { Type.Base name }
+    { TType.mkType (Type.Base name) $symbolstartpos $endpos}
 
     (* Type of pairs *)
   | t1 = typ; CROSS; t2 = typ
-    { Type.Prod (t1, t2) }
+    { Type.mkType (Type.Prod (t1, t2)) $symbolstartpos $endpos}
 
     (* Type of functions *)
   | dom = typ; ARROW; cod = typ
-    { Type.Arr (dom, cod) }
+    { Type.mkType (Type.Arr (dom, cod)) $symbolstartpos $endpos}
 
     (* Type-level box *)
   | TBOX; t = typ
-    { Type.Box t }
+    { Type.mkType (Type.Box t) $symbolstartpos $endpos}
 
     (* Parenthesized type expressions *)
   | LPAREN; t = typ; RPAREN
-    { t }
+    { Type.mkType t $symbolstartpos $endpos}
 
 ident:
     (* Regular variables *)
