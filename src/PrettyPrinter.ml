@@ -52,7 +52,7 @@ module Doc : DOC = struct
     their corresponding values from a regular environment *)
   let rec of_expr_with_free_vars_l bound_vars lenv expr =
     let open Expr in
-    let rec walk bvs term = 
+    let rec walk bvs term =
       match term.data with
       | Unit -> unit_term
       | Pair (e1, e2) -> angles (walk bvs e1 ^^ comma ^/^ walk bvs e2)
@@ -92,7 +92,7 @@ module Doc : DOC = struct
   and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.R)) Env.emp_l e
 
   and of_lit term =
-    match term.data with 
+    match term.data with
     | Val.Unit -> unit_term
     | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
     | Val.Clos (idl, body, lenv) ->
