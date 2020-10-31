@@ -6,7 +6,7 @@ open ParserInterface
 
 (* Parsing with error handling utilities *)
 let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
-  fun ast_kind source ->
+ fun ast_kind source ->
   parse_from ast_kind source
   |> Result.map_error ~f:(fun parse_error ->
          [%string "Parse error: $parse_error"])
