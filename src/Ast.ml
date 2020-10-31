@@ -2,33 +2,24 @@ open Base
 
 type idT = string [@@deriving equal, sexp]
 
-type 'ast astAndPosition = 
-  {
-    ast : 'ast; 
-    start_pos : (Lexing.position sexp_opaque) [@equal.ignore];
-    end_pos : (Lexing.position sexp_opaque) [@equal.ignore];
-  }
-  [@@deriving equal, sexp]
-
 (** Types *)
 module Type = struct
-  type ast =
+  type t = ast Location.location
+  and ast =
     | Unit  (** Unit type *)
-    | Base of idT astAndPosition
+    | Base of idT
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
-    | Prod of (ast * ast) astAndPosition (** Type of pairs *)
-    | Arr of (ast * ast) astAndPosition  (** Type of functions *)
-    | Box of ast astAndPosition (** Type-level box *)
+    | Prod of t * t (** Type of pairs *)
+    | Arr of t * t  (** Type of functions *)
+    | Box of t (** Type-level box *)
     [@@deriving equal, sexp]
 
-  type t = ast astAndPosition [@@deriving equal, sexp]
-
-  let mkType ast start_pos end_pos = {ast; start_pos; end_pos; }
 end
 
 (** Expressions *)
 module Expr = struct
-  type t =
+  type t = ast Location.location
+  and ast =
     | Unit  (** [unit] *)
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
@@ -47,7 +38,8 @@ end
 
 (** Values *)
 module Val = struct
-  type t =
+  type t = ast Location.location
+  and ast =
     | Unit  (** [unit] literal *)
     | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
     | Clos of Id.R.t * Expr.t * t Env.l  (** Deeply embedded closures *)

@@ -2,6 +2,7 @@ open Base
 open PPrint
 open PPrintCombinators
 open Ast
+open Location
 
 module type DOC = sig
   val of_type : Type.t -> PPrint.document
@@ -39,7 +40,8 @@ module Doc : DOC = struct
 
   let in_kwd = !^"in"
 
-  let rec of_type = function
+  let rec of_type term =
+    match term.data with
     | Type.Unit -> unit_type
     | Type.Base idT -> !^idT
     | Type.Prod (t1, t2) -> parens (of_type t1 ^^ cross ^^ of_type t2)
@@ -50,7 +52,8 @@ module Doc : DOC = struct
     their corresponding values from a regular environment *)
   let rec of_expr_with_free_vars_l bound_vars lenv expr =
     let open Expr in
-    let rec walk bvs = function
+    let rec walk bvs term = 
+      match term.data with
       | Unit -> unit_term
       | Pair (e1, e2) -> angles (walk bvs e1 ^^ comma ^/^ walk bvs e2)
       | Fst pe -> group (parens (fst_kwd ^^ walk bvs pe))
@@ -88,7 +91,8 @@ module Doc : DOC = struct
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
   and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.R)) Env.emp_l e
 
-  and of_lit = function
+  and of_lit term =
+    match term.data with 
     | Val.Unit -> unit_term
     | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
     | Val.Clos (idl, body, lenv) ->

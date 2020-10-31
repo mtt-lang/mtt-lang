@@ -49,65 +49,65 @@
 typ:
     (* Unit type *)
   | UNIT
-    { TType.mkType Type.Unit $symbolstartpos $endpos}
+    { Location.mkLocByPosition Type.Unit $symbolstartpos $endpos}
 
     (* Uninterpreted base types *)
   | name = IDT
-    { TType.mkType (Type.Base name) $symbolstartpos $endpos}
+    { Location.mkLocByPosition (Type.Base name) $symbolstartpos $endpos}
 
     (* Type of pairs *)
   | t1 = typ; CROSS; t2 = typ
-    { Type.mkType (Type.Prod (t1, t2)) $symbolstartpos $endpos}
+    { Location.mkLocByPosition (Type.Prod (t1, t2)) $symbolstartpos $endpos}
 
     (* Type of functions *)
   | dom = typ; ARROW; cod = typ
-    { Type.mkType (Type.Arr (dom, cod)) $symbolstartpos $endpos}
+    { Location.mkLocByPosition (Type.Arr (dom, cod)) $symbolstartpos $endpos}
 
     (* Type-level box *)
   | TBOX; t = typ
-    { Type.mkType (Type.Box t) $symbolstartpos $endpos}
+    { Location.mkLocByPosition (Type.Box t) $symbolstartpos $endpos}
 
     (* Parenthesized type expressions *)
   | LPAREN; t = typ; RPAREN
-    { Type.mkType t $symbolstartpos $endpos}
+    {t}
 
 ident:
     (* Regular variables *)
   | name = IDR
-    { VarL (Id.R.mk name) }
+    { Location.mkLocByPosition (VarL (Id.R.mk name)) $symbolstartpos $endpos}
 
     (* Modal (i.e. valid) variables *)
   | name = IDM
-    { VarG (Id.M.mk name) }
+    { Location.mkLocByPosition (VarG (Id.M.mk name)) $symbolstartpos $endpos}
 
 expr:
     (* First projection *)
   | FST; e = parceled_expr
-    { Fst (e) }
+    { Location.mkLocByPosition (Fst (e)) $symbolstartpos $endpos }
 
     (* Second projection *)
   | SND; e = parceled_expr
-    { Snd (e) }
+    { Location.mkLocByPosition (Snd (e)) $symbolstartpos $endpos }
 
     (* anonymous function (lambda) *)
   | FUN; idl = IDR; COLON; t = typ; DARROW; e = expr
-    { Fun (Id.R.mk idl, t, e) }
+    { Location.mkLocByPosition (Fun (Id.R.mk idl, t, e)) $symbolstartpos $endpos }
 
     (* allow parenthesizing of the bound variable for lambdas *)
   | FUN; LPAREN; idl = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
-    { Fun (Id.R.mk idl, t, e) }
+    { Location.mkLocByPosition (Fun (Id.R.mk idl, t, e)) $symbolstartpos $endpos }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr
-    { App (fe, arge) }
+    { Location.mkLocByPosition (App (fe, arge)) $symbolstartpos $endpos }
 
     (* term-level box *)
   | BOX; e = parceled_expr
-    { Box e }
+    { Location.mkLocByPosition (Box e) $symbolstartpos $endpos }
 
     (* letbox idg = expr in expr *)
   | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr
-    { Letbox (Id.M.mk idg, e, body) }
+    { Location.mkLocByPosition (Letbox (Id.M.mk idg, e, body)) $symbolstartpos $endpos }
 
   | e = parceled_expr
     { e }
@@ -115,7 +115,7 @@ expr:
 parceled_expr:
     (* Unit *)
   | UNIT
-    { Unit }
+    { Location.mkLocByPosition Unit $symbolstartpos $endpos}
 
     (* Identifiers *)
   | i = ident
@@ -127,7 +127,7 @@ parceled_expr:
 
     (* Pair of expressions *)
   | LANGLE; e1 = expr; COMMA; e2 = expr; RANGLE
-    { Pair (e1, e2) }
+    { Location.mkLocByPosition (Pair (e1, e2)) $symbolstartpos $endpos}
 
 expr_eof:
   | e = expr; EOF { e }
