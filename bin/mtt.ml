@@ -6,7 +6,6 @@ open ParserInterface
 
 (* Parsing with error handling utilities *)
 let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
-  Stdio.print_endline "parse_from_e";
   fun ast_kind source ->
   parse_from ast_kind source
   |> Result.map_error ~f:(fun parse_error ->
@@ -14,7 +13,6 @@ let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
 
 (* Parsing and typechecking with error handling utilities *)
 let parse_and_typecheck source typ_str =
-  Stdio.print_endline "parse_and_typecheck";
   let%bind ast = parse_from_e Term source in
   let%bind typ = parse_from_e Type (String typ_str) in
   Typechecker.check ast typ
@@ -23,7 +21,6 @@ let parse_and_typecheck source typ_str =
 
 (* Parsing and type inference with error handling utilities *)
 let parse_and_typeinfer source =
-  Stdio.print_endline "parse_and_typeinfer";
   let%bind ast = parse_from_e Term source in
   Typechecker.infer ast
   |> Result.map_error ~f:(fun eval_err ->
@@ -31,7 +28,6 @@ let parse_and_typeinfer source =
 
 (* Parsing and evaluation with error handling utilities *)
 let parse_and_eval source =
-  Stdio.print_endline "parse_and_eval";
   let open Result.Let_syntax in
   let%bind ast = parse_from_e Term source in
   Evaluator.eval ast
@@ -39,7 +35,6 @@ let parse_and_eval source =
          [%string "Evaluation error: $eval_err"])
 
 let osource source_file source_arg =
-  Stdio.print_endline "osource";
   match (source_file, source_arg) with
   | Some filename, None -> Some (File filename)
   | None, Some string -> Some (String string)
@@ -47,7 +42,6 @@ let osource source_file source_arg =
   | None, None -> Some Stdin
 
 let parse_expr source_file source_arg =
-  Stdio.print_endline "parse_expr";
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to parse")
   | Some source -> (
@@ -60,7 +54,6 @@ let parse_expr source_file source_arg =
       | Error err_msg -> `Error (false, err_msg) )
 
 let check_expr source_file source_arg typ verbose =
-  Stdio.print_endline "check_expr";
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to typecheck")
   | Some source -> (
@@ -73,7 +66,6 @@ let check_expr source_file source_arg typ verbose =
       | Error err_msg -> `Error (false, err_msg) )
 
 let infer_type source_file source_arg =
-  Stdio.print_endline "infer_type";
   match osource source_file source_arg with
   | None ->
       `Error (true, "Please provide exactly one expression to infer its type")
@@ -87,7 +79,6 @@ let infer_type source_file source_arg =
       | Error err_msg -> `Error (false, err_msg) )
 
 let eval_expr source_file source_arg =
-  Stdio.print_endline "eval_expr";
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to evaluate")
   | Some source -> (
@@ -104,7 +95,6 @@ let eval_expr source_file source_arg =
 open Cmdliner
 
 let help man_format cmds topic =
-  Stdio.print_endline "help";
   match topic with
   | None -> `Help (`Pager, None)
   | Some topic -> (
