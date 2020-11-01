@@ -12,14 +12,17 @@ K I = K*
   $ mtt eval <<EOF
   > (fun x: A. let y = x in y) ()
   > EOF
+  ()
 
   $ mtt eval <<EOF
   > let f = fun x: A. < x, x > in f ()
   > EOF
+  <(), ()>
 
   $ mtt eval <<EOF
   > let f = fun p: A * B. < snd p, fst p > in f < (), () >
   > EOF
+  <(), ()>
 
   $ mtt eval <<EOF
   > (fun p: A * B. 
@@ -27,3 +30,4 @@ K I = K*
   > let s = snd p in
   > < s, f > ) < (), () >
   > EOF
+  <(), ()>
