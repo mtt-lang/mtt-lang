@@ -100,5 +100,5 @@ module Doc : DOC = struct
            the corresponding literals from the closures' regular environment *)
         let bound_vars = Set.singleton (module Id.R) idl in
         of_expr_with_free_vars_l bound_vars lenv body
-    | Val.Box e -> of_expr e
+    | Val.Box e -> box_kwd ^^^ of_expr e
 end
