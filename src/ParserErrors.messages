@@ -46,7 +46,7 @@ expr_eof: FUN IDR COLON LPAREN UNIT UNIT
 ## LPAREN typ
 ##
 
-Missing closing parenthesis at type level. Or unexpected lexeme, like => is used instead of ->
+Missing closing parenthesis at type level. Or unexpected lexeme, like => is used instead of ->. Or you are using (A, B) instead of A * B
 
 expr_eof: FUN IDR COLON SND
 ##
@@ -134,7 +134,7 @@ expr_eof: FUN IDR COLON UNIT UNIT
 ## FUN IDR COLON typ
 ##
 
-Separator between bound variable and lambda body is missing. Use e.g. => or .
+Separator between bound variable and lambda body is missing. Use e.g. => or . Also, make sure parentheses are balanced
 
 expr_eof: FUN IDR UNIT
 ##
@@ -146,7 +146,7 @@ expr_eof: FUN IDR UNIT
 ## FUN IDR
 ##
 
-Bound variable is missing type annotation
+Function parameter is missing type annotation
 
 expr_eof: FUN UNIT
 ##
@@ -159,7 +159,7 @@ expr_eof: FUN UNIT
 ## FUN
 ##
 
-A regular identifier expected. This happens, when e.g. a modal identifier is used fun (x' : T). ...
+A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
 
 expr_eof: LANGLE TBOX
 ##
@@ -315,7 +315,7 @@ expr_eof: LPAREN UNIT RANGLE
 ## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-Missing closing parenthesis or missing obligatory parentheses for mutli-arg function application: (f x) y
+Missing closing parenthesis or missing obligatory parentheses for multi-arg function application: (f x) y or maybe using parentheses instead of angle brackets for pairs
 
 expr_eof: SND TBOX
 ##
@@ -357,7 +357,7 @@ expr_eof: UNIT RPAREN
 ## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-Missing EOF
+Binary application must be parenthesized like so: (f x) y
 
 expr_eof: UNIT TBOX
 ##
@@ -370,4 +370,4 @@ expr_eof: UNIT TBOX
 ## parceled_expr
 ##
 
-Unexpected dot (.)
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
