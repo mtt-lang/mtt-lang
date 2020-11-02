@@ -2,32 +2,32 @@ open Base
 
 (** Environment interface *)
 
-type 'a g
+type 'a m
 (** Modal environment (\Delta, or environment for validities).
     Parameterized by the type of values it stores *)
 
-type 'a l [@@deriving sexp]
+type 'a r [@@deriving sexp]
 (** Regular environment (\Gamma).
     Parameterized by the type of values it stores *)
 
 (** Constructors *)
 
-val emp_g : 'a g
+val emp_m : 'a m
 (** Empty modal environment *)
 
-val extend_g : 'a g -> Id.M.t -> 'a -> 'a g
+val extend_m : 'a m -> Id.M.t -> 'a -> 'a m
 (** Extend modal environment with an id and the corresponding value *)
 
-val emp_l : 'a l
+val emp_r : 'a r
 (** Empty regular environment *)
 
-val extend_l : 'a l -> Id.R.t -> 'a -> 'a l
+val extend_r : 'a r -> Id.R.t -> 'a -> 'a r
 (** Extend regular environment with an id and the corresponding value *)
 
 (** Destructors *)
 
-val lookup_g : 'a g -> Id.M.t -> ('a, string) Result.t
+val lookup_m : 'a m -> Id.M.t -> ('a, string) Result.t
 (** Find the value corresponding to a modal identifier *)
 
-val lookup_l : 'a l -> Id.R.t -> ('a, string) Result.t
+val lookup_r : 'a r -> Id.R.t -> ('a, string) Result.t
 (** Find the value corresponding to a regular identifier *)

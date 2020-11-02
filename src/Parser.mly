@@ -86,12 +86,12 @@ expr:
     { Snd (e) }
 
     (* anonymous function (lambda) *)
-  | FUN; idl = IDR; COLON; t = typ; DARROW; e = expr
-    { Fun (Id.R.mk idl, t, e) }
+  | FUN; idr = IDR; COLON; t = typ; DARROW; e = expr
+    { Fun (Id.R.mk idr, t, e) }
 
     (* allow parenthesizing of the bound variable for lambdas *)
-  | FUN; LPAREN; idl = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
-    { Fun (Id.R.mk idl, t, e) }
+  | FUN; LPAREN; idr = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
+    { Fun (Id.R.mk idr, t, e) }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr

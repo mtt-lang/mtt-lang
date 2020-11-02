@@ -48,7 +48,7 @@ module Doc : DOC = struct
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
-  let rec of_expr_with_free_vars_l bound_vars lenv expr =
+  let rec of_expr_with_free_vars_r bound_vars lenv expr =
     let open Expr in
     let rec walk bvs = function
       | Unit -> unit_term
@@ -61,11 +61,11 @@ module Doc : DOC = struct
             Set.mem bvs idl
           then !^(Id.R.to_string idl)
           else
-            match Env.lookup_l lenv idl with
+            match Env.lookup_r lenv idl with
             | Ok literal -> parens (of_lit literal)
             | Error _msg ->
                 failwith
-                  "The precondition for calling Doc.of_expr_with_free_vars_l \
+                  "The precondition for calling Doc.of_expr_with_free_vars_r \
                    function is violated" )
       | VarG idg -> !^(Id.M.to_string idg)
       | Fun (idl, t_of_id, body) ->
@@ -86,7 +86,7 @@ module Doc : DOC = struct
     walk bound_vars expr
 
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
-  and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.R)) Env.emp_l e
+  and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.emp_r e
 
   and of_lit = function
     | Val.Unit -> unit_term
@@ -99,6 +99,6 @@ module Doc : DOC = struct
         (* when print out closures, substitute the free vars in its body with
            the corresponding literals from the closures' regular environment *)
         let bound_vars = Set.singleton (module Id.R) idl in
-        of_expr_with_free_vars_l bound_vars lenv body
+        of_expr_with_free_vars_r bound_vars lenv body
     | Val.Box e -> box_kwd ^^^ of_expr e
 end
