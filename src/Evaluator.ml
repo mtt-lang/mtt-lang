@@ -133,9 +133,9 @@ let rec eval_open gamma expr =
           eval_open (Env.extend_l c_gamma idl argv) body
       | _ -> Result.fail "Trying to apply an argument to a non-function" )
   | Box e -> return @@ Val.Box e
-  | Let (idr, bounded_e, body) -> (
+  | Let (idr, bounded_e, body) ->
       let%bind bounded_v = eval_open gamma bounded_e in
-      eval_open (Env.extend_l gamma idr bounded_v) body )
+      eval_open (Env.extend_l gamma idr bounded_v) body
   | Letbox (idg, boxed_e, body) -> (
       let%bind boxed_v = eval_open gamma boxed_e in
       match boxed_v with
