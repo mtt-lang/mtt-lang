@@ -71,11 +71,11 @@ typ:
 ident:
     (* Regular variables *)
   | name = IDR
-    { Location.locate_start_end (VarL (Id.R.mk name)) $symbolstartpos $endpos }
+    { Location.locate_start_end (VarR (Id.R.mk name)) $symbolstartpos $endpos }
 
     (* Modal (i.e. valid) variables *)
   | name = IDM
-    { Location.locate_start_end (VarG (Id.M.mk name)) $symbolstartpos $endpos }
+    { Location.locate_start_end (VarM (Id.M.mk name)) $symbolstartpos $endpos }
 
 expr:
     (* First projection *)
@@ -106,9 +106,9 @@ expr:
   | LET; idr = IDR; EQ; e = expr; IN; body = expr
     { Location.locate_start_end (Let (Id.R.mk idr, e, body)) $symbolstartpos $endpos }
 
-    (* letbox idg = expr in expr *)
-  | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr
-    { Location.locate_start_end (Letbox (Id.M.mk idg, e, body)) $symbolstartpos $endpos }
+    (* letbox idm = expr in expr *)
+  | LETBOX; idm = IDM; EQ; e = expr; IN; body = expr
+    { Location.locate_start_end (Letbox (Id.M.mk idm, e, body)) $symbolstartpos $endpos }
 
   | e = parceled_expr
     { e }

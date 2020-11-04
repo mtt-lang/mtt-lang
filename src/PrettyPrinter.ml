@@ -64,25 +64,25 @@ module Doc : DOC = struct
       | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
       | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
       | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
-      | VarL idl -> (
+      | VarR idr -> (
           if
             (* To print free regular variables we use a regular environment with literals *)
-            Set.mem bvs idl
-          then !^(Id.R.to_string idl)
+            Set.mem bvs idr
+          then !^(Id.R.to_string idr)
           else
-            match Env.R.lookup lenv idl with
+            match Env.R.lookup lenv idr with
             | Ok literal -> parens (of_lit literal)
             | Error _msg ->
                 failwith
                   "The precondition for calling Doc.of_expr_with_free_vars_r \
                    function is violated" )
-      | VarG idg -> !^(Id.M.to_string idg)
-      | Fun (idl, t_of_id, body) ->
+      | VarM idm -> !^(Id.M.to_string idm)
+      | Fun (idr, t_of_id, body) ->
           (parens_if (p > 1))
             ( fun_kwd
-            ^^ !^(Id.R.to_string idl)
+            ^^ !^(Id.R.to_string idr)
             ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
-            ^^ walk (Set.add bvs idl) 1 body )
+            ^^ walk (Set.add bvs idr) 1 body )
       | App (fe, arge) ->
           group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
       | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
@@ -93,11 +93,11 @@ module Doc : DOC = struct
                ^^^ !^(Id.R.to_string idr)
                ^^^ equals ^^^ walk bvs 2 bound_e ^^^ in_kwd
                ^/^ walk (Set.add bvs idr) 1 body ))
-      | Letbox (idg, boxed_e, body) ->
+      | Letbox (idm, boxed_e, body) ->
           (parens_if (p > 1))
             (group
                ( letbox_kwd
-               ^^^ !^(Id.M.to_string idg)
+               ^^^ !^(Id.M.to_string idm)
                ^^^ equals ^^^ walk bvs 2 boxed_e ^^^ in_kwd ^/^ walk bvs 1 body
                ))
     in
@@ -109,14 +109,14 @@ module Doc : DOC = struct
   and of_lit = function
     | Val.Unit -> unit_term
     | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
-    | Val.Clos (idl, body, lenv) ->
+    | Val.Clos (idr, body, lenv) ->
         fun_kwd
-        ^^ !^(Id.R.to_string idl)
+        ^^ !^(Id.R.to_string idr)
         ^^ dot
         ^^^
         (* when print out closures, substitute the free vars in its body with
            the corresponding literals from the closures' regular environment *)
-        let bound_vars = Set.singleton (module Id.R) idl in
+        let bound_vars = Set.singleton (module Id.R) idr in
         of_expr_with_free_vars_r bound_vars lenv body
     | Val.Box e -> box_kwd ^^^ of_expr e
 end
