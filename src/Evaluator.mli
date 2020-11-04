@@ -7,14 +7,7 @@ type error = string
 val free_vars_m : Expr.t -> (Id.M.t, Id.M.comparator_witness) Set.t
 (** Compute the set of free modal variables in a term *)
 
-<<<<<<< HEAD
-val free_vars_r : Expr.t -> (Id.R.t, Id.R.comparator_witness) Set.t
-(** Compute the set of free regular variables in a term *)
-
-val refresh_g :
-=======
 val refresh_m :
->>>>>>> upstream/master
   Id.M.t -> (Id.M.t, Id.M.comparator_witness) Set.t -> Id.M.t option
 (** Given a modal identifier and a set of free modal variables,
     come up with a new name that won't capture any of the free modal variables.
