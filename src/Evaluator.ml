@@ -28,12 +28,6 @@ let refresh_m idg fvs =
   in
   if Set.mem fvs idg then Some (loop idg) else None
 
-let refresh_r idr fvs =
-  let rec loop (idr : Id.R.t) =
-    if Set.mem fvs idr then loop (Id.R.mk (Id.R.to_string idr ^ "'")) else idr
-  in
-  if Set.mem fvs idr then Some (loop idr) else None
-
 (* modal (modal) substitution *)
 let rec subst_m term idg body =
   let open Expr in
@@ -47,7 +41,7 @@ let rec subst_m term idg body =
   | Fun (idl, t_of_id, body) -> Fun (idl, t_of_id, subst_m term idg body)
   | App (fe, arge) -> App (subst_m term idg fe, subst_m term idg arge)
   | Box e -> Box (subst_m term idg e)
-  | Let (_i, _bouned_e, body) -> body
+  | Let (i, bound_e, body) -> Let (i, bound_e, subst_m term idg body)
   | Letbox (i, boxed_e, body) -> (
       if [%equal: Id.M.t] idg i then Letbox (i, subst_m term idg boxed_e, body)
       else
