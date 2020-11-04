@@ -12,10 +12,10 @@ let rec free_vars_m term =
   | Fst pe | Snd pe -> free_vars_m pe
   | VarL _i -> Set.empty (module Id.M)
   | VarG i -> Set.singleton (module Id.M) i
-  | Fun (_i, _t_of_id, body) -> free_vars_g body
-  | App (fe, arge) -> Set.union (free_vars_g fe) (free_vars_g arge)
-  | Box e -> free_vars_g e
-  | Let (_i, _bounded_e, body) -> free_vars_g body
+  | Fun (_i, _t_of_id, body) -> free_vars_m body
+  | App (fe, arge) -> Set.union (free_vars_m fe) (free_vars_m arge)
+  | Box e -> free_vars_m e
+  | Let (_i, _bound_e, body) -> free_vars_m body
   | Letbox (i, boxed_e, body) ->
       Set.union (free_vars_m boxed_e)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) i))
@@ -90,9 +90,9 @@ let rec eval_open gamma expr =
           eval_open (Env.extend_r c_gamma idl argv) body
       | _ -> Result.fail "Trying to apply an argument to a non-function" )
   | Box e -> return @@ Val.Box e
-  | Let (idr, bounded_e, body) ->
-      let%bind bounded_v = eval_open gamma bounded_e in
-      eval_open (Env.extend_l gamma idr bounded_v) body
+  | Let (idr, bound_e, body) ->
+      let%bind bound_v = eval_open gamma bound_e in
+      eval_open (Env.extend_r gamma idr bound_v) body
   | Letbox (idg, boxed_e, body) -> (
       let%bind boxed_v = eval_open gamma boxed_e in
       match boxed_v with

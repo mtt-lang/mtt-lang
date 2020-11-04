@@ -59,12 +59,12 @@ tests for regular 'let .. in' construction
   ((A×B) → (B×A))
 
   $ mtt infer <<EOF
-  > fun x: ((A * B) * C).
-  > let fx = fst x in
-  > let ffx = fst fx in
-  > let sfx = snd fx in
-  > let sx = snd x in
-  > < ffx, <sfx, sx> >
+  > fun ab_c: ((A * B) * C).
+  > let ab = fst ab_c in
+  > let a = fst ab in
+  > let b = snd ab in
+  > let c = snd ab_c in
+  > < a, <b, c> >
   > EOF
   (((A×B)×C) → (A×(B×C)))
 
