@@ -15,7 +15,7 @@ let rec free_vars_m term =
   | Fun (_i, _t_of_id, body) -> free_vars_m body
   | App (fe, arge) -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box e -> free_vars_m e
-  | Let (_i, _bound_e, body) -> free_vars_m body
+  | Let (_i, bound_e, body) -> Set.union (free_vars_m bound_e) (free_vars_m body)
   | Letbox (i, boxed_e, body) ->
       Set.union (free_vars_m boxed_e)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) i))
