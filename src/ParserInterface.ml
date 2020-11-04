@@ -29,7 +29,7 @@ let handle_syntax_error _lexbuf checkpoint =
         "Unrecognized syntax error. Please report your example"
     | msg -> msg
   in
-  Result.fail message
+  Result.fail @@ String.strip message
 
 (* let rec loop next_token lexbuf (checkpoint : Ast.Expr.t MI.checkpoint) = *)
 let rec loop next_token lexbuf (checkpoint : 'a MI.checkpoint) =

@@ -4,13 +4,17 @@ open Ast
 type error = string
 (** Type of errors *)
 
-val free_vars_g : Expr.t -> (Id.M.t, Id.M.comparator_witness) Set.t
+val free_vars_m : Expr.t -> (Id.M.t, Id.M.comparator_witness) Set.t
 (** Compute the set of free modal variables in a term *)
 
+<<<<<<< HEAD
 val free_vars_r : Expr.t -> (Id.R.t, Id.R.comparator_witness) Set.t
 (** Compute the set of free regular variables in a term *)
 
 val refresh_g :
+=======
+val refresh_m :
+>>>>>>> upstream/master
   Id.M.t -> (Id.M.t, Id.M.comparator_witness) Set.t -> Id.M.t option
 (** Given a modal identifier and a set of free modal variables,
     come up with a new name that won't capture any of the free modal variables.
@@ -26,11 +30,7 @@ val subst_m : Expr.t -> Id.M.t -> Expr.t -> Expr.t
 (** Capture-avoiding modal substitution: "[term/idg]body",
     i.e. substitute [term] for free variable [idg] in [body] *)
 
-val subst_r : Expr.t -> Id.R.t -> Expr.t -> Expr.t
-(** Capture-avoiding regular substitution: "[term/idr]body",
-    i.e. substitute [term] for free variable [idr] in [body] *)
-
-val eval_open : Val.t Env.l -> Expr.t -> (Val.t, error) Result.t
+val eval_open : Val.t Env.r -> Expr.t -> (Val.t, error) Result.t
 (** Evaluate a possibly open term in a regular context *)
 
 val eval : Expr.t -> (Val.t, error) Result.t

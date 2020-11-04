@@ -1,108 +1,6 @@
-type_eof: LPAREN SND
-##
-## Ends in an error in state: 19.
-##
-## typ -> LPAREN . typ RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-type_eof: LPAREN UNIT UNIT
-##
-## Ends in an error in state: 21.
-##
-## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
-## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
-## typ -> LPAREN typ . RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN typ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-type_eof: SND
-##
-## Ends in an error in state: 60.
-##
-## type_eof' -> . type_eof [ # ]
-##
-## The known suffix of the stack is as follows:
-##
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-type_eof: TBOX SND
-##
-## Ends in an error in state: 18.
-##
-## typ -> TBOX . typ [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## TBOX
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-type_eof: UNIT ARROW SND
-##
-## Ends in an error in state: 25.
-##
-## typ -> typ ARROW . typ [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ ARROW
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-type_eof: UNIT ARROW UNIT UNIT
-##
-## Ends in an error in state: 26.
-##
-## typ -> typ . CROSS typ [ RPAREN EOF DARROW CROSS ARROW ]
-## typ -> typ . ARROW typ [ RPAREN EOF DARROW CROSS ARROW ]
-## typ -> typ ARROW typ . [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ ARROW typ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-type_eof: UNIT CROSS SND
-##
-## Ends in an error in state: 23.
-##
-## typ -> typ CROSS . typ [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ CROSS
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-type_eof: UNIT UNIT
-##
-## Ends in an error in state: 62.
-##
-## typ -> typ . CROSS typ [ EOF CROSS ARROW ]
-## typ -> typ . ARROW typ [ EOF CROSS ARROW ]
-## type_eof -> typ . EOF [ # ]
-##
-## The known suffix of the stack is as follows:
-## typ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
 expr_eof: BOX TBOX
 ##
-## Ends in an error in state: 34.
+## Ends in an error in state: 31.
 ##
 ## expr -> BOX . parceled_expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
@@ -110,11 +8,11 @@ expr_eof: BOX TBOX
 ## BOX
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Boxed expression is expected
 
 expr_eof: FST TBOX
 ##
-## Ends in an error in state: 31.
+## Ends in an error in state: 28.
 ##
 ## expr -> FST . parceled_expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
@@ -122,11 +20,37 @@ expr_eof: FST TBOX
 ## FST
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+An expression after fst is expected. This primitive can be only used fully applied.
+
+expr_eof: FUN IDR COLON LPAREN SND
+##
+## Ends in an error in state: 16.
+##
+## typ -> LPAREN . typ RPAREN [ RPAREN DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+Valid type is expected after opening parenthesis
+
+expr_eof: FUN IDR COLON LPAREN UNIT UNIT
+##
+## Ends in an error in state: 18.
+##
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+## typ -> LPAREN typ . RPAREN [ RPAREN DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN typ
+##
+
+Missing closing parenthesis at type level. Or unexpected lexeme, like => is used instead of ->. Or you are using (A, B) instead of A * B
 
 expr_eof: FUN IDR COLON SND
 ##
-## Ends in an error in state: 40.
+## Ends in an error in state: 37.
 ##
 ## expr -> FUN IDR COLON . typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
@@ -134,11 +58,61 @@ expr_eof: FUN IDR COLON SND
 ## FUN IDR COLON
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Valid type expected. Make sure uninterpreted type identifiers are capitalized and there are no unbalanced parentheses
+
+expr_eof: FUN IDR COLON TBOX SND
+##
+## Ends in an error in state: 15.
+##
+## typ -> TBOX . typ [ RPAREN DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## TBOX
+##
+
+Type-level box must be followed by a type
+
+expr_eof: FUN IDR COLON UNIT ARROW SND
+##
+## Ends in an error in state: 22.
+##
+## typ -> typ ARROW . typ [ RPAREN DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ ARROW
+##
+
+Valid codomain type is expected. Sometimes this happens if -> is used instead of =>
+
+expr_eof: FUN IDR COLON UNIT ARROW UNIT UNIT
+##
+## Ends in an error in state: 23.
+##
+## typ -> typ . CROSS typ [ RPAREN DARROW CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN DARROW CROSS ARROW ]
+## typ -> typ ARROW typ . [ RPAREN DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ ARROW typ
+##
+
+Please report your example, producing this parsing error
+
+expr_eof: FUN IDR COLON UNIT CROSS SND
+##
+## Ends in an error in state: 20.
+##
+## typ -> typ CROSS . typ [ RPAREN DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ CROSS
+##
+
+Second component of product type is expected
 
 expr_eof: FUN IDR COLON UNIT DARROW TBOX
 ##
-## Ends in an error in state: 42.
+## Ends in an error in state: 39.
 ##
 ## expr -> FUN IDR COLON typ DARROW . expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
@@ -146,11 +120,11 @@ expr_eof: FUN IDR COLON UNIT DARROW TBOX
 ## FUN IDR COLON typ DARROW
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Error when parsing lambda function body: missing body or unexpected lexeme
 
 expr_eof: FUN IDR COLON UNIT UNIT
 ##
-## Ends in an error in state: 41.
+## Ends in an error in state: 38.
 ##
 ## expr -> FUN IDR COLON typ . DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
@@ -160,11 +134,11 @@ expr_eof: FUN IDR COLON UNIT UNIT
 ## FUN IDR COLON typ
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Separator between bound variable and lambda body is missing. Use e.g. => or . Also, make sure parentheses are balanced
 
 expr_eof: FUN IDR UNIT
 ##
-## Ends in an error in state: 39.
+## Ends in an error in state: 36.
 ##
 ## expr -> FUN IDR . COLON typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
@@ -172,85 +146,11 @@ expr_eof: FUN IDR UNIT
 ## FUN IDR
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: FUN LPAREN IDR COLON SND
-##
-## Ends in an error in state: 16.
-##
-## expr -> FUN LPAREN IDR COLON . typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: FUN LPAREN IDR COLON UNIT RPAREN DARROW TBOX
-##
-## Ends in an error in state: 30.
-##
-## expr -> FUN LPAREN IDR COLON typ RPAREN DARROW . expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON typ RPAREN DARROW
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: FUN LPAREN IDR COLON UNIT RPAREN UNIT
-##
-## Ends in an error in state: 29.
-##
-## expr -> FUN LPAREN IDR COLON typ RPAREN . DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON typ RPAREN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: FUN LPAREN IDR COLON UNIT UNIT
-##
-## Ends in an error in state: 28.
-##
-## expr -> FUN LPAREN IDR COLON typ . RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
-## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
-## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON typ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: FUN LPAREN IDR UNIT
-##
-## Ends in an error in state: 15.
-##
-## expr -> FUN LPAREN IDR . COLON typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## FUN LPAREN IDR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: FUN LPAREN UNIT
-##
-## Ends in an error in state: 14.
-##
-## expr -> FUN LPAREN . IDR COLON typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## FUN LPAREN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Function parameter is missing type annotation
 
 expr_eof: FUN UNIT
 ##
-## Ends in an error in state: 13.
+## Ends in an error in state: 10.
 ##
 ## expr -> FUN . IDR COLON typ DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
 ## expr -> FUN . LPAREN IDR COLON typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
@@ -259,11 +159,11 @@ expr_eof: FUN UNIT
 ## FUN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
 
 expr_eof: LANGLE TBOX
 ##
-## Ends in an error in state: 10.
+## Ends in an error in state: 7.
 ##
 ## parceled_expr -> LANGLE . expr COMMA expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
@@ -271,11 +171,11 @@ expr_eof: LANGLE TBOX
 ## LANGLE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+First component of pair expression is expected
 
 expr_eof: LANGLE UNIT COMMA TBOX
 ##
-## Ends in an error in state: 45.
+## Ends in an error in state: 42.
 ##
 ## parceled_expr -> LANGLE expr COMMA . expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
@@ -283,11 +183,11 @@ expr_eof: LANGLE UNIT COMMA TBOX
 ## LANGLE expr COMMA
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Second component of pair expression is expected
 
 expr_eof: LANGLE UNIT COMMA UNIT RPAREN
 ##
-## Ends in an error in state: 46.
+## Ends in an error in state: 43.
 ##
 ## parceled_expr -> LANGLE expr COMMA expr . RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
@@ -298,14 +198,14 @@ expr_eof: LANGLE UNIT COMMA UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production expr -> parceled_expr 
+## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Right angle bracket is expected
 
 expr_eof: LANGLE UNIT RPAREN
 ##
-## Ends in an error in state: 44.
+## Ends in an error in state: 41.
 ##
 ## parceled_expr -> LANGLE expr . COMMA expr RANGLE [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
@@ -316,76 +216,10 @@ expr_eof: LANGLE UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production expr -> parceled_expr 
+## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: LET IDR EQ TBOX
-##
-## Ends in an error in state: 9.
-##
-## expr -> LET IDR EQ . expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## LET IDR EQ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: LET IDR EQ UNIT IN TBOX
-##
-## Ends in an error in state: 49.
-##
-## expr -> LET IDR EQ expr IN . expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## LET IDR EQ expr IN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: LET IDR EQ UNIT RPAREN
-##
-## Ends in an error in state: 48.
-##
-## expr -> LET IDR EQ expr . IN expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## LET IDR EQ expr
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production expr -> parceled_expr 
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: LET IDR UNIT
-##
-## Ends in an error in state: 8.
-##
-## expr -> LET IDR . EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## LET IDR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-expr_eof: LET UNIT
-##
-## Ends in an error in state: 7.
-##
-## expr -> LET . IDR EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## LET
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing comma which separates components of pair expression
 
 expr_eof: LETBOX IDM EQ TBOX
 ##
@@ -397,11 +231,11 @@ expr_eof: LETBOX IDM EQ TBOX
 ## LETBOX IDM EQ
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Right-hand side of lexbox expression is expected
 
 expr_eof: LETBOX IDM EQ UNIT IN TBOX
 ##
-## Ends in an error in state: 52.
+## Ends in an error in state: 46.
 ##
 ## expr -> LETBOX IDM EQ expr IN . expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
@@ -409,11 +243,11 @@ expr_eof: LETBOX IDM EQ UNIT IN TBOX
 ## LETBOX IDM EQ expr IN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Body of letbox expression is expected
 
 expr_eof: LETBOX IDM EQ UNIT RPAREN
 ##
-## Ends in an error in state: 51.
+## Ends in an error in state: 45.
 ##
 ## expr -> LETBOX IDM EQ expr . IN expr [ RPAREN RANGLE IN EOF COMMA ]
 ##
@@ -424,10 +258,10 @@ expr_eof: LETBOX IDM EQ UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production expr -> parceled_expr 
+## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing "in" keyword in letbox expression
 
 expr_eof: LETBOX IDM UNIT
 ##
@@ -439,7 +273,7 @@ expr_eof: LETBOX IDM UNIT
 ## LETBOX IDM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing "=" after identifier in letbox expression
 
 expr_eof: LETBOX UNIT
 ##
@@ -451,7 +285,7 @@ expr_eof: LETBOX UNIT
 ## LETBOX
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+A modal identifier is expected. It should start with a lowercase letter and end with an apostrophe (').
 
 expr_eof: LPAREN TBOX
 ##
@@ -463,11 +297,11 @@ expr_eof: LPAREN TBOX
 ## LPAREN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing or unexpected lexeme in parenthesized expression
 
 expr_eof: LPAREN UNIT RANGLE
 ##
-## Ends in an error in state: 54.
+## Ends in an error in state: 48.
 ##
 ## parceled_expr -> LPAREN expr . RPAREN [ UNIT RPAREN RANGLE LPAREN LANGLE IN IDR IDM EOF COMMA ]
 ##
@@ -478,10 +312,10 @@ expr_eof: LPAREN UNIT RANGLE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production expr -> parceled_expr 
+## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing closing parenthesis or missing obligatory parentheses for multi-arg function application: (f x) y or maybe using parentheses instead of angle brackets for pairs
 
 expr_eof: SND TBOX
 ##
@@ -493,7 +327,7 @@ expr_eof: SND TBOX
 ## SND
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+An expression after snd is expected. This primitive can be only used fully applied.
 
 expr_eof: TBOX
 ##
@@ -505,11 +339,11 @@ expr_eof: TBOX
 ##
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+An expression is expected. This may result from a missing or unexpected lexeme or an attempt to parse a type-level expression
 
 expr_eof: UNIT RPAREN
 ##
-## Ends in an error in state: 58.
+## Ends in an error in state: 52.
 ##
 ## expr_eof -> expr . EOF [ # ]
 ##
@@ -520,14 +354,14 @@ expr_eof: UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production expr -> parceled_expr 
+## In state 33, spurious reduction of production expr -> parceled_expr 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Binary application must be parenthesized like so: (f x) y
 
 expr_eof: UNIT TBOX
 ##
-## Ends in an error in state: 36.
+## Ends in an error in state: 33.
 ##
 ## expr -> parceled_expr . parceled_expr [ RPAREN RANGLE IN EOF COMMA ]
 ## expr -> parceled_expr . [ RPAREN RANGLE IN EOF COMMA ]
@@ -536,5 +370,4 @@ expr_eof: UNIT TBOX
 ## parceled_expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"

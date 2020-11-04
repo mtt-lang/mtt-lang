@@ -35,12 +35,12 @@ let rec check_open delta gamma expr typ =
             ~error:"snd error: inferred type is different from the input one"
       | _ -> Result.fail "snd is applied to a non-product type" )
   | VarL idl ->
-      let%bind t = Env.lookup_l gamma idl in
+      let%bind t = Env.lookup_r gamma idl in
       Result.ok_if_true
         ([%equal: Type.t] typ t)
         ~error:"Unexpected regular variable type"
   | VarG idg ->
-      let%bind t = Env.lookup_g delta idg in
+      let%bind t = Env.lookup_m delta idg in
       Result.ok_if_true
         ([%equal: Type.t] typ t)
         ~error:"Unexpected modal variable type"
@@ -48,7 +48,7 @@ let rec check_open delta gamma expr typ =
       match typ with
       | Type.Arr (dom, cod) ->
           if [%equal: Type.t] dom t_of_id then
-            check_open delta (Env.extend_l gamma idl dom) body cod
+            check_open delta (Env.extend_r gamma idl dom) body cod
           else
             Result.fail
               "Domain of arrow type is not the same as type of function \
@@ -65,7 +65,7 @@ let rec check_open delta gamma expr typ =
       | _ -> Result.fail "Inferred type is not an arrow type" )
   | Box e -> (
       match typ with
-      | Type.Box t -> check_open delta Env.emp_l e t
+      | Type.Box t -> check_open delta Env.emp_r e t
       | _ -> Result.fail "Error: unboxed type" )
   | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
@@ -73,7 +73,7 @@ let rec check_open delta gamma expr typ =
   | Letbox (idg, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with
-      | Type.Box t -> check_open (Env.extend_g delta idg t) gamma body typ
+      | Type.Box t -> check_open (Env.extend_m delta idg t) gamma body typ
       | _ -> Result.fail "Inferred type is not a box" )
 
 and infer_open delta gamma expr =
@@ -93,10 +93,10 @@ and infer_open delta gamma expr =
       match t with
       | Type.Prod (_t1, t2) -> return t2
       | _ -> Result.fail "snd is applied to a non-product type" )
-  | VarL idl -> Env.lookup_l gamma idl
-  | VarG idg -> Env.lookup_g delta idg
+  | VarL idl -> Env.lookup_r gamma idl
+  | VarG idg -> Env.lookup_m delta idg
   | Fun (idl, dom, body) ->
-      let%map cod = infer_open delta (Env.extend_l gamma idl dom) body in
+      let%map cod = infer_open delta (Env.extend_r gamma idl dom) body in
       Type.Arr (dom, cod)
   | App (fe, arge) -> (
       let%bind t = infer_open delta gamma fe in
@@ -106,7 +106,7 @@ and infer_open delta gamma expr =
           return cod
       | _ -> Result.fail "Inferred type is not an arrow type" )
   | Box e ->
-      let%map t = infer_open delta Env.emp_l e in
+      let%map t = infer_open delta Env.emp_r e in
       Type.Box t
   | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
@@ -114,9 +114,9 @@ and infer_open delta gamma expr =
   | Letbox (idg, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with
-      | Type.Box t -> infer_open (Env.extend_g delta idg t) gamma body
+      | Type.Box t -> infer_open (Env.extend_m delta idg t) gamma body
       | _ -> Result.fail "Inferred type is not a box" )
 
-let check expr typ = check_open Env.emp_g Env.emp_l expr typ
+let check expr typ = check_open Env.emp_m Env.emp_r expr typ
 
-let infer expr = infer_open Env.emp_g Env.emp_l expr
+let infer expr = infer_open Env.emp_m Env.emp_r expr
