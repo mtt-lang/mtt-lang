@@ -41,7 +41,8 @@ let rec subst_m term idg body =
   | Fun (idl, t_of_id, body) -> Fun (idl, t_of_id, subst_m term idg body)
   | App (fe, arge) -> App (subst_m term idg fe, subst_m term idg arge)
   | Box e -> Box (subst_m term idg e)
-  | Let (i, bound_e, body) -> Let (i, subst_m term idg bound_e, subst_m term idg body)
+  | Let (i, bound_e, body) ->
+      Let (i, subst_m term idg bound_e, subst_m term idg body)
   | Letbox (i, boxed_e, body) -> (
       if [%equal: Id.M.t] idg i then Letbox (i, subst_m term idg boxed_e, body)
       else
