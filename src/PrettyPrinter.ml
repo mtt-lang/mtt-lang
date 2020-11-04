@@ -70,7 +70,7 @@ module Doc : DOC = struct
             Set.mem bvs idl
           then !^(Id.R.to_string idl)
           else
-            match Env.lookup_r lenv idl with
+            match Env.R.lookup lenv idl with
             | Ok literal -> parens (of_lit literal)
             | Error _msg ->
                 failwith
@@ -104,7 +104,7 @@ module Doc : DOC = struct
     walk bound_vars 0 expr
 
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
-  and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.emp_r e
+  and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.R.emp e
 
   and of_lit = function
     | Val.Unit -> unit_term

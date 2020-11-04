@@ -1,34 +1,42 @@
 open Base
 open Result.Let_syntax
 
-type 'a m = (Id.M.t * 'a) list
-(** Modal environment *)
+module Make (Key : sig
+  type t [@@deriving_inline sexp]
 
-let emp_m = []
+  include sig
+    [@@@ocaml.warning "-32"]
 
-let extend_m delta id v = (id, v) :: delta
+    include Ppx_sexp_conv_lib.Sexpable.S with type t := t
+  end
+  [@@ocaml.doc "@inline"]
 
-let lookup_m delta id =
-  let typ_o = List.Assoc.find delta id ~equal:[%equal: Id.M.t] in
-  match typ_o with
-  | Some t -> return t
-  | None ->
-      let var_name = [%sexp_of: Id.M.t] id |> Sexp.to_string in
-      Result.fail
-        [%string "Variable $(var_name) is not found in the modal context!"]
+  [@@@end]
 
-type 'a r = (Id.R.t * 'a) list [@@deriving sexp]
+  include Equal.S with type t := t
+end) =
+struct
+  type 'v t = (Key.t, 'v) List.Assoc.t [@@deriving sexp]
+  (** Environment *)
+
+  (** Empty environment *)
+  let emp = []
+
+  (** Extend environment with a key and the corresponding value *)
+  let extend env k v = (k, v) :: env
+
+  (** Find the value corresponding to a key identifier *)
+  let lookup env k =
+    let typ_o = List.Assoc.find env k ~equal:Key.equal in
+    match typ_o with
+    | Some t -> return t
+    | None ->
+        let var_name = [%sexp_of: Key.t] k |> Sexp.to_string in
+        Result.fail [%string "$(var_name) is not found in the environment!"]
+end
+
+module R = Make (Id.R)
 (** Regular environment *)
 
-let emp_r = []
-
-let extend_r gamma id v = (id, v) :: gamma
-
-let lookup_r gamma id =
-  let typ_o = List.Assoc.find gamma id ~equal:[%equal: Id.R.t] in
-  match typ_o with
-  | Some t -> return t
-  | None ->
-      let var_name = [%sexp_of: Id.R.t] id |> Sexp.to_string in
-      Result.fail
-        [%string "Variable $(var_name) is not found in the regular context!"]
+module M = Make (Id.M)
+(** Modal environment *)

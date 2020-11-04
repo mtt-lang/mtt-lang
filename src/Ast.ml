@@ -64,7 +64,7 @@ module Val = struct
   type t =
     | Unit  (** [unit] literal *)
     | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
-    | Clos of Id.R.t * Expr.t * t Env.r  (** Deeply embedded closures *)
+    | Clos of Id.R.t * Expr.t * t Env.R.t  (** Deeply embedded closures *)
     | Box of Expr.t
         (** [box] literal, basically it's an unevaluated expression *)
   [@@deriving sexp]
