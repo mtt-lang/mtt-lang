@@ -56,11 +56,11 @@ module Doc : DOC = struct
     their corresponding values from a regular environment *)
   let rec of_expr_with_free_vars_l bound_vars lenv expr =
     let open Expr in
-    let rec walk bvs = function
+    let rec walk bvs p = function
       | Unit -> unit_term
-      | Pair (e1, e2) -> angles (walk bvs e1 ^^ comma ^/^ walk bvs e2)
-      | Fst pe -> group (parens (fst_kwd ^^ walk bvs pe))
-      | Snd pe -> group (parens (snd_kwd ^^ walk bvs pe))
+      | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
+      | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
+      | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
       | VarL idl -> (
           if
             (* To print free regular variables we use a regular environment with literals *)
@@ -75,21 +75,22 @@ module Doc : DOC = struct
                    function is violated" )
       | VarG idg -> !^(Id.M.to_string idg)
       | Fun (idl, t_of_id, body) ->
-          parens
+          (parens_if (p > 1))
             ( fun_kwd
             ^^ !^(Id.R.to_string idl)
-            ^^ colon ^^ of_type t_of_id ^^ dot ^^ space
-            ^^ walk (Set.add bvs idl) body )
-      | App (fe, arge) -> group (parens (walk bvs fe ^/^ walk bvs arge))
-      | Box e -> group (parens (box_kwd ^^ space ^^ walk bvs e))
+            ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
+            ^^ walk (Set.add bvs idl) 1 body )
+      | App (fe, arge) -> group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
+      | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
       | Letbox (idg, boxed_e, body) ->
-          parens
+          (parens_if (p > 1))
             (group
                ( letbox_kwd
                ^^^ !^(Id.M.to_string idg)
-               ^^^ equals ^^^ walk bvs boxed_e ^^^ in_kwd ^/^ walk bvs body ))
+               ^^^ equals ^^^ walk bvs 2 boxed_e ^^^ in_kwd ^/^ walk bvs 1 body
+               ))
     in
-    walk bound_vars expr
+    walk bound_vars 0 expr
 
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
   and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.R)) Env.emp_l e

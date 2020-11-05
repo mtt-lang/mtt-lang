@@ -4,8 +4,10 @@ open Mtt.PrettyPrinter
 
 (* QCheck generator for the arbitrary (and most likely invalid) expressions *)
 let generator =
+  (* let max_size = 1000 in *)
   QCheck.Gen.(
     sized
+    (* sized_size (int_bound max_size) *)
     @@ fix (fun self size ->
            let lowercase_id =
              string_size ~gen:(char_range 'a' 'z') (return 1)
@@ -56,14 +58,14 @@ let rec print_tree = function
       "Fun(" ^ R.to_string idl ^ ", Unit, " ^ print_tree body ^ ")"
   | Expr.Box e -> "Box(" ^ print_tree e ^ ")"
   | Expr.Letbox (idg, boxed_e, body) ->
-      "App(" ^ M.to_string idg ^ "," ^ print_tree boxed_e ^ ", "
+      "Letbox(" ^ M.to_string idg ^ "," ^ print_tree boxed_e ^ ", "
       ^ print_tree body ^ ")"
 
 let arbitrary_tree = QCheck.make generator ~print:print_tree
 
 let test =
   QCheck.Test.make ~name:"Expression pretty printer preserving syntax"
-    ~count:100 arbitrary_tree (fun tree ->
+    ~count:1000 arbitrary_tree (fun tree ->
       let buffer_size = 1024 in
       let buffer = Stdlib.Buffer.create buffer_size in
       let _ =
