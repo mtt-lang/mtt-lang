@@ -1,0 +1,3 @@
+(test
+ (name prettyprinter)
+ (libraries mtt qcheck))
