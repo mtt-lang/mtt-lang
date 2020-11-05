@@ -24,6 +24,7 @@ depends: [
   "sedlex"
   "sexplib"
   "stdio"
+  "qcheck"
   "odoc" {with-doc}
 ]
 build: [
