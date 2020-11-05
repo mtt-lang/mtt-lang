@@ -39,25 +39,18 @@ module Doc : DOC = struct
 
   let in_kwd = !^"in"
 
-  let enclose = function true -> parens | false -> fun x -> x
+  let parens_if b = if b then parens else fun x -> x
 
-  let rec of_type =
+  let of_type =
     let open Type in
-    function
-    | Unit -> unit_type
-    | Base idT -> !^idT
-    | Prod (t1, t2) ->
-        let p_t1 = match t1 with Arr (_, _) -> true | _ -> false in
-        let p_t2 =
-          match t2 with Prod (_, _) | Arr (_, _) -> true | _ -> false
-        in
-        (enclose p_t1) (of_type t1) ^^ cross ^^ (enclose p_t2) (of_type t2)
-    | Arr (dom, cod) ->
-        let p_dom = match dom with Arr (_, _) -> true | _ -> false in
-        (enclose p_dom) (of_type dom) ^^^ arrow ^^^ of_type cod
-    | Box t ->
-        let p_t = match t with Unit | Base _ | Box _ -> false | _ -> true in
-        box_type ^^ (enclose p_t) (of_type t)
+    let rec walk p = function
+      | Unit -> unit_type
+      | Base idT -> !^idT
+      | Prod (t1, t2) -> parens_if (p > 1) (walk 1 t1 ^^ cross ^^ walk 2 t2)
+      | Arr (dom, cod) -> parens_if (p > 0) (walk 1 dom ^^^ arrow ^^^ walk 0 cod)
+      | Box t -> box_type ^^ walk 2 t
+    in
+    walk 0
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
