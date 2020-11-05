@@ -80,7 +80,8 @@ module Doc : DOC = struct
             ^^ !^(Id.R.to_string idl)
             ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
             ^^ walk (Set.add bvs idl) 1 body )
-      | App (fe, arge) -> group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
+      | App (fe, arge) ->
+          group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
       | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
       | Letbox (idg, boxed_e, body) ->
           (parens_if (p > 1))
