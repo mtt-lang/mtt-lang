@@ -79,3 +79,9 @@ Weak form of Pierce's law with 'let .. in'-construction
   >   in abaab abaa
   > EOF
   (((((A → B) → A) → A) → B) → B)
+
+Shadowing x
+  $ mtt infer <<EOF
+  > let x = () in let x = (fun a: A. a) in x
+  > EOF
+  (A → A)

@@ -10,7 +10,7 @@ K I = K*
 
 'Let .. in' expression
   $ mtt eval <<EOF
-  > (fun x: A. let y = x in y) ()
+  > let y = () in (fun x: A. x) y
   > EOF
   ()
 
@@ -31,3 +31,9 @@ K I = K*
   > < s, f > ) < (), () >
   > EOF
   <(), ()>
+
+Shadowing x
+  $ mtt eval <<EOF
+  > (let x = () in let x = fun a: A. a in x x)
+  > EOF
+  λa. a
