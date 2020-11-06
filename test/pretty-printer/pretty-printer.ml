@@ -12,6 +12,7 @@ let generator =
            let lowercase_id =
              string_size ~gen:(char_range 'a' 'z') (return 1)
            in
+           let modal_id id = Mtt.Id.M.mk (id ^ "'") in
            match size with
            | 0 ->
                oneof
@@ -21,9 +22,7 @@ let generator =
                    (* map
                       (fun s -> Expr.VarL (R.mk s))
                       (string_size ~gen:(char_range 'a' 'z') (return 1)); *)
-                   map
-                     (fun idg -> Expr.VarG (Mtt.Id.M.mk (idg ^ "'")))
-                     lowercase_id;
+                   map (fun idg -> Expr.VarG (modal_id idg)) lowercase_id;
                  ]
            | size ->
                let unary_node f = map f (self (size - 1)) in
@@ -42,7 +41,7 @@ let generator =
                    unary_node (fun x -> Expr.Box x);
                    map3
                      (fun x y z -> Expr.Letbox (x, y, z))
-                     (map (fun s -> Mtt.Id.M.mk (s ^ "'")) lowercase_id)
+                     (map modal_id lowercase_id)
                      (self (size / 2))
                      (self (size / 2));
                  ]))
