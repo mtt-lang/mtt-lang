@@ -25,6 +25,7 @@
 %token SND
 %token FUN
 %token BOX
+%token LET
 %token LETBOX
 %token IN
 
@@ -100,6 +101,10 @@ expr:
     (* term-level box *)
   | BOX; e = parceled_expr
     { Box e }
+
+    (* let idr = expr in expr *)
+  | LET; idr = IDR; EQ; e = expr; IN; body = expr
+    { Let (Id.R.mk idr, e, body) }
 
     (* letbox idg = expr in expr *)
   | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr

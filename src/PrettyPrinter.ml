@@ -35,6 +35,8 @@ module Doc : DOC = struct
 
   let fun_kwd = !^"λ"
 
+  let let_kwd = !^"let"
+
   let letbox_kwd = !^"letbox"
 
   let in_kwd = !^"in"
@@ -76,6 +78,13 @@ module Doc : DOC = struct
             ^^ walk (Set.add bvs idl) body )
       | App (fe, arge) -> group (parens (walk bvs fe ^/^ walk bvs arge))
       | Box e -> group (parens (box_kwd ^^ space ^^ walk bvs e))
+      | Let (idr, bound_e, body) ->
+          parens
+            (group
+               ( let_kwd
+               ^^^ !^(Id.R.to_string idr)
+               ^^^ equals ^^^ walk bvs bound_e ^^^ in_kwd
+               ^/^ walk (Set.add bvs idr) body ))
       | Letbox (idg, boxed_e, body) ->
           parens
             (group
