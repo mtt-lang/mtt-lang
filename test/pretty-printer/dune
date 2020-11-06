@@ -1,5 +1,5 @@
 (test
- (name pretty-printer)
+ (name ppTest)
  (libraries mtt qcheck)
  (preprocess
   (pps ppx_let ppx_compare ppx_sexp_conv)))
