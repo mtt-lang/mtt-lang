@@ -21,10 +21,10 @@ depends: [
   "ppx_let"
   "ppx_sexp_conv"
   "ppx_string_interpolation"
+  "qcheck"
   "sedlex"
   "sexplib"
   "stdio"
-  "qcheck"
   "odoc" {with-doc}
 ]
 build: [
