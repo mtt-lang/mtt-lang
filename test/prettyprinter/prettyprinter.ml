@@ -1,3 +1,4 @@
+open Base
 open Mtt.Ast
 open Mtt.PrettyPrinter
 
@@ -47,20 +48,7 @@ let generator =
                  ]))
 
 (* Primitive expressions printer for testing purposes *)
-let rec print_tree = function
-  | Expr.Unit -> "Unit"
-  | Expr.Pair (e1, e2) -> "Pair(" ^ print_tree e1 ^ ", " ^ print_tree e2 ^ ")"
-  | Expr.Fst pe -> "Fst(" ^ print_tree pe ^ ")"
-  | Expr.Snd pe -> "Snd(" ^ print_tree pe ^ ")"
-  | Expr.VarL idl -> "VarL(" ^ Mtt.Id.R.to_string idl ^ ")"
-  | Expr.VarG idg -> "VarG(" ^ Mtt.Id.M.to_string idg ^ ")"
-  | Expr.App (fe, arge) -> "App(" ^ print_tree fe ^ "," ^ print_tree arge ^ ")"
-  | Expr.Fun (idl, _, body) ->
-      "Fun(" ^ Mtt.Id.R.to_string idl ^ ", Unit, " ^ print_tree body ^ ")"
-  | Expr.Box e -> "Box(" ^ print_tree e ^ ")"
-  | Expr.Letbox (idg, boxed_e, body) ->
-      "Letbox(" ^ Mtt.Id.M.to_string idg ^ "," ^ print_tree boxed_e ^ ", "
-      ^ print_tree body ^ ")"
+let print_tree t = [%sexp_of: Expr.t] t |> Sexp.to_string
 
 let arbitrary_tree = QCheck.make generator ~print:print_tree
 
@@ -79,6 +67,6 @@ let test =
         | Ok ast -> ast
         | Error _ -> Expr.Unit
       in
-      tree = parsed_tree)
+      Expr.equal tree parsed_tree)
 
 let () = QCheck.Test.check_exn test
