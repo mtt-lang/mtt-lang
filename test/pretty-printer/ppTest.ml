@@ -65,7 +65,7 @@ let test =
       let parsed_ast =
         match Mtt.ParserInterface.parse_from_string Term ast_string with
         | Ok ast -> ast
-        | Error _ -> Expr.Unit
+        | Error err_msg -> QCheck.Test.fail_reportf "Parse error: %s" err_msg
       in
       Expr.equal ast parsed_ast)
 
