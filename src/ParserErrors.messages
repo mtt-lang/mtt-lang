@@ -1,3 +1,105 @@
+type_eof: LPAREN SND
+##
+## Ends in an error in state: 19.
+##
+## typ -> LPAREN . typ RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+Valid type is expected after opening parenthesis
+
+type_eof: LPAREN UNIT UNIT
+##
+## Ends in an error in state: 21.
+##
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+## typ -> LPAREN typ . RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN typ
+##
+
+Missing closing parenthesis at type level. Or unexpected lexeme, like => is used instead of ->. Or you are using (A, B) instead of A * B
+
+type_eof: SND
+##
+## Ends in an error in state: 60.
+##
+## type_eof' -> . type_eof [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+Valid type expected. Make sure uninterpreted type identifiers are capitalized and there are no unbalanced parentheses
+
+type_eof: TBOX SND
+##
+## Ends in an error in state: 18.
+##
+## typ -> TBOX . typ [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## TBOX
+##
+
+Type-level box must be followed by a type
+
+type_eof: UNIT ARROW SND
+##
+## Ends in an error in state: 25.
+##
+## typ -> typ ARROW . typ [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ ARROW
+##
+
+Valid codomain type is expected. Sometimes this happens if -> is used instead of =>
+
+type_eof: UNIT ARROW UNIT UNIT
+##
+## Ends in an error in state: 26.
+##
+## typ -> typ . CROSS typ [ RPAREN EOF DARROW CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN EOF DARROW CROSS ARROW ]
+## typ -> typ ARROW typ . [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ ARROW typ
+##
+
+Please report your example, producing this parsing error
+
+type_eof: UNIT CROSS SND
+##
+## Ends in an error in state: 23.
+##
+## typ -> typ CROSS . typ [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ CROSS
+##
+
+"snd" is not type expression
+
+type_eof: UNIT UNIT
+##
+## Ends in an error in state: 62.
+##
+## typ -> typ . CROSS typ [ EOF CROSS ARROW ]
+## typ -> typ . ARROW typ [ EOF CROSS ARROW ]
+## type_eof -> typ . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## typ
+##
+
+Please report your example, producing this parsing error
+
 expr_eof: BOX TBOX
 ##
 ## Ends in an error in state: 34.
@@ -22,32 +124,6 @@ expr_eof: FST TBOX
 
 An expression after fst is expected. This primitive can be only used fully applied.
 
-expr_eof: FUN IDR COLON LPAREN SND
-##
-## Ends in an error in state: 19.
-##
-## typ -> LPAREN . typ RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN
-##
-
-Valid type is expected after opening parenthesis
-
-expr_eof: FUN IDR COLON LPAREN UNIT UNIT
-##
-## Ends in an error in state: 21.
-##
-## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
-## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
-## typ -> LPAREN typ . RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN typ
-##
-
-Missing closing parenthesis at type level. Or unexpected lexeme, like => is used instead of ->. Or you are using (A, B) instead of A * B
-
 expr_eof: FUN IDR COLON SND
 ##
 ## Ends in an error in state: 40.
@@ -59,56 +135,6 @@ expr_eof: FUN IDR COLON SND
 ##
 
 Valid type expected. Make sure uninterpreted type identifiers are capitalized and there are no unbalanced parentheses
-
-expr_eof: FUN IDR COLON TBOX SND
-##
-## Ends in an error in state: 18.
-##
-## typ -> TBOX . typ [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## TBOX
-##
-
-Type-level box must be followed by a type
-
-expr_eof: FUN IDR COLON UNIT ARROW SND
-##
-## Ends in an error in state: 25.
-##
-## typ -> typ ARROW . typ [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ ARROW
-##
-
-Valid codomain type is expected. Sometimes this happens if -> is used instead of =>
-
-expr_eof: FUN IDR COLON UNIT ARROW UNIT UNIT
-##
-## Ends in an error in state: 26.
-##
-## typ -> typ . CROSS typ [ RPAREN EOF DARROW CROSS ARROW ]
-## typ -> typ . ARROW typ [ RPAREN EOF DARROW CROSS ARROW ]
-## typ -> typ ARROW typ . [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ ARROW typ
-##
-
-Please report your example, producing this parsing error
-
-expr_eof: FUN IDR COLON UNIT CROSS SND
-##
-## Ends in an error in state: 23.
-##
-## typ -> typ CROSS . typ [ RPAREN EOF DARROW CROSS ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ CROSS
-##
-
-Second component of product type is expected
 
 expr_eof: FUN IDR COLON UNIT DARROW TBOX
 ##
@@ -147,6 +173,80 @@ expr_eof: FUN IDR UNIT
 ##
 
 Function parameter is missing type annotation
+
+expr_eof: FUN LPAREN IDR COLON SND
+##
+## Ends in an error in state: 16.
+##
+## expr -> FUN LPAREN IDR COLON . typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON
+##
+
+Unrecognized syntax error. Please report your example
+
+expr_eof: FUN LPAREN IDR COLON UNIT RPAREN DARROW TBOX
+##
+## Ends in an error in state: 30.
+##
+## expr -> FUN LPAREN IDR COLON typ RPAREN DARROW . expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON typ RPAREN DARROW
+##
+
+Unrecognized syntax error. Please report your example
+
+expr_eof: FUN LPAREN IDR COLON UNIT RPAREN UNIT
+##
+## Ends in an error in state: 29.
+##
+## expr -> FUN LPAREN IDR COLON typ RPAREN . DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON typ RPAREN
+##
+
+Unrecognized syntax error. Please report your example
+
+expr_eof: FUN LPAREN IDR COLON UNIT UNIT
+##
+## Ends in an error in state: 28.
+##
+## expr -> FUN LPAREN IDR COLON typ . RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON typ
+##
+
+Missing closed parenthesis
+
+expr_eof: FUN LPAREN IDR UNIT
+##
+## Ends in an error in state: 15.
+##
+## expr -> FUN LPAREN IDR . COLON typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR
+##
+
+Missing closed parenthesis
+
+expr_eof: FUN LPAREN UNIT
+##
+## Ends in an error in state: 14.
+##
+## expr -> FUN LPAREN . IDR COLON typ RPAREN DARROW expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN
+##
+
+Missing closed parenthesis
 
 expr_eof: FUN UNIT
 ##
@@ -220,6 +320,72 @@ expr_eof: LANGLE UNIT RPAREN
 ##
 
 Missing comma which separates components of pair expression
+
+expr_eof: LET IDR EQ TBOX
+##
+## Ends in an error in state: 9.
+##
+## expr -> LET IDR EQ . expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR EQ
+##
+
+Varibale in "let" expression must be term, not box type
+
+expr_eof: LET IDR EQ UNIT IN TBOX
+##
+## Ends in an error in state: 49.
+##
+## expr -> LET IDR EQ expr IN . expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR EQ expr IN
+##
+
+Expected term after "in"-keyword, not box type
+
+expr_eof: LET IDR EQ UNIT RPAREN
+##
+## Ends in an error in state: 48.
+##
+## expr -> LET IDR EQ expr . IN expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR EQ expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 36, spurious reduction of production expr -> parceled_expr 
+##
+
+Missing or unexpected lexeme in parenthesized expression
+
+expr_eof: LET IDR UNIT
+##
+## Ends in an error in state: 8.
+##
+## expr -> LET IDR . EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR
+##
+
+Missing "in" keyword in "let-in" construction
+
+expr_eof: LET UNIT
+##
+## Ends in an error in state: 7.
+##
+## expr -> LET . IDR EQ expr IN expr [ RPAREN RANGLE IN EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
 
 expr_eof: LETBOX IDM EQ TBOX
 ##

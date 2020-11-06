@@ -102,3 +102,25 @@
   $ mtt parse -e "letbox x = box () in x"
   mtt: Parse error: A modal identifier is expected. It should start with a lowercase letter and end with an apostrophe (').
   [1]
+
+## Regular "let .. in" expression
+
+### Bound variable in "let" expression must be term, not type
+  $ mtt parse -e "let x = []"
+  mtt: Parse error: Varibale in "let" expression must be term, not box type
+  [1]
+
+### After "in" must term must follow, not type
+  $ mtt parse -e "let x = () in []"
+  mtt: Parse error: Expected term after "in"-keyword, not box type
+  [1]
+
+### Extra closed parenthesis
+  $ mtt parse -e "let x = ())"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  [1]
+
+### Missing "in" keyword
+  $ mtt parse -e "let x ()"
+  mtt: Parse error: Missing "in" keyword in "let-in" construction
+  [1]
