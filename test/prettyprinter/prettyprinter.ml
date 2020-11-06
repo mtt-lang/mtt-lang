@@ -53,15 +53,16 @@ let print_tree t = [%sexp_of: Expr.t] t |> Sexp.to_string
 let arbitrary_tree = QCheck.make generator ~print:print_tree
 
 let test =
+  let buffer_size = 1024 in
+  let buffer = Stdlib.Buffer.create buffer_size in
   QCheck.Test.make ~name:"Expression pretty printer preserving syntax"
     ~count:1000 arbitrary_tree (fun tree ->
-      let buffer_size = 1024 in
-      let buffer = Stdlib.Buffer.create buffer_size in
       let _ =
         try (PPrint.ToBuffer.pretty 1.0 80 buffer) (Doc.of_expr tree)
         with _ -> ()
       in
       let tree_string = Stdlib.Buffer.contents buffer in
+      let _ = Stdlib.Buffer.clear buffer in
       let parsed_tree =
         match Mtt.ParserInterface.parse_from_string Term tree_string with
         | Ok ast -> ast
