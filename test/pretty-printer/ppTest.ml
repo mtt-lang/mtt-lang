@@ -23,22 +23,21 @@ let generator =
                    map (fun idg -> Expr.VarG (modal_id idg)) lowercase_id;
                  ]
            | size ->
+               let open Expr in
                let unary_node f = map f (self (size - 1)) in
                let binary_node f = map2 f (self (size / 2)) (self (size / 2)) in
                oneof
                  [
-                   binary_node (fun e1 e2 -> Expr.Pair (e1, e2));
-                   unary_node (fun pe -> Expr.Fst pe);
-                   unary_node (fun pe -> Expr.Snd pe);
-                   binary_node (fun x y -> Expr.App (x, y));
-                   map3
-                     (fun x y z -> Expr.Fun (x, y, z))
+                   binary_node pair;
+                   unary_node fst;
+                   unary_node snd;
+                   binary_node app;
+                   map3 func
                      (map (fun s -> Mtt.Id.R.mk s) lowercase_id)
                      (return Type.Unit)
                      (self (size - 1));
-                   unary_node (fun x -> Expr.Box x);
-                   map3
-                     (fun x y z -> Expr.Letbox (x, y, z))
+                   unary_node box;
+                   map3 letbox
                      (map modal_id lowercase_id)
                      (self (size / 2))
                      (self (size / 2));
