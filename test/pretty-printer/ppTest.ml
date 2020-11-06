@@ -4,10 +4,8 @@ open Mtt.PrettyPrinter
 
 (* QCheck generator for the arbitrary (and most likely invalid) expressions *)
 let generator =
-  (* let max_size = 1000 in *)
   QCheck.Gen.(
     sized
-    (* sized_size (int_bound max_size) *)
     @@ fix (fun self size ->
            let lowercase_id =
              string_size ~gen:(char_range 'a' 'z') (return 1)
@@ -18,9 +16,9 @@ let generator =
                oneof
                  [
                    return Expr.Unit;
-                   (* won't work until expressions with free variables can be parsed *)
+                   (* won't work until expressions with free variables can be pretty-printed *)
                    (* map
-                      (fun s -> Expr.VarL (R.mk s))
+                      (fun s -> Expr.VarL (Mtt.Id.R.mk s))
                       (string_size ~gen:(char_range 'a' 'z') (return 1)); *)
                    map (fun idg -> Expr.VarG (modal_id idg)) lowercase_id;
                  ]
