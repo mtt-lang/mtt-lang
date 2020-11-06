@@ -331,7 +331,7 @@ expr_eof: LET IDR EQ TBOX
 ## LET IDR EQ
 ##
 
-Varibale in "let" expression must be term, not box type
+Variable in "let" expression must be term, not type
 
 expr_eof: LET IDR EQ UNIT IN TBOX
 ##
@@ -343,7 +343,7 @@ expr_eof: LET IDR EQ UNIT IN TBOX
 ## LET IDR EQ expr IN
 ##
 
-Expected term after "in"-keyword, not box type
+Expected term after "in"-keyword, not type
 
 expr_eof: LET IDR EQ UNIT RPAREN
 ##

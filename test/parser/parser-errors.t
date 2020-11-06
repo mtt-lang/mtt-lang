@@ -107,12 +107,12 @@
 
 ### Bound variable in "let" expression must be term, not type
   $ mtt parse -e "let x = []"
-  mtt: Parse error: Varibale in "let" expression must be term, not box type
+  mtt: Parse error: Variable in "let" expression must be term, not type
   [1]
 
 ### After "in" must term must follow, not type
   $ mtt parse -e "let x = () in []"
-  mtt: Parse error: Expected term after "in"-keyword, not box type
+  mtt: Parse error: Expected term after "in"-keyword, not type
   [1]
 
 ### Extra closed parenthesis
@@ -121,6 +121,18 @@
   [1]
 
 ### Missing "in" keyword
-  $ mtt parse -e "let x ()"
-  mtt: Parse error: Missing "in" keyword in "let-in" construction
+  $ mtt parse -e "let x = fun y: A. y"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  [1]
+
+  $ mtt parse -e "let x = () x"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  [1]
+
+  $ mtt parse -e "let x = () y = x"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  [1]
+
+  $ mtt parse -e "let x = (fun z: A. z) y = () in x y"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
   [1]
