@@ -44,7 +44,7 @@ let generator =
                  ]))
 
 (* Primitive expressions printer for testing purposes *)
-let print_ast t = [%sexp_of: Expr.t] t |> Sexp.to_string
+let print_ast t = [%sexp_of: Expr.t] t |> Sexp.to_string_hum
 
 let arbitrary_ast = QCheck.make generator ~print:print_ast
 
