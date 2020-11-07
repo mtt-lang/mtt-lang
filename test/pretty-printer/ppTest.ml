@@ -50,17 +50,30 @@ let generator =
 
 let arbitrary_ast =
   let print_ast t = [%sexp_of: Expr.t] t |> Sexp.to_string_hum in
-  let shrink_ast =
+  let rec shrink_ast =
     let open QCheck.Iter in
+    let shrink_unary cons arg =
+      return arg <+> (shrink_ast arg >|= fun arg' -> cons arg')
+    in
+    let shrink_binary cons arg1 arg2 =
+      of_list [ arg1; arg2 ]
+      <+> (shrink_ast arg1 >|= fun arg1' -> cons arg1' arg2)
+      <+> (shrink_ast arg2 >|= fun arg2' -> cons arg1 arg2')
+    in
     function
     | Expr.Unit | Expr.VarL _ | Expr.VarG _ -> empty
-    | Expr.Fst pe | Expr.Snd pe -> return pe
-    | Expr.Pair (e1, e2) -> of_list [ e1; e2 ]
-    | Expr.Fun (_, _, body) -> return body
-    | Expr.App (fe, arge) -> of_list [ fe; arge ]
-    | Expr.Box e -> return e
-    | Expr.Let (_, bound_e, body) -> of_list [ bound_e; body ]
-    | Expr.Letbox (_, boxed_e, body) -> of_list [ boxed_e; body ]
+    | Expr.Fst pe -> shrink_unary Expr.fst pe
+    | Expr.Snd pe -> shrink_unary Expr.snd pe
+    | Expr.Pair (e1, e2) -> shrink_binary Expr.pair e1 e2
+    | Expr.Fun (idl, t_of_id, body) ->
+        return body
+        <+> (shrink_ast body >|= fun body' -> Expr.func idl t_of_id body')
+    | Expr.App (fe, arge) -> shrink_binary Expr.app fe arge
+    | Expr.Box e -> shrink_unary Expr.box e
+    | Expr.Let (idl, bound_e, body) ->
+        shrink_binary (Expr.letc idl) bound_e body
+    | Expr.Letbox (idg, boxed_e, body) ->
+        shrink_binary (Expr.letbox idg) boxed_e body
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
 
