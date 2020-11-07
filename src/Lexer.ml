@@ -51,6 +51,7 @@ let token buf =
   | "snd" | 0x03C0, 0x2082 (* π₂ *) -> SND
   | "in" -> IN
   | "fun" | 0x03BB -> FUN
+  | "let" -> LET
   | "box" -> BOX
   | "letbox" -> LETBOX
   | regular_ident -> IDR (Utf8.lexeme buf)

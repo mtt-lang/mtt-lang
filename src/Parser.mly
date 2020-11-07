@@ -25,6 +25,7 @@
 %token SND
 %token FUN
 %token BOX
+%token LET
 %token LETBOX
 %token IN
 
@@ -86,12 +87,12 @@ expr:
     { Snd (e) }
 
     (* anonymous function (lambda) *)
-  | FUN; idl = IDR; COLON; t = typ; DARROW; e = expr
-    { Fun (Id.R.mk idl, t, e) }
+  | FUN; idr = IDR; COLON; t = typ; DARROW; e = expr
+    { Fun (Id.R.mk idr, t, e) }
 
     (* allow parenthesizing of the bound variable for lambdas *)
-  | FUN; LPAREN; idl = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
-    { Fun (Id.R.mk idl, t, e) }
+  | FUN; LPAREN; idr = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
+    { Fun (Id.R.mk idr, t, e) }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr
@@ -100,6 +101,10 @@ expr:
     (* term-level box *)
   | BOX; e = parceled_expr
     { Box e }
+
+    (* let idr = expr in expr *)
+  | LET; idr = IDR; EQ; e = expr; IN; body = expr
+    { Let (Id.R.mk idr, e, body) }
 
     (* letbox idg = expr in expr *)
   | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr

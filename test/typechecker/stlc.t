@@ -30,4 +30,58 @@ Weak form of Pierce's law
   > aba (λa: A. 
   > (abaab (λabaa: ((A -> B) -> A). a))))
   > EOF
-  ((((A → B) → A) → A) → B) → B
+  (((((A → B) → A) → A) → B) → B)
+
+tests for regular 'let .. in' construction
+  $ mtt infer <<EOF
+  > fun x: A. let y = x in y
+  > EOF
+  (A → A)
+
+  $ mtt infer <<EOF
+  > fun x: A. let y = x in x
+  > EOF
+  (A → A)
+
+  $ mtt infer <<EOF
+  > fun x: A.
+  > let f = fun x: A. <x, x> in 
+  > (f x)
+  > EOF
+  (A → (A×A))
+
+  $ mtt infer <<EOF
+  > fun p: (A * B).
+  > let f = fst p in
+  > let s = snd p in
+  > <s, f>
+  > EOF
+  ((A×B) → (B×A))
+
+  $ mtt infer <<EOF
+  > fun ab_c: ((A * B) * C).
+  > let ab = fst ab_c in
+  > let a = fst ab in
+  > let b = snd ab in
+  > let c = snd ab_c in
+  > < a, <b, c> >
+  > EOF
+  (((A×B)×C) → (A×(B×C)))
+
+Weak form of Pierce's law with 'let .. in'-construction 
+  $ mtt infer <<EOF
+  > fun abaab: (((A -> B) -> A) -> A) -> B.
+  >   let abaa = fun aba: (A -> B) -> A.
+  >     let ab = fun a: A.
+  >       let b = abaab (fun abaa: (A -> B) -> A . a)
+  >       in b
+  >     in aba ab
+  >   in abaab abaa
+  > EOF
+  (((((A → B) → A) → A) → B) → B)
+
+Shadowing x
+  $ mtt infer <<EOF
+  > let x = () in let x = (fun a: A. a) in x
+  > EOF
+  (A → A)
