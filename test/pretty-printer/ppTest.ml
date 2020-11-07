@@ -10,6 +10,7 @@ let generator =
            let lowercase_id =
              string_size ~gen:(char_range 'a' 'z') (return 1)
            in
+           let regular_id id = Mtt.Id.R.mk id in
            let modal_id id = Mtt.Id.M.mk (id ^ "'") in
            match size with
            | 0 ->
@@ -33,10 +34,14 @@ let generator =
                    unary_node snd;
                    binary_node app;
                    map3 func
-                     (map (fun s -> Mtt.Id.R.mk s) lowercase_id)
+                     (map regular_id lowercase_id)
                      (return Type.Unit)
                      (self (size - 1));
                    unary_node box;
+                   map3 letc
+                     (map regular_id lowercase_id)
+                     (self (size / 2))
+                     (self (size / 2));
                    map3 letbox
                      (map modal_id lowercase_id)
                      (self (size / 2))
@@ -54,6 +59,7 @@ let arbitrary_ast =
     | Expr.Fun (_, _, body) -> return body
     | Expr.App (fe, arge) -> of_list [ fe; arge ]
     | Expr.Box e -> return e
+    | Expr.Let (_, bound_e, body) -> of_list [ bound_e; body ]
     | Expr.Letbox (_, boxed_e, body) -> of_list [ boxed_e; body ]
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast

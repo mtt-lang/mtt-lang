@@ -90,8 +90,8 @@ module Doc : DOC = struct
             (group
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk bvs bound_e ^^^ in_kwd
-               ^/^ walk (Set.add bvs idr) body ))
+               ^^^ equals ^^^ walk bvs p bound_e ^^^ in_kwd
+               ^/^ walk (Set.add bvs idr) p body ))
       | Letbox (idg, boxed_e, body) ->
           (parens_if (p > 1))
             (group

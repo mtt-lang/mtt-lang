@@ -50,6 +50,8 @@ module Expr = struct
 
   let box e = Box e
 
+  let letc idl bound_e body = Let (idl, bound_e, body)
+
   let letbox idg boxed_e body = Letbox (idg, boxed_e, body)
 end
 
