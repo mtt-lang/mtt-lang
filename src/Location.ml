@@ -24,7 +24,7 @@ let mk s_pos e_pos =
       end_column = e_pos.pos_cnum;
     }
 
-let locate data s_pos e_pos =
+let locate_start_end data s_pos e_pos =
   let loc = mk s_pos e_pos in
   { data; loc }
 
