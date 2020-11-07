@@ -33,25 +33,25 @@ let rec subst_m term idg body =
   match body.data with
   | Unit -> body
   | Pair (e1, e2) ->
-      mkLocated ~loc:body.loc (Pair (subst_m term idg e1, subst_m term idg e2))
-  | Fst pe -> mkLocated ~loc:body.loc (Fst (subst_m term idg pe))
-  | Snd pe -> mkLocated ~loc:body.loc (Snd (subst_m term idg pe))
+      mk_located ~loc:body.loc (Pair (subst_m term idg e1, subst_m term idg e2))
+  | Fst pe -> mk_located ~loc:body.loc (Fst (subst_m term idg pe))
+  | Snd pe -> mk_located ~loc:body.loc (Snd (subst_m term idg pe))
   | VarL _i -> body
   | VarG i -> if [%equal: Id.M.t] idg i then term else body
   | Fun (idl, t_of_id, body) ->
-      mkLocated ~loc:body.loc (Fun (idl, t_of_id, subst_m term idg body))
+      mk_located ~loc:body.loc (Fun (idl, t_of_id, subst_m term idg body))
   | App (fe, arge) ->
-      mkLocated ~loc:body.loc (App (subst_m term idg fe, subst_m term idg arge))
-  | Box e -> mkLocated ~loc:body.loc (Box (subst_m term idg e))
+      mk_located ~loc:body.loc (App (subst_m term idg fe, subst_m term idg arge))
+  | Box e -> mk_located ~loc:body.loc (Box (subst_m term idg e))
   | Letbox (i, boxed_e, body) ->
-      mkLocated ~loc:body.loc
+      mk_located ~loc:body.loc
         ( if [%equal: Id.M.t] idg i then
           Letbox (i, subst_m term idg boxed_e, body)
         else
           match refresh_g i (free_vars_g term) with
           | Some new_i ->
               let body_with_renamed_bound_var =
-                subst_m (mkLocated ~loc:body.loc (VarG new_i)) i body
+                subst_m (mk_located ~loc:body.loc (VarG new_i)) i body
               in
               Letbox
                 ( new_i,
@@ -64,10 +64,10 @@ let rec subst_m term idg body =
 let rec eval_open gamma expr =
   let open Expr in
   match expr.data with
-  | Unit -> return (mkLocated ~loc:expr.loc Val.Unit)
+  | Unit -> return (mk_located ~loc:expr.loc Val.Unit)
   | Pair (e1, e2) ->
       let%map v1 = eval_open gamma e1 and v2 = eval_open gamma e2 in
-      mkLocated ~loc:expr.loc (Val.Pair (v1, v2))
+      mk_located ~loc:expr.loc (Val.Pair (v1, v2))
   | Fst pe -> (
       let%bind pv = eval_open gamma pe in
       match pv.data with
@@ -84,7 +84,7 @@ let rec eval_open gamma expr =
       @@ pp ~msg:"Modal variable access is not possible in a well-typed term"
            expr.loc
   | Fun (idl, _t_of_id, body) ->
-      return @@ mkLocated ~loc:expr.loc (Val.Clos (idl, body, gamma))
+      return @@ mk_located ~loc:expr.loc (Val.Clos (idl, body, gamma))
   | App (fe, arge) -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
@@ -94,7 +94,7 @@ let rec eval_open gamma expr =
       | _ ->
           Result.fail
           @@ pp ~msg:"Trying to apply an argument to a non-function" fv.loc )
-  | Box e -> return @@ mkLocated ~loc:expr.loc (Val.Box e)
+  | Box e -> return @@ mk_located ~loc:expr.loc (Val.Box e)
   | Letbox (idg, boxed_e, body) -> (
       let%bind boxed_v = eval_open gamma boxed_e in
       match boxed_v.data with

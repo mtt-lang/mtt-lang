@@ -28,7 +28,7 @@ let locate_start_end data s_pos e_pos =
   let loc = mk s_pos e_pos in
   { data; loc }
 
-let mkLocated ?(loc = NoSource) data = { data; loc }
+let mk_located ?(loc = NoSource) data = { data; loc }
 
 let showPos pos' =
   match pos' with

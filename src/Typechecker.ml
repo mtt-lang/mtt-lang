@@ -10,7 +10,7 @@ let rec check_open delta gamma expr typ =
   match expr.data with
   | Unit ->
       Result.ok_if_true
-        ([%equal: Type.t] typ (mkLocated Type.Unit))
+        ([%equal: Type.t] typ (mk_located Type.Unit))
         ~error:(pp ~msg:"Expected unit type" expr.loc)
   | Pair (e1, e2) -> (
       match typ.data with
@@ -87,11 +87,11 @@ let rec check_open delta gamma expr typ =
 
 and infer_open delta gamma expr =
   match expr.data with
-  | Unit -> return (mkLocated ~loc:expr.loc Type.Unit)
+  | Unit -> return (mk_located ~loc:expr.loc Type.Unit)
   | Pair (e1, e2) ->
       let%map t1 = infer_open delta gamma e1
       and t2 = infer_open delta gamma e2 in
-      mkLocated ~loc:t2.loc (Type.Prod (t1, t2))
+      mk_located ~loc:t2.loc (Type.Prod (t1, t2))
   | Fst pe -> (
       let%bind t = infer_open delta gamma pe in
       match t.data with
@@ -109,7 +109,7 @@ and infer_open delta gamma expr =
   | VarG idg -> Env.lookup_g delta idg
   | Fun (idl, dom, body) ->
       let%map cod = infer_open delta (Env.extend_l gamma idl dom) body in
-      mkLocated ~loc:expr.loc (Type.Arr (dom, cod))
+      mk_located ~loc:expr.loc (Type.Arr (dom, cod))
   | App (fe, arge) -> (
       let%bind t = infer_open delta gamma fe in
       match t.data with
@@ -119,7 +119,7 @@ and infer_open delta gamma expr =
       | _ -> Result.fail @@ pp ~msg:"Inferred type is not an arrow type" t.loc )
   | Box e ->
       let%map t = infer_open delta Env.emp_l e in
-      mkLocated ~loc:expr.loc (Type.Box t)
+      mk_located ~loc:expr.loc (Type.Box t)
   | Letbox (idg, boxed_e, body) -> (
       let%bind t = infer_open delta gamma boxed_e in
       match t.data with
