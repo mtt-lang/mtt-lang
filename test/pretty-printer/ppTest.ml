@@ -43,16 +43,33 @@ let generator =
                      (self (size / 2));
                  ]))
 
+<<<<<<< HEAD
 (* Primitive expressions printer for testing purposes *)
 let print_ast t = [%sexp_of: Expr.t] t |> Sexp.to_string_hum
 
 let arbitrary_ast = QCheck.make generator ~print:print_ast
+=======
+let arbitrary_ast =
+  let print_ast t = [%sexp_of: Expr.t] t |> Sexp.to_string_hum in
+  let shrink_ast =
+    let open QCheck.Iter in
+    function
+    | Expr.Unit | Expr.VarL _ | Expr.VarG _ -> empty
+    | Expr.Fst pe | Expr.Snd pe -> return pe
+    | Expr.Pair (e1, e2) -> of_list [ e1; e2 ]
+    | Expr.Fun (_, _, body) -> return body
+    | Expr.App (fe, arge) -> of_list [ fe; arge ]
+    | Expr.Box e -> return e
+    | Expr.Letbox (_, boxed_e, body) -> of_list [ boxed_e; body ]
+  in
+  QCheck.make generator ~print:print_ast ~shrink:shrink_ast
+>>>>>>> test: add shrinker for arbitrary expressions
 
 let test =
   let buffer_size = 1024 in
   let buffer = Stdlib.Buffer.create buffer_size in
   QCheck.Test.make ~name:"Expression pretty printer preserving syntax"
-    ~count:1000 arbitrary_ast (fun ast ->
+    ~count:1000 ~long_factor:10 arbitrary_ast (fun ast ->
       let _ =
         try (PPrint.ToBuffer.pretty 1.0 80 buffer) (Doc.of_expr ast)
         with _ -> ()
@@ -66,4 +83,4 @@ let test =
       in
       Expr.equal ast parsed_ast)
 
-let () = QCheck.Test.check_exn test
+let _ = QCheck_runner.run_tests_main [ test ]
