@@ -27,8 +27,10 @@ let rec check_open delta gamma expr typ =
             ([%equal: Type.t] typ t1)
             ~error:
               (pp
-              ~msg:"fst error: inferred type is different from the input one" t1.loc)
-      | _ -> Result.fail @@ pp ~msg:"fst is applied to a non-product type" t.loc )
+                 ~msg:"fst error: inferred type is different from the input one"
+                 t1.loc)
+      | _ -> Result.fail @@ pp ~msg:"fst is applied to a non-product type" t.loc
+      )
   | Snd pe -> (
       let%bind t = infer_open delta gamma pe in
       match t.data with
@@ -37,8 +39,10 @@ let rec check_open delta gamma expr typ =
             ([%equal: Type.t] typ t2)
             ~error:
               (pp
-              ~msg:"snd error: inferred type is different from the input one" t2.loc)
-      | _ -> Result.fail @@ pp ~msg:"snd is applied to a non-product type" t.loc )
+                 ~msg:"snd error: inferred type is different from the input one"
+                 t2.loc)
+      | _ -> Result.fail @@ pp ~msg:"snd is applied to a non-product type" t.loc
+      )
   | VarL idl ->
       let%bind t = Env.lookup_l gamma idl in
       Result.ok_if_true
@@ -57,8 +61,9 @@ let rec check_open delta gamma expr typ =
           else
             Result.fail
             @@ pp
-            ~msg:"Domain of arrow type is not the same as type of function \
-                  parameter"
+                 ~msg:
+                   "Domain of arrow type is not the same as type of function \
+                    parameter"
                  t_of_id.loc
       | _ -> Result.fail @@ pp ~msg:"Arror type expected" expr.loc )
   | App (fe, arge) -> (
@@ -91,12 +96,15 @@ and infer_open delta gamma expr =
       let%bind t = infer_open delta gamma pe in
       match t.data with
       | Type.Prod (t1, _t2) -> return t1
-      | _ -> Result.fail @@ pp ~msg:"fst is applied to a non-product type" expr.loc )
+      | _ ->
+          Result.fail @@ pp ~msg:"fst is applied to a non-product type" expr.loc
+      )
   | Snd pe -> (
       let%bind t = infer_open delta gamma pe in
       match t.data with
       | Type.Prod (_t1, t2) -> return t2
-      | _ -> Result.fail @@ pp ~msg:"snd is applied to a non-product type" t.loc )
+      | _ -> Result.fail @@ pp ~msg:"snd is applied to a non-product type" t.loc
+      )
   | VarL idl -> Env.lookup_l gamma idl
   | VarG idg -> Env.lookup_g delta idg
   | Fun (idl, dom, body) ->

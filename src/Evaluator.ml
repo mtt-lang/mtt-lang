@@ -72,7 +72,7 @@ let rec eval_open gamma expr =
       let%bind pv = eval_open gamma pe in
       match pv.data with
       | Val.Pair (v1, _v2) -> return v1
-      | _ -> Result.fail @@ pp ~msg:"fst is stuck;" pv.loc)
+      | _ -> Result.fail @@ pp ~msg:"fst is stuck;" pv.loc )
   | Snd pe -> (
       let%bind pv = eval_open gamma pe in
       match pv.data with
@@ -100,7 +100,7 @@ let rec eval_open gamma expr =
       match boxed_v.data with
       | Val.Box e -> eval_open gamma (subst_m e idg body)
       | _ ->
-          Result.fail @@ pp ~msg:"Trying to unbox a non-box expression" boxed_v.loc
-      )
+          Result.fail
+          @@ pp ~msg:"Trying to unbox a non-box expression" boxed_v.loc )
 
 let eval expr = eval_open Env.emp_l expr
