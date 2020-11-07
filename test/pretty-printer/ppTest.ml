@@ -65,9 +65,7 @@ let arbitrary_ast =
     | Expr.Fst pe -> shrink_unary Expr.fst pe
     | Expr.Snd pe -> shrink_unary Expr.snd pe
     | Expr.Pair (e1, e2) -> shrink_binary Expr.pair e1 e2
-    | Expr.Fun (idl, t_of_id, body) ->
-        return body
-        <+> (shrink_ast body >|= fun body' -> Expr.func idl t_of_id body')
+    | Expr.Fun (idl, t_of_id, body) -> shrink_unary (Expr.func idl t_of_id) body
     | Expr.App (fe, arge) -> shrink_binary Expr.app fe arge
     | Expr.Box e -> shrink_unary Expr.box e
     | Expr.Let (idl, bound_e, body) ->
