@@ -1,53 +1,54 @@
 open Base
+open Lexing
 
-type position = Lexing.position = {
-  pos_fname : string;
-  pos_lnum : int;
-  pos_bol : int;
-  pos_cnum : int;
-}
+type t =
+  | NoSource
+  | Source of
+      { filename     : string [@equal.ignore]
+      ; start_line   : int [@equal.ignore]
+      ; start_column : int [@equal.ignore]
+      ; end_line     : int [@equal.ignore]
+      ; end_column   : int [@equal.ignore]
+      }
 [@@deriving equal, sexp]
 
-type t = { start_position : position; end_position : position }
-[@@deriving equal, sexp]
+type 'a located = { data : 'a; loc : t } [@@deriving equal, sexp]
 
-type 'a location = { data : 'a; loc : t } [@@deriving equal, sexp]
+let mk s_pos e_pos = 
+  Source {
+  filename = s_pos.pos_fname;
+  start_line = s_pos.pos_lnum;
+  start_column = s_pos.pos_cnum;
+  end_line = e_pos.pos_lnum;
+  end_column = e_pos.pos_cnum;
+  }
 
-let mkPosition start_position end_position = { start_position; end_position }
-
-let mkLocByPosition data start_position end_position =
-  let loc = mkPosition start_position end_position in
+let locate data s_pos e_pos =
+  let loc = mk s_pos e_pos in
   { data; loc }
 
-let mkLocation data location =
-  let loc = mkPosition location.start_position location.end_position in
-  { data; loc }
+let mkLocated ?(loc=NoSource) data = {data; loc}
 
-let showPos pos =
-  let file =
-    if String.length pos.pos_fname <> 0 then
-      String.concat [ "file name : "; pos.pos_fname ]
-    else String.concat [ "file name : "; "Not a file" ]
-  in
-  let line =
-    String.concat
-      [ "line number : "; Sexp.to_string ([%sexp_of: int] pos.pos_lnum) ]
-  in
-  let offs =
-    String.concat [ "offset : "; Sexp.to_string ([%sexp_of: int] pos.pos_bol) ]
-  in
-  String.concat ~sep:"\n" [ "Show Position: \n"; file; line; offs ]
+let showPos pos' =
+  match pos' with
+  | Source pos -> 
+      let file =
+        if String.length pos.filename  <> 0 then
+          String.concat [ "file name : "; pos.filename ]
+        else String.concat [ "file name : "; "Not a file" ] in
+      let line = String.concat
+        [ "lines : "; 
+          Sexp.to_string ([%sexp_of: int] pos.start_line) ; 
+          "-";
+          Sexp.to_string ([%sexp_of: int] pos.end_line)
+        ] in
+      let column = String.concat
+        [ "column : "; 
+          Sexp.to_string ([%sexp_of: int] pos.start_column) ; 
+          "-";
+          Sexp.to_string ([%sexp_of: int] pos.end_column)
+        ] in
+      String.concat ~sep:", " [file; line; column]
+  | NoSource   -> "No position"
 
-let showLocation location =
-  let show_s =
-    String.concat
-      [ "start_position : \n"; showPos location.loc.start_position; "----\n" ]
-  in
-  let show_e =
-    String.concat
-      [ "end_position : \n"; showPos location.loc.end_position; "----\n" ]
-  in
-  String.concat ~sep:"\n" [ "Show Location: \n"; show_s; show_e ]
-
-let errorMsg msg location =
-  String.concat ~sep:"\n" [ msg; showLocation location ]
+let pp ?(msg="") loc = String.concat ~sep:"\n" [ msg; showPos loc]

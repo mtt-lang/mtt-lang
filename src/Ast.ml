@@ -4,9 +4,9 @@ type idT = string [@@deriving equal, sexp]
 
 (** Types *)
 module Type = struct
-  type t = ast Location.location
+  type t = t' Location.located
 
-  and ast =
+  and t' =
     | Unit  (** Unit type *)
     | Base of idT
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
@@ -18,9 +18,9 @@ end
 
 (** Expressions *)
 module Expr = struct
-  type t = ast Location.location
+  type t = t' Location.located
 
-  and ast =
+  and t' =
     | Unit  (** [unit] *)
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
@@ -39,9 +39,9 @@ end
 
 (** Values *)
 module Val = struct
-  type t = ast Location.location
+  type t = t' Location.located
 
-  and ast =
+  and t' =
     | Unit  (** [unit] literal *)
     | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
     | Clos of Id.R.t * Expr.t * t Env.l  (** Deeply embedded closures *)

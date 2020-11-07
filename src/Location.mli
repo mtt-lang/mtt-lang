@@ -1,21 +1,11 @@
 open Base
 
-type position = Lexing.position = {
-  pos_fname : string;
-  pos_lnum : int;
-  pos_bol : int;
-  pos_cnum : int;
-}
-[@@deriving equal, sexp]
-
 type t
 
-type 'a location = { data : 'a; loc : t } [@@deriving equal, sexp]
+type 'a located = { data : 'a; loc : t } [@@deriving equal, sexp]
 
-val mkLocByPosition : 'a -> position -> position -> 'a location
+val locate : 'a -> Lexing.position -> Lexing.position -> 'a located
 
-val mkLocation : 'a -> t -> 'a location
+val mkLocated : ?loc: t -> 'a -> 'a located
 
-val showLocation : 'a location -> string
-
-val errorMsg : string -> 'a location -> string
+val pp : ?msg:string -> t -> string
