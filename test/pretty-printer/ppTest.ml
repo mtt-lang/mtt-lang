@@ -43,12 +43,6 @@ let generator =
                      (self (size / 2));
                  ]))
 
-<<<<<<< HEAD
-(* Primitive expressions printer for testing purposes *)
-let print_ast t = [%sexp_of: Expr.t] t |> Sexp.to_string_hum
-
-let arbitrary_ast = QCheck.make generator ~print:print_ast
-=======
 let arbitrary_ast =
   let print_ast t = [%sexp_of: Expr.t] t |> Sexp.to_string_hum in
   let shrink_ast =
@@ -63,7 +57,6 @@ let arbitrary_ast =
     | Expr.Letbox (_, boxed_e, body) -> of_list [ boxed_e; body ]
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
->>>>>>> test: add shrinker for arbitrary expressions
 
 let test =
   let buffer_size = 1024 in
