@@ -93,6 +93,7 @@ let test =
             QCheck.Test.fail_reportf "Parse error: %s\nParser input: %s" err_msg
               ast_string
       in
-      Expr.equal ast parsed_ast)
+      Expr.equal ast parsed_ast
+      || QCheck.Test.fail_reportf "Parser input: %s" ast_string)
 
 let _ = QCheck_runner.run_tests_main [ test ]
