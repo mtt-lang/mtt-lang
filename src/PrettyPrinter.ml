@@ -86,12 +86,12 @@ module Doc : DOC = struct
           group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
       | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
       | Let (idr, bound_e, body) ->
-          parens
+          (parens_if (p > 1))
             (group
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk bvs p bound_e ^^^ in_kwd
-               ^/^ walk (Set.add bvs idr) p body ))
+               ^^^ equals ^^^ walk bvs 2 bound_e ^^^ in_kwd
+               ^/^ walk (Set.add bvs idr) 1 body ))
       | Letbox (idg, boxed_e, body) ->
           (parens_if (p > 1))
             (group
