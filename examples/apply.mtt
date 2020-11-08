@@ -1,1 +1,1 @@
-(λx:[](() -> ()). λy:[](). letbox u' = x in letbox w' = y in box (u' w'))
+(λx:[](() -> ()). λy:[](). letbox u' = x in letbox w' = y in fst (u' w'))

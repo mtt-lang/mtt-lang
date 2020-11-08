@@ -30,33 +30,21 @@ let locate_start_end data s_pos e_pos =
 
 let locate ?(loc = NoSource) data = { data; loc }
 
-let showPos pos' =
+let show_pos pos' =
   match pos' with
   | Source pos ->
       let file =
         if String.length pos.filename <> 0 then
-          String.concat [ "file name : "; pos.filename ]
-        else String.concat [ "file name : "; "Not a file" ]
+          [%string "file name :  $(pos.filename)"]
+        else "file name :  Not a file"
       in
       let line =
-        String.concat
-          [
-            "lines : ";
-            Sexp.to_string ([%sexp_of: int] pos.start_line);
-            "-";
-            Sexp.to_string ([%sexp_of: int] pos.end_line);
-          ]
+        [%string "lines :  $(Int.to_string pos.start_line) - $(Int.to_string pos.end_line)"]
       in
       let column =
-        String.concat
-          [
-            "column : ";
-            Sexp.to_string ([%sexp_of: int] pos.start_column);
-            "-";
-            Sexp.to_string ([%sexp_of: int] pos.end_column);
-          ]
+        [%string "column :  $(Int.to_string pos.start_column) - $(Int.to_string pos.end_column)"]
       in
-      String.concat ~sep:", " [ file; line; column ]
+        [%string "$(file), $(line), $(column)"]
   | NoSource -> "No position"
 
-let pp ?(msg = "") loc = String.concat ~sep:"\n" [ msg; showPos loc ]
+let pp ?(msg = "") loc = String.concat ~sep:"\n" [ msg; show_pos loc ]
