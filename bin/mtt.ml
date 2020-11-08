@@ -148,7 +148,7 @@ let help_cmd =
 let parse_cmd =
   let source_file =
     let doc = "The file with expression to parse and pretty-print." in
-    Arg.(value & pos 0 (some string) None & info [] ~docv:"FILE" ~doc)
+    Arg.(value & pos 0 (some non_dir_file) None & info [] ~docv:"FILE" ~doc)
   in
   let source_arg =
     let doc =
@@ -180,7 +180,7 @@ let check_cmd =
   in
   let source_file =
     let doc = "The file with expression to typecheck." in
-    Arg.(value & pos 1 (some string) None & info [] ~docv:"FILE" ~doc)
+    Arg.(value & pos 1 (some non_dir_file) None & info [] ~docv:"FILE" ~doc)
   in
   let source_arg =
     let doc = "The expression to typecheck given as a CLI argument." in
@@ -211,7 +211,7 @@ let check_cmd =
 let infer_cmd =
   let source_file =
     let doc = "The file with expression to infer its type." in
-    Arg.(value & pos 0 (some string) None & info [] ~docv:"FILE" ~doc)
+    Arg.(value & pos 0 (some non_dir_file) None & info [] ~docv:"FILE" ~doc)
   in
   let source_arg =
     let doc = "The expression to infer the type of given as a CLI argument." in
@@ -237,7 +237,7 @@ let infer_cmd =
 let eval_cmd =
   let source_file =
     let doc = "The file with expression to evaluate." in
-    Arg.(value & pos 0 (some string) None & info [] ~docv:"FILE" ~doc)
+    Arg.(value & pos 0 (some non_dir_file) None & info [] ~docv:"FILE" ~doc)
   in
   let source_arg =
     let doc = "The expression to evaluate given as a CLI argument." in

@@ -29,6 +29,7 @@
 %token SND
 %token FUN
 %token BOX
+%token LET
 %token LETBOX
 %token IN
 
@@ -90,12 +91,12 @@ expr:
     { Location.locate_start_end (Snd (e)) $symbolstartpos $endpos }
 
     (* anonymous function (lambda) *)
-  | FUN; idl = IDR; COLON; t = typ; DARROW; e = expr
-    { Location.locate_start_end (Fun (Id.R.mk idl, t, e)) $symbolstartpos $endpos }
+  | FUN; idr = IDR; COLON; t = typ; DARROW; e = expr
+    { Location.locate_start_end (Fun (Id.R.mk idr, t, e)) $symbolstartpos $endpos }
 
     (* allow parenthesizing of the bound variable for lambdas *)
-  | FUN; LPAREN; idl = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
-    { Location.locate_start_end (Fun (Id.R.mk idl, t, e)) $symbolstartpos $endpos }
+  | FUN; LPAREN; idr = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
+    { Location.locate_start_end (Fun (Id.R.mk idr, t, e)) $symbolstartpos $endpos }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr
@@ -104,6 +105,10 @@ expr:
     (* term-level box *)
   | BOX; e = parceled_expr
     { Location.locate_start_end (Box e) $symbolstartpos $endpos }
+
+    (* let idr = expr in expr *)
+  | LET; idr = IDR; EQ; e = expr; IN; body = expr
+    { Location.locate_start_end (Let (Id.R.mk idr, e, body)) $symbolstartpos $endpos }
 
     (* letbox idg = expr in expr *)
   | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr

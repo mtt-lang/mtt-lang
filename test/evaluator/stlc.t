@@ -8,3 +8,32 @@ K I = K*
   > EOF
   <λa. a, λb. b>
 
+'Let .. in' expression
+  $ mtt eval <<EOF
+  > let y = () in (fun x: A. x) y
+  > EOF
+  ()
+
+  $ mtt eval <<EOF
+  > let f = fun x: A. < x, x > in f ()
+  > EOF
+  <(), ()>
+
+  $ mtt eval <<EOF
+  > let f = fun p: A * B. < snd p, fst p > in f < (), () >
+  > EOF
+  <(), ()>
+
+  $ mtt eval <<EOF
+  > (fun p: A * B. 
+  > let f = fst p in
+  > let s = snd p in
+  > < s, f > ) < (), () >
+  > EOF
+  <(), ()>
+
+Shadowing x
+  $ mtt eval <<EOF
+  > (let x = () in let x = fun a: A. a in x x)
+  > EOF
+  λa. a

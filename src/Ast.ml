@@ -33,6 +33,7 @@ module Expr = struct
         (** anonymous functions: [fun (x : T) => expr] *)
     | App of t * t  (** function application: [f x] *)
     | Box of t  (** term-level box: [box expr1] *)
+    | Let of Id.R.t * t * t  (** [let u = expr1 in expr2] *)
     | Letbox of Id.M.t * t * t  (** [letbox u = expr1 in expr2] *)
   [@@deriving sexp]
 end
@@ -44,7 +45,7 @@ module Val = struct
   and t' =
     | Unit  (** [unit] literal *)
     | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
-    | Clos of Id.R.t * Expr.t * t Env.l  (** Deeply embedded closures *)
+    | Clos of Id.R.t * Expr.t * t Env.r  (** Deeply embedded closures *)
     | Box of Expr.t
         (** [box] literal, basically it's an unevaluated expression *)
   [@@deriving sexp]

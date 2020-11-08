@@ -35,6 +35,8 @@ module Doc : DOC = struct
 
   let fun_kwd = !^"λ"
 
+  let let_kwd = !^"let"
+
   let letbox_kwd = !^"letbox"
 
   let in_kwd = !^"in"
@@ -49,7 +51,7 @@ module Doc : DOC = struct
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
-  let rec of_expr_with_free_vars_l bound_vars lenv expr =
+  let rec of_expr_with_free_vars_r bound_vars lenv expr =
     let open Expr in
     let rec walk bvs term =
       match term.Location.data with
@@ -63,11 +65,11 @@ module Doc : DOC = struct
             Set.mem bvs idl
           then !^(Id.R.to_string idl)
           else
-            match Env.lookup_l lenv idl with
+            match Env.lookup_r lenv idl with
             | Ok literal -> parens (of_lit literal)
             | Error _msg ->
                 failwith
-                  "The precondition for calling Doc.of_expr_with_free_vars_l \
+                  "The precondition for calling Doc.of_expr_with_free_vars_r \
                    function is violated" )
       | VarG idg -> !^(Id.M.to_string idg)
       | Fun (idl, t_of_id, body) ->
@@ -78,6 +80,13 @@ module Doc : DOC = struct
             ^^ walk (Set.add bvs idl) body )
       | App (fe, arge) -> group (parens (walk bvs fe ^/^ walk bvs arge))
       | Box e -> group (parens (box_kwd ^^ space ^^ walk bvs e))
+      | Let (idr, bound_e, body) ->
+          parens
+            (group
+               ( let_kwd
+               ^^^ !^(Id.R.to_string idr)
+               ^^^ equals ^^^ walk bvs bound_e ^^^ in_kwd
+               ^/^ walk (Set.add bvs idr) body ))
       | Letbox (idg, boxed_e, body) ->
           parens
             (group
@@ -88,7 +97,7 @@ module Doc : DOC = struct
     walk bound_vars expr
 
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
-  and of_expr e = of_expr_with_free_vars_l (Set.empty (module Id.R)) Env.emp_l e
+  and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.emp_r e
 
   and of_lit lit =
     match lit.Location.data with
@@ -102,6 +111,6 @@ module Doc : DOC = struct
         (* when print out closures, substitute the free vars in its body with
            the corresponding literals from the closures' regular environment *)
         let bound_vars = Set.singleton (module Id.R) idl in
-        of_expr_with_free_vars_l bound_vars lenv body
-    | Val.Box e -> of_expr e
+        of_expr_with_free_vars_r bound_vars lenv body
+    | Val.Box e -> box_kwd ^^^ of_expr e
 end
