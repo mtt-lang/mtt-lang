@@ -47,4 +47,4 @@ let show_pos pos' =
         [%string "$(file), $(line), $(column)"]
   | NoSource -> "No position"
 
-let pp ?(msg = "") loc = String.concat ~sep:"\n" [ msg; show_pos loc ]
+let pp ?(msg = "") loc = [%string "$(msg) \n $(show_pos loc)"]
