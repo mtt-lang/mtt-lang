@@ -4,15 +4,15 @@ open Lexing
 type t =
   | NoSource
   | Source of {
-      filename : string; [@equal.ignore]
-      start_line : int; [@equal.ignore]
-      start_column : int; [@equal.ignore]
-      end_line : int; [@equal.ignore]
-      end_column : int; [@equal.ignore]
+      filename : string;
+      start_line : int;
+      start_column : int;
+      end_line : int;
+      end_column : int;
     }
-[@@deriving equal, sexp]
+[@@deriving sexp]
 
-type 'a located = { data : 'a; loc : t } [@@deriving equal, sexp]
+type 'a located = { data : 'a; loc : t [@equal.ignore] } [@@deriving equal, sexp]
 
 let mk s_pos e_pos =
   Source
