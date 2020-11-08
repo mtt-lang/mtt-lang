@@ -29,7 +29,7 @@ let refresh_g idg fvs =
 (* modal (modal) substitution *)
 let rec subst_m term idg body =
   let data = body.Location.data in
-  let loc  = body.Location.loc in
+  let loc = body.Location.loc in
   let open Expr in
   match data with
   | Unit -> body
@@ -64,7 +64,7 @@ let rec subst_m term idg body =
 
 let rec eval_open gamma expr =
   let data = expr.Location.data in
-  let loc  = expr.Location.loc in
+  let loc = expr.Location.loc in
   let open Expr in
   match data with
   | Unit -> return (Location.locate ~loc Val.Unit)
@@ -84,8 +84,8 @@ let rec eval_open gamma expr =
   | VarL idl -> Env.lookup_l gamma idl
   | VarG _idg ->
       Result.fail
-      @@ Location.pp ~msg:"Modal variable access is not possible in a well-typed term"
-           loc
+      @@ Location.pp
+           ~msg:"Modal variable access is not possible in a well-typed term" loc
   | Fun (idl, _t_of_id, body) ->
       return @@ Location.locate ~loc (Val.Clos (idl, body, gamma))
   | App (fe, arge) -> (
@@ -96,7 +96,8 @@ let rec eval_open gamma expr =
           eval_open (Env.extend_l c_gamma idl argv) body
       | _ ->
           Result.fail
-          @@ Location.pp ~msg:"Trying to apply an argument to a non-function" fv.loc )
+          @@ Location.pp ~msg:"Trying to apply an argument to a non-function"
+               fv.loc )
   | Box e -> return @@ Location.locate ~loc (Val.Box e)
   | Letbox (idg, boxed_e, body) -> (
       let%bind boxed_v = eval_open gamma boxed_e in
@@ -104,6 +105,7 @@ let rec eval_open gamma expr =
       | Val.Box e -> eval_open gamma (subst_m e idg body)
       | _ ->
           Result.fail
-          @@ Location.pp ~msg:"Trying to unbox a non-box expression" boxed_v.loc )
+          @@ Location.pp ~msg:"Trying to unbox a non-box expression" boxed_v.loc
+      )
 
 let eval expr = eval_open Env.emp_l expr

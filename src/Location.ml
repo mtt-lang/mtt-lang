@@ -12,7 +12,8 @@ type t =
     }
 [@@deriving sexp]
 
-type 'a located = { data : 'a; loc : t [@equal.ignore] } [@@deriving equal, sexp]
+type 'a located = { data : 'a; loc : t [@equal.ignore] }
+[@@deriving equal, sexp]
 
 let mk s_pos e_pos =
   Source
@@ -39,12 +40,16 @@ let show_pos pos' =
         else "file name :  Not a file"
       in
       let line =
-        [%string "lines :  $(Int.to_string pos.start_line) - $(Int.to_string pos.end_line)"]
+        [%string
+          "lines :  $(Int.to_string pos.start_line) - $(Int.to_string \
+           pos.end_line)"]
       in
       let column =
-        [%string "column :  $(Int.to_string pos.start_column) - $(Int.to_string pos.end_column)"]
+        [%string
+          "column :  $(Int.to_string pos.start_column) - $(Int.to_string \
+           pos.end_column)"]
       in
-        [%string "$(file), $(line), $(column)"]
+      [%string "$(file), $(line), $(column)"]
   | NoSource -> "No position"
 
 let pp ?(msg = "") loc = [%string "$(msg) \n $(show_pos loc)"]
