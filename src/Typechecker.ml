@@ -87,11 +87,12 @@ let rec check_open delta gamma expr typ =
   | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
       check_open delta (Env.extend_r gamma idr ty) body typ
-  | Letbox (idg, boxed_e, body) ->
+  | Letbox (idg, boxed_e, body) -> (
       let%bind t = infer_open delta gamma boxed_e in
       match t.data with
       | Type.Box t -> check_open (Env.extend_m delta idg t) gamma body typ
       | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" t.loc
+      )
 
 and infer_open delta gamma expr =
   let data = expr.Location.data in
@@ -136,11 +137,12 @@ and infer_open delta gamma expr =
   | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
       infer_open delta (Env.extend_r gamma idr ty) body
-  | Letbox (idg, boxed_e, body) ->
+  | Letbox (idg, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty.data with
       | Type.Box t -> infer_open (Env.extend_m delta idg t) gamma body
       | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" ty.loc
+      )
 
 let check expr typ = check_open Env.emp_m Env.emp_r expr typ
 

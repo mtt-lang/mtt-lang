@@ -47,7 +47,8 @@ let rec subst_m term idg body =
       Location.locate ~loc (App (subst_m term idg fe, subst_m term idg arge))
   | Box e -> Location.locate ~loc (Box (subst_m term idg e))
   | Let (i, bound_e, body) ->
-      Location.locate ~loc (Let (i, subst_m term idg bound_e, subst_m term idg body))
+      Location.locate ~loc
+        (Let (i, subst_m term idg bound_e, subst_m term idg body))
   | Letbox (i, boxed_e, body) ->
       Location.locate ~loc
         ( if [%equal: Id.M.t] idg i then
