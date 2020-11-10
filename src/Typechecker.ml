@@ -5,7 +5,8 @@ open Ast.Expr
 
 type error = string
 
-let rec check_open delta gamma Location.{data = expr; loc} Location.{data = typ; loc = t_loc} =
+let rec check_open delta gamma Location.{ data = expr; loc }
+    Location.{ data = typ; loc = t_loc } =
   match expr with
   | Unit ->
       Result.ok_if_true
@@ -48,12 +49,14 @@ let rec check_open delta gamma Location.{data = expr; loc} Location.{data = typ;
       let%bind t = Env.lookup_r gamma idl in
       Result.ok_if_true
         ([%equal: Type.t'] typ t.Location.data)
-        ~error:(Location.pp ~msg:"Unexpected regular variable type" t.Location.loc)
+        ~error:
+          (Location.pp ~msg:"Unexpected regular variable type" t.Location.loc)
   | VarG idg ->
       let%bind t = Env.lookup_m delta idg in
       Result.ok_if_true
         ([%equal: Type.t'] typ t.Location.data)
-        ~error:(Location.pp ~msg:"Unexpected modal variable type" t.Location.loc)
+        ~error:
+          (Location.pp ~msg:"Unexpected modal variable type" t.Location.loc)
   | Fun (idl, t_of_id, body) -> (
       match typ with
       | Type.Arr (dom, cod) ->
@@ -84,15 +87,20 @@ let rec check_open delta gamma Location.{data = expr; loc} Location.{data = typ;
       | _ -> Result.fail @@ Location.pp ~msg:"Error: unboxed type" loc )
   | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
-      check_open delta (Env.extend_r gamma idr ty) body (Location.locate ~loc:t_loc typ)
+      check_open delta
+        (Env.extend_r gamma idr ty)
+        body
+        (Location.locate ~loc:t_loc typ)
   | Letbox (idg, boxed_e, body) -> (
       let%bind t = infer_open delta gamma boxed_e in
       match t.data with
-      | Type.Box t -> check_open (Env.extend_m delta idg t) gamma body (Location.locate ~loc:t_loc typ)
+      | Type.Box t ->
+          check_open (Env.extend_m delta idg t) gamma body
+            (Location.locate ~loc:t_loc typ)
       | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" t.loc
       )
 
-and infer_open delta gamma Location.{data = expr; loc} =
+and infer_open delta gamma Location.{ data = expr; loc } =
   match expr with
   | Unit -> return (Location.locate ~loc Type.Unit)
   | Pair (e1, e2) ->

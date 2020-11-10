@@ -4,7 +4,7 @@ open Ast
 
 type error = string
 
-let rec free_vars_m Location.{data = term; _} =
+let rec free_vars_m Location.{ data = term; _ } =
   let open Expr in
   match term with
   | Unit -> Set.empty (module Id.M)
@@ -29,7 +29,7 @@ let refresh_m idg fvs =
   if Set.mem fvs idg then Some (loop idg) else None
 
 (* modal (modal) substitution *)
-let rec subst_m term idg Location.{data = body; _} =
+let rec subst_m term idg Location.{ data = body; _ } =
   let open Expr in
   match body with
   | Unit -> Location.locate body
@@ -45,8 +45,7 @@ let rec subst_m term idg Location.{data = body; _} =
       Location.locate (App (subst_m term idg fe, subst_m term idg arge))
   | Box e -> Location.locate (Box (subst_m term idg e))
   | Let (i, bound_e, body) ->
-      Location.locate
-        (Let (i, subst_m term idg bound_e, subst_m term idg body))
+      Location.locate (Let (i, subst_m term idg bound_e, subst_m term idg body))
   | Letbox (i, boxed_e, body) ->
       Location.locate
         ( if [%equal: Id.M.t] idg i then
@@ -65,7 +64,7 @@ let rec subst_m term idg Location.{data = body; _} =
               (* no need to rename the bound var *)
               Letbox (i, subst_m term idg boxed_e, subst_m term idg body) )
 
-let rec eval_open gamma Location.{data = expr; _} =
+let rec eval_open gamma Location.{ data = expr; _ } =
   let open Expr in
   match expr with
   | Unit -> return (Location.locate Val.Unit)
@@ -76,7 +75,7 @@ let rec eval_open gamma Location.{data = expr; _} =
       let%bind pv = eval_open gamma pe in
       match pv.data with
       | Val.Pair (v1, _v2) -> return v1
-      | _ -> Result.fail "fst is stuck;")
+      | _ -> Result.fail "fst is stuck;" )
   | Snd pe -> (
       let%bind pv = eval_open gamma pe in
       match pv.data with
@@ -93,8 +92,7 @@ let rec eval_open gamma Location.{data = expr; _} =
       match fv.data with
       | Val.Clos (idl, body, c_gamma) ->
           eval_open (Env.extend_r c_gamma idl argv) body
-      | _ ->
-          Result.fail "Trying to apply an argument to a non-function")
+      | _ -> Result.fail "Trying to apply an argument to a non-function" )
   | Box e -> return @@ Location.locate (Val.Box e)
   | Let (idr, bound_e, body) ->
       let%bind bound_v = eval_open gamma bound_e in
@@ -103,8 +101,6 @@ let rec eval_open gamma Location.{data = expr; _} =
       let%bind boxed_v = eval_open gamma boxed_e in
       match boxed_v.data with
       | Val.Box e -> eval_open gamma (subst_m e idg body)
-      | _ ->
-          Result.fail "Trying to unbox a non-box expression"
-      )
+      | _ -> Result.fail "Trying to unbox a non-box expression" )
 
 let eval expr = eval_open Env.emp_r expr
