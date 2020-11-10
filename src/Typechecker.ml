@@ -5,16 +5,14 @@ open Ast.Expr
 
 type error = string
 
-let rec check_open delta gamma expr typ =
-  let data = expr.Location.data in
-  let loc = expr.Location.loc in
-  match data with
+let rec check_open delta gamma Location.{data = expr; loc} Location.{data = typ; loc = t_loc} =
+  match expr with
   | Unit ->
       Result.ok_if_true
-        ([%equal: Type.t] typ (Location.locate Type.Unit))
+        ([%equal: Type.t'] typ Type.Unit)
         ~error:(Location.pp ~msg:"Expected unit type" loc)
   | Pair (e1, e2) -> (
-      match typ.data with
+      match typ with
       | Type.Prod (t1, t2) ->
           let%map () = check_open delta gamma e1 t1
           and () = check_open delta gamma e2 t2 in
@@ -25,7 +23,7 @@ let rec check_open delta gamma expr typ =
       match t.Location.data with
       | Type.Prod (t1, _t2) ->
           Result.ok_if_true
-            ([%equal: Type.t] typ t1)
+            ([%equal: Type.t'] typ t1.data)
             ~error:
               (Location.pp
                  ~msg:"fst error: inferred type is different from the input one"
@@ -38,7 +36,7 @@ let rec check_open delta gamma expr typ =
       match t.data with
       | Type.Prod (_t1, t2) ->
           Result.ok_if_true
-            ([%equal: Type.t] typ t2)
+            ([%equal: Type.t'] typ t2.data)
             ~error:
               (Location.pp
                  ~msg:"snd error: inferred type is different from the input one"
@@ -49,17 +47,17 @@ let rec check_open delta gamma expr typ =
   | VarL idl ->
       let%bind t = Env.lookup_r gamma idl in
       Result.ok_if_true
-        ([%equal: Type.t] typ t)
-        ~error:(Location.pp ~msg:"Unexpected regular variable type" t.loc)
+        ([%equal: Type.t'] typ t.Location.data)
+        ~error:(Location.pp ~msg:"Unexpected regular variable type" t.Location.loc)
   | VarG idg ->
       let%bind t = Env.lookup_m delta idg in
       Result.ok_if_true
-        ([%equal: Type.t] typ t)
-        ~error:(Location.pp ~msg:"Unexpected modal variable type" t.loc)
+        ([%equal: Type.t'] typ t.Location.data)
+        ~error:(Location.pp ~msg:"Unexpected modal variable type" t.Location.loc)
   | Fun (idl, t_of_id, body) -> (
-      match typ.data with
+      match typ with
       | Type.Arr (dom, cod) ->
-          if [%equal: Type.t] dom t_of_id then
+          if [%equal: Type.t'] dom.data t_of_id.data then
             check_open delta (Env.extend_r gamma idl dom) body cod
           else
             Result.fail
@@ -75,29 +73,27 @@ let rec check_open delta gamma expr typ =
       | Type.Arr (dom, cod) ->
           let%bind () = check_open delta gamma arge dom in
           Result.ok_if_true
-            ([%equal: Type.t] typ cod)
+            ([%equal: Type.t'] typ cod.data)
             ~error:(Location.pp ~msg:"Unexpected function codomain" cod.loc)
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"Inferred type is not an arrow type" t.loc )
   | Box e -> (
-      match typ.data with
+      match typ with
       | Type.Box t -> check_open delta Env.emp_r e t
       | _ -> Result.fail @@ Location.pp ~msg:"Error: unboxed type" loc )
   | Let (idr, binded_e, body) ->
       let%bind ty = infer_open delta gamma binded_e in
-      check_open delta (Env.extend_r gamma idr ty) body typ
+      check_open delta (Env.extend_r gamma idr ty) body (Location.locate ~loc:t_loc typ)
   | Letbox (idg, boxed_e, body) -> (
       let%bind t = infer_open delta gamma boxed_e in
       match t.data with
-      | Type.Box t -> check_open (Env.extend_m delta idg t) gamma body typ
+      | Type.Box t -> check_open (Env.extend_m delta idg t) gamma body (Location.locate ~loc:t_loc typ)
       | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" t.loc
       )
 
-and infer_open delta gamma expr =
-  let data = expr.Location.data in
-  let loc = expr.Location.loc in
-  match data with
+and infer_open delta gamma Location.{data = expr; loc} =
+  match expr with
   | Unit -> return (Location.locate ~loc Type.Unit)
   | Pair (e1, e2) ->
       let%map t1 = infer_open delta gamma e1

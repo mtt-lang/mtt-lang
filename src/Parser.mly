@@ -7,10 +7,6 @@
 
 (* Parentheses *)
 %token LPAREN RPAREN
-(* this implementation different from this? :
-%token LPAREN 
-%token RPAREN
-*)
 %token LANGLE RANGLE
 
 (* Type-level syntax *)
