@@ -103,10 +103,10 @@ module Doc : DOC = struct
   and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.emp_r e
 
   and of_lit = function
-    | Location.{ data = Val.Unit; _ } -> unit_term
-    | Location.{ data = Val.Pair (l1, l2); _ } ->
+    | Val.Unit -> unit_term
+    | Val.Pair (l1, l2) ->
         group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
-    | Location.{ data = Val.Clos (idl, body, lenv); _ } ->
+    | Val.Clos (idl, body, lenv)->
         fun_kwd
         ^^ !^(Id.R.to_string idl)
         ^^ dot
@@ -115,5 +115,5 @@ module Doc : DOC = struct
            the corresponding literals from the closures' regular environment *)
         let bound_vars = Set.singleton (module Id.R) idl in
         of_expr_with_free_vars_r bound_vars lenv body
-    | Location.{ data = Val.Box e; _ } -> box_kwd ^^^ of_expr e
+    | Val.Box e -> box_kwd ^^^ of_expr e
 end
