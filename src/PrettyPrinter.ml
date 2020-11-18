@@ -41,26 +41,25 @@ module Doc : DOC = struct
 
   let in_kwd = !^"in"
 
-  let rec of_type = function
-    | Location.{ data = Type.Unit; _ } -> unit_type
-    | Location.{ data = Type.Base idT; _ } -> !^idT
-    | Location.{ data = Type.Prod (t1, t2); _ } ->
-        parens (of_type t1 ^^ cross ^^ of_type t2)
-    | Location.{ data = Type.Arr (dom, cod); _ } ->
-        parens (of_type dom ^^^ arrow ^^^ of_type cod)
-    | Location.{ data = Type.Box t; _ } -> box_type ^^ of_type t
+  let rec of_type Location.{ data = t; _ } =
+    match t with
+    | Type.Unit -> unit_type
+    | Type.Base idT -> !^idT
+    | Type.Prod (t1, t2) -> parens (of_type t1 ^^ cross ^^ of_type t2)
+    | Type.Arr (dom, cod) -> parens (of_type dom ^^^ arrow ^^^ of_type cod)
+    | Type.Box t -> box_type ^^ of_type t
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
   let rec of_expr_with_free_vars_r bound_vars lenv expr =
     let open Expr in
-    let rec walk bvs = function
-      | Location.{ data = Unit; _ } -> unit_term
-      | Location.{ data = Pair (e1, e2); _ } ->
-          angles (walk bvs e1 ^^ comma ^/^ walk bvs e2)
-      | Location.{ data = Fst pe; _ } -> group (parens (fst_kwd ^^ walk bvs pe))
-      | Location.{ data = Snd pe; _ } -> group (parens (snd_kwd ^^ walk bvs pe))
-      | Location.{ data = VarL idl; _ } -> (
+    let rec walk bvs Location.{ data = e; _ } =
+      match e with
+      | Unit -> unit_term
+      | Pair (e1, e2) -> angles (walk bvs e1 ^^ comma ^/^ walk bvs e2)
+      | Fst pe -> group (parens (fst_kwd ^^ walk bvs pe))
+      | Snd pe -> group (parens (snd_kwd ^^ walk bvs pe))
+      | VarL idl -> (
           if
             (* To print free regular variables we use a regular environment with literals *)
             Set.mem bvs idl
@@ -72,25 +71,23 @@ module Doc : DOC = struct
                 failwith
                   "The precondition for calling Doc.of_expr_with_free_vars_r \
                    function is violated" )
-      | Location.{ data = VarG idg; _ } -> !^(Id.M.to_string idg)
-      | Location.{ data = Fun (idl, t_of_id, body); _ } ->
+      | VarG idg -> !^(Id.M.to_string idg)
+      | Fun (idl, t_of_id, body) ->
           parens
             ( fun_kwd
             ^^ !^(Id.R.to_string idl)
             ^^ colon ^^ of_type t_of_id ^^ dot ^^ space
             ^^ walk (Set.add bvs idl) body )
-      | Location.{ data = App (fe, arge); _ } ->
-          group (parens (walk bvs fe ^/^ walk bvs arge))
-      | Location.{ data = Box e; _ } ->
-          group (parens (box_kwd ^^ space ^^ walk bvs e))
-      | Location.{ data = Let (idr, bound_e, body); _ } ->
+      | App (fe, arge) -> group (parens (walk bvs fe ^/^ walk bvs arge))
+      | Box e -> group (parens (box_kwd ^^ space ^^ walk bvs e))
+      | Let (idr, bound_e, body) ->
           parens
             (group
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
                ^^^ equals ^^^ walk bvs bound_e ^^^ in_kwd
                ^/^ walk (Set.add bvs idr) body ))
-      | Location.{ data = Letbox (idg, boxed_e, body); _ } ->
+      | Letbox (idg, boxed_e, body) ->
           parens
             (group
                ( letbox_kwd
@@ -104,9 +101,8 @@ module Doc : DOC = struct
 
   and of_lit = function
     | Val.Unit -> unit_term
-    | Val.Pair (l1, l2) ->
-        group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
-    | Val.Clos (idl, body, lenv)->
+    | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
+    | Val.Clos (idl, body, lenv) ->
         fun_kwd
         ^^ !^(Id.R.to_string idl)
         ^^ dot

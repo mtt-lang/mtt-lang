@@ -80,12 +80,11 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       let%bind pv = eval_open gamma pe in
       match pv with
       | Val.Pair (_v1, v2) -> return v2
-      | _ -> Result.fail "snd is stuck" )
+      | _ -> Result.fail "snd is stuck;" )
   | VarL idl -> Env.lookup_r gamma idl
   | VarG _idg ->
       Result.fail "Modal variable access is not possible in a well-typed term"
-  | Fun (idl, _t_of_id, body) ->
-      return @@ Val.Clos (idl, body, gamma)
+  | Fun (idl, _t_of_id, body) -> return @@ Val.Clos (idl, body, gamma)
   | App (fe, arge) -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
