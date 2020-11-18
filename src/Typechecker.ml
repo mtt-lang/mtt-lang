@@ -121,8 +121,18 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" t.loc )
-  | VarL idl -> Env.lookup_r gamma idl
-  | VarG idg -> Env.lookup_m delta idg
+  | VarL idl -> (
+      match Env.lookup_r gamma idl with
+      | Ok res -> return res
+      | Error msg  ->
+          Result.fail
+          @@ Location.pp ~msg loc )
+  | VarG idg -> (
+    match Env.lookup_m delta idg with
+    | Ok res -> return res
+    | Error msg  ->
+          Result.fail
+          @@ Location.pp ~msg loc )
   | Fun (idl, dom, body) ->
       let%map cod = infer_open delta (Env.extend_r gamma idl dom) body in
       Location.locate ~loc (Type.Arr (dom, cod))
