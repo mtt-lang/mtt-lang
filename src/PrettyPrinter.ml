@@ -59,7 +59,7 @@ module Doc : DOC = struct
     their corresponding values from a regular environment *)
   let rec of_expr_with_free_vars_r bound_vars lenv expr =
     let open Expr in
-    let rec walk bvs Location.{ data = e; _ } =
+    let rec walk bvs p Location.{ data = e; _ } =
       match e with
       | Unit -> unit_term
       | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
