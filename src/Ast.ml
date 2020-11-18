@@ -35,7 +35,28 @@ module Expr = struct
     | Box of t  (** term-level box: [box expr1] *)
     | Let of Id.R.t * t * t  (** [let u = expr1 in expr2] *)
     | Letbox of Id.M.t * t * t  (** [letbox u = expr1 in expr2] *)
-  [@@deriving sexp]
+  [@@deriving equal, sexp]
+
+  (* Wrappers for constructors *)
+  let pair e1 e2 = Pair (e1, e2)
+
+  let fst pe = Fst pe
+
+  let snd pe = Snd pe
+
+  let varl idl = VarL idl
+
+  let varg idg = VarG idg
+
+  let func idl t_of_id body = Fun (idl, t_of_id, body)
+
+  let app fe arge = App (fe, arge)
+
+  let box e = Box e
+
+  let letc idl bound_e body = Let (idl, bound_e, body)
+
+  let letbox idg boxed_e body = Letbox (idg, boxed_e, body)
 end
 
 (** Values *)

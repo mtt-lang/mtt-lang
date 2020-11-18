@@ -41,13 +41,19 @@ module Doc : DOC = struct
 
   let in_kwd = !^"in"
 
-  let rec of_type Location.{ data = t; _ } =
-    match t with
-    | Type.Unit -> unit_type
-    | Type.Base idT -> !^idT
-    | Type.Prod (t1, t2) -> parens (of_type t1 ^^ cross ^^ of_type t2)
-    | Type.Arr (dom, cod) -> parens (of_type dom ^^^ arrow ^^^ of_type cod)
-    | Type.Box t -> box_type ^^ of_type t
+  let parens_if b = if b then parens else fun x -> x
+
+  let of_type =
+    let open Type in
+    let rec walk p Location.{ data = t; _ } =
+      match t with
+      | Unit -> unit_type
+      | Base idT -> !^idT
+      | Prod (t1, t2) -> parens_if (p > 1) (walk 1 t1 ^^ cross ^^ walk 2 t2)
+      | Arr (dom, cod) -> parens_if (p > 0) (walk 1 dom ^^^ arrow ^^^ walk 0 cod)
+      | Box t -> box_type ^^ walk 2 t
+    in
+    walk 0
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
@@ -56,9 +62,9 @@ module Doc : DOC = struct
     let rec walk bvs Location.{ data = e; _ } =
       match e with
       | Unit -> unit_term
-      | Pair (e1, e2) -> angles (walk bvs e1 ^^ comma ^/^ walk bvs e2)
-      | Fst pe -> group (parens (fst_kwd ^^ walk bvs pe))
-      | Snd pe -> group (parens (snd_kwd ^^ walk bvs pe))
+      | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
+      | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
+      | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
       | VarL idl -> (
           if
             (* To print free regular variables we use a regular environment with literals *)
@@ -73,28 +79,30 @@ module Doc : DOC = struct
                    function is violated" )
       | VarG idg -> !^(Id.M.to_string idg)
       | Fun (idl, t_of_id, body) ->
-          parens
+          (parens_if (p > 1))
             ( fun_kwd
             ^^ !^(Id.R.to_string idl)
-            ^^ colon ^^ of_type t_of_id ^^ dot ^^ space
-            ^^ walk (Set.add bvs idl) body )
-      | App (fe, arge) -> group (parens (walk bvs fe ^/^ walk bvs arge))
-      | Box e -> group (parens (box_kwd ^^ space ^^ walk bvs e))
+            ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
+            ^^ walk (Set.add bvs idl) 1 body )
+      | App (fe, arge) ->
+          group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
+      | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
       | Let (idr, bound_e, body) ->
-          parens
+          (parens_if (p > 1))
             (group
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk bvs bound_e ^^^ in_kwd
-               ^/^ walk (Set.add bvs idr) body ))
+               ^^^ equals ^^^ walk bvs 2 bound_e ^^^ in_kwd
+               ^/^ walk (Set.add bvs idr) 1 body ))
       | Letbox (idg, boxed_e, body) ->
-          parens
+          (parens_if (p > 1))
             (group
                ( letbox_kwd
                ^^^ !^(Id.M.to_string idg)
-               ^^^ equals ^^^ walk bvs boxed_e ^^^ in_kwd ^/^ walk bvs body ))
+               ^^^ equals ^^^ walk bvs 2 boxed_e ^^^ in_kwd ^/^ walk bvs 1 body
+               ))
     in
-    walk bound_vars expr
+    walk bound_vars 0 expr
 
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
   and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.emp_r e

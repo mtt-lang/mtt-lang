@@ -1,27 +1,27 @@
 Simple properties
   $ mtt infer -e "λx: A. λy: B. x"
-  (A → (B → A))
+  A → B → A
 
   $ mtt infer -e "λx: (A -> B). λy: (B -> C). λa: A. y (x a)"
-  ((A → B) → ((B → C) → (A → C)))
+  (A → B) → (B → C) → A → C
 
 Properties of conjuction
   $ mtt infer -e "λx: (A * B). < snd x, fst x >"
-  ((A×B) → (B×A))
+  A×B → B×A
 
   $ mtt infer -e "λx: ((A * B) * C). < fst (fst x), <snd (fst x), snd x> >"
-  (((A×B)×C) → (A×(B×C)))
+  A×B×C → A×(B×C)
 
 A implies (not not A)
   $ mtt infer -e "λx: A. λf: (A -> False). f x"
-  (A → ((A → False) → False))
+  A → (A → False) → False
 
 not not not A implies not A
   $ mtt infer <<EOF
   > λnnna: (((A -> False) -> False) -> False). 
   > λa: A. nnna (λna: (A -> False). na a)
   > EOF
-  ((((A → False) → False) → False) → (A → False))
+  (((A → False) → False) → False) → A → False
 
 Weak form of Pierce's law
   $ mtt infer <<EOF
@@ -30,25 +30,25 @@ Weak form of Pierce's law
   > aba (λa: A. 
   > (abaab (λabaa: ((A -> B) -> A). a))))
   > EOF
-  (((((A → B) → A) → A) → B) → B)
+  ((((A → B) → A) → A) → B) → B
 
 tests for regular 'let .. in' construction
   $ mtt infer <<EOF
   > fun x: A. let y = x in y
   > EOF
-  (A → A)
+  A → A
 
   $ mtt infer <<EOF
   > fun x: A. let y = x in x
   > EOF
-  (A → A)
+  A → A
 
   $ mtt infer <<EOF
   > fun x: A.
   > let f = fun x: A. <x, x> in 
   > (f x)
   > EOF
-  (A → (A×A))
+  A → A×A
 
   $ mtt infer <<EOF
   > fun p: (A * B).
@@ -56,7 +56,7 @@ tests for regular 'let .. in' construction
   > let s = snd p in
   > <s, f>
   > EOF
-  ((A×B) → (B×A))
+  A×B → B×A
 
   $ mtt infer <<EOF
   > fun ab_c: ((A * B) * C).
@@ -66,7 +66,7 @@ tests for regular 'let .. in' construction
   > let c = snd ab_c in
   > < a, <b, c> >
   > EOF
-  (((A×B)×C) → (A×(B×C)))
+  A×B×C → A×(B×C)
 
 Weak form of Pierce's law with 'let .. in'-construction 
   $ mtt infer <<EOF
@@ -78,10 +78,10 @@ Weak form of Pierce's law with 'let .. in'-construction
   >     in aba ab
   >   in abaab abaa
   > EOF
-  (((((A → B) → A) → A) → B) → B)
+  ((((A → B) → A) → A) → B) → B
 
 Shadowing x
   $ mtt infer <<EOF
   > let x = () in let x = (fun a: A. a) in x
   > EOF
-  (A → A)
+  A → A

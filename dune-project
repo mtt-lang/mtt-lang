@@ -29,6 +29,7 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   ppx_let
   ppx_sexp_conv
   ppx_string_interpolation
+  qcheck
   sedlex
   sexplib
   stdio
