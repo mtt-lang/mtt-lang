@@ -38,25 +38,25 @@ module Expr = struct
   [@@deriving equal, sexp]
 
   (* Wrappers for constructors *)
-  let pair e1 e2 = Pair (e1, e2)
+  let pair e1 e2 = Location.locate @@ Pair (e1, e2)
 
-  let fst pe = Fst pe
+  let fst pe = Location.locate @@ Fst pe
 
-  let snd pe = Snd pe
+  let snd pe = Location.locate @@ Snd pe
 
-  let varl idl = VarL idl
+  let varl idl = Location.locate @@ VarL idl
 
-  let varg idg = VarG idg
+  let varg idg = Location.locate @@ VarG idg
 
-  let func idl t_of_id body = Fun (idl, t_of_id, body)
+  let func idl t_of_id body = Location.locate @@ Fun (idl, t_of_id, body)
 
-  let app fe arge = App (fe, arge)
+  let app fe arge = Location.locate @@ App (fe, arge)
 
-  let box e = Box e
+  let box e = Location.locate @@ Box e
 
-  let letc idl bound_e body = Let (idl, bound_e, body)
+  let letc idl bound_e body = Location.locate @@ Let (idl, bound_e, body)
 
-  let letbox idg boxed_e body = Letbox (idg, boxed_e, body)
+  let letbox idg boxed_e body = Location.locate @@ Letbox (idg, boxed_e, body)
 end
 
 (** Values *)
