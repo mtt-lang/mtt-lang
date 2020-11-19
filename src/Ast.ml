@@ -38,6 +38,7 @@ module Expr = struct
   [@@deriving equal, sexp]
 
   (* Wrappers for constructors *)
+  let e_unit () = Location.locate Unit
   let pair e1 e2 = Location.locate @@ Pair (e1, e2)
 
   let fst pe = Location.locate @@ Fst pe

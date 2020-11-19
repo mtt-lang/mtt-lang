@@ -16,13 +16,13 @@ let generator =
            | 0 ->
                oneof
                  [
-                   return @@ Mtt.Location.locate Expr.Unit;
+                   return e_unit;
                    (* won't work until expressions with free variables can be pretty-printed *)
                    (* map
                       (fun s -> Expr.VarL (Mtt.Id.R.mk s))
                       (string_size ~gen:(char_range 'a' 'z') (return 1)); *)
                    map
-                     (fun idg -> Mtt.Location.locate (Expr.VarG (modal_id idg)))
+                     (fun idg -> varg (modal_id idg))
                      lowercase_id;
                  ]
            | size ->
@@ -37,7 +37,7 @@ let generator =
                    binary_node app;
                    map3 func
                      (map regular_id lowercase_id)
-                     (return @@ Mtt.Location.locate Type.Unit)
+                     (return e_unit)
                      (self (size - 1));
                    unary_node box;
                    map3 letc
