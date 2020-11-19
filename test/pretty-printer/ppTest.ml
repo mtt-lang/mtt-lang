@@ -17,7 +17,7 @@ let generator =
            | 0 ->
                oneof
                  [
-                   return @@ e_unit ();
+                   return @@ unit ();
                    (* won't work until expressions with free variables can be pretty-printed *)
                    (* map
                       (fun s -> Expr.VarL (Mtt.Id.R.mk s))
@@ -35,7 +35,7 @@ let generator =
                    binary_node app;
                    map3 func
                      (map regular_id lowercase_id)
-                     (return @@ Type.t_unit ())
+                     (return @@ Type.unit ())
                      (self (size - 1));
                    unary_node box;
                    map3 letc
