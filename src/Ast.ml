@@ -14,6 +14,8 @@ module Type = struct
     | Arr of t * t  (** Type of functions *)
     | Box of t  (** Type-level box *)
   [@@deriving equal, sexp]
+
+  let t_unit () = Location.locate Unit
 end
 
 (** Expressions *)
@@ -39,6 +41,7 @@ module Expr = struct
 
   (* Wrappers for constructors *)
   let e_unit () = Location.locate Unit
+
   let pair e1 e2 = Location.locate @@ Pair (e1, e2)
 
   let fst pe = Location.locate @@ Fst pe

@@ -22,26 +22,26 @@ let rec check_open delta gamma Location.{ data = expr; loc }
   | Fst pe -> (
       let%bind Location.{ data = t; loc = t_loc } = infer_open delta gamma pe in
       match t with
-      | Type.Prod (t1, _t2) ->
+      | Type.Prod (Location.{ data = t1; loc = t1_loc }, _t2) ->
           Result.ok_if_true
-            ([%equal: Type.t'] typ t1.data)
+            ([%equal: Type.t'] typ t1)
             ~error:
               (Location.pp
                  ~msg:"fst error: inferred type is different from the input one"
-                 t1.loc)
+                 t1_loc)
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"fst is applied to a non-product type" t_loc )
   | Snd pe -> (
       let%bind Location.{ data = t; loc = t_loc } = infer_open delta gamma pe in
       match t with
-      | Type.Prod (_t1, t2) ->
+      | Type.Prod (_t1, Location.{ data = t2; loc = t2_loc }) ->
           Result.ok_if_true
-            ([%equal: Type.t'] typ t2.data)
+            ([%equal: Type.t'] typ t2)
             ~error:
               (Location.pp
                  ~msg:"snd error: inferred type is different from the input one"
-                 t2.loc)
+                 t2_loc)
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" t_loc )
@@ -55,10 +55,10 @@ let rec check_open delta gamma Location.{ data = expr; loc }
       Result.ok_if_true
         ([%equal: Type.t'] typ t)
         ~error:(Location.pp ~msg:"Unexpected modal variable type" t_loc)
-  | Fun (idl, t_of_id, body) -> (
+  | Fun (idl, Location.{ data = t_of_id; loc = t_of_id_loc }, body) -> (
       match typ with
-      | Type.Arr (dom, cod) ->
-          if [%equal: Type.t'] dom.data t_of_id.data then
+      | Type.Arr ((Location.{ data = d_dom; _ } as dom), cod) ->
+          if [%equal: Type.t'] d_dom t_of_id then
             check_open delta (Env.extend_r gamma idl dom) body cod
           else
             Result.fail
@@ -66,16 +66,16 @@ let rec check_open delta gamma Location.{ data = expr; loc }
                  ~msg:
                    "Domain of arrow type is not the same as type of function \
                     parameter"
-                 t_of_id.loc
+                 t_of_id_loc
       | _ -> Result.fail @@ Location.pp ~msg:"Arror type expected" loc )
   | App (fe, arge) -> (
       let%bind Location.{ data = t; loc = t_loc } = infer_open delta gamma fe in
       match t with
-      | Type.Arr (dom, cod) ->
+      | Type.Arr (dom, Location.{ data = cod; loc = cod_loc }) ->
           let%bind () = check_open delta gamma arge dom in
           Result.ok_if_true
-            ([%equal: Type.t'] typ cod.data)
-            ~error:(Location.pp ~msg:"Unexpected function codomain" cod.loc)
+            ([%equal: Type.t'] typ cod)
+            ~error:(Location.pp ~msg:"Unexpected function codomain" cod_loc)
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"Inferred type is not an arrow type" t_loc )
@@ -105,8 +105,10 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Unit -> return (Location.locate ~loc Type.Unit)
   | Pair (e1, e2) ->
       let%map t1 = infer_open delta gamma e1
-      and t2 = infer_open delta gamma e2 in
-      Location.locate ~loc:t2.loc (Type.Prod (t1, t2))
+      and (Location.{ data = _; loc = t2_loc } as t2) =
+        infer_open delta gamma e2
+      in
+      Location.locate ~loc:t2_loc (Type.Prod (t1, t2))
   | Fst pe -> (
       let%bind Location.{ data = t; loc = t_loc } = infer_open delta gamma pe in
       match t with
