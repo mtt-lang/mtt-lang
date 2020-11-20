@@ -15,7 +15,7 @@ module Type = struct
     | Box of t  (** Type-level box *)
   [@@deriving equal, sexp]
 
-  let unit () = Location.locate Unit
+  let unit = Location.locate Unit
 end
 
 (** Expressions *)
@@ -40,7 +40,7 @@ module Expr = struct
   [@@deriving equal, sexp]
 
   (* Wrappers for constructors *)
-  let unit () = Location.locate Unit
+  let unit = Location.locate Unit
 
   let pair e1 e2 = Location.locate @@ Pair (e1, e2)
 
