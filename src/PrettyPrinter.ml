@@ -45,8 +45,7 @@ module Doc : DOC = struct
 
   let of_type =
     let open Type in
-    let rec walk p Location.{ data = t; _ } =
-      match t with
+    let rec walk p = function
       | Unit -> unit_type
       | Base idT -> !^idT
       | Prod (t1, t2) -> parens_if (p > 1) (walk 1 t1 ^^ cross ^^ walk 2 t2)

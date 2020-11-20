@@ -35,7 +35,7 @@ let generator =
                    binary_node app;
                    map3 func
                      (map regular_id lowercase_id)
-                     (return Type.unit)
+                     (return Type.Unit)
                      (self (size - 1));
                    unary_node box;
                    map3 letc

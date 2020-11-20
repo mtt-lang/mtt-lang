@@ -4,9 +4,7 @@ type idT = string [@@deriving equal, sexp]
 
 (** Types *)
 module Type = struct
-  type t = t' Location.located
-
-  and t' =
+  type t =
     | Unit  (** Unit type *)
     | Base of idT
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
@@ -14,8 +12,6 @@ module Type = struct
     | Arr of t * t  (** Type of functions *)
     | Box of t  (** Type-level box *)
   [@@deriving equal, sexp]
-
-  let unit = Location.locate Unit
 end
 
 (** Expressions *)

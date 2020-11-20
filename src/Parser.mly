@@ -46,23 +46,23 @@
 typ:
     (* Unit type *)
   | UNIT
-    { Location.locate_start_end Type.Unit $symbolstartpos $endpos }
+    { Type.Unit }
 
     (* Uninterpreted base types *)
   | name = IDT
-    { Location.locate_start_end (Type.Base name) $symbolstartpos $endpos }
+    { Type.Base name }
 
     (* Type of pairs *)
   | t1 = typ; CROSS; t2 = typ
-    { Location.locate_start_end (Type.Prod (t1, t2)) $symbolstartpos $endpos }
+    { Type.Prod (t1, t2) }
 
     (* Type of functions *)
   | dom = typ; ARROW; cod = typ
-    { Location.locate_start_end (Type.Arr (dom, cod)) $symbolstartpos $endpos }
+    { Type.Arr (dom, cod) }
 
     (* Type-level box *)
   | TBOX; t = typ
-    { Location.locate_start_end (Type.Box t) $symbolstartpos $endpos }
+    { Type.Box t }
 
     (* Parenthesized type expressions *)
   | LPAREN; t = typ; RPAREN
