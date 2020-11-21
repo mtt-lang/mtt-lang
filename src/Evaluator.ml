@@ -4,7 +4,7 @@ open Ast
 
 type error = string
 
-let rec free_vars_m term =
+let rec free_vars_m Location.{ data = term; _ } =
   let open Expr in
   match term with
   | Unit -> Set.empty (module Id.M)
@@ -29,35 +29,42 @@ let refresh_m idg fvs =
   if Set.mem fvs idg then Some (loop idg) else None
 
 (* modal (modal) substitution *)
-let rec subst_m term idg body =
+let rec subst_m term idg Location.{ data = body; _ } =
   let open Expr in
   match body with
-  | Unit -> body
-  | Pair (e1, e2) -> Pair (subst_m term idg e1, subst_m term idg e2)
-  | Fst pe -> Fst (subst_m term idg pe)
-  | Snd pe -> Snd (subst_m term idg pe)
-  | VarL _i -> body
-  | VarG i -> if [%equal: Id.M.t] idg i then term else body
-  | Fun (idl, t_of_id, body) -> Fun (idl, t_of_id, subst_m term idg body)
-  | App (fe, arge) -> App (subst_m term idg fe, subst_m term idg arge)
-  | Box e -> Box (subst_m term idg e)
+  | Unit -> Location.locate body
+  | Pair (e1, e2) ->
+      Location.locate (Pair (subst_m term idg e1, subst_m term idg e2))
+  | Fst pe -> Location.locate (Fst (subst_m term idg pe))
+  | Snd pe -> Location.locate (Snd (subst_m term idg pe))
+  | VarL _i -> Location.locate body
+  | VarG i -> if [%equal: Id.M.t] idg i then term else Location.locate body
+  | Fun (idl, t_of_id, body) ->
+      Location.locate (Fun (idl, t_of_id, subst_m term idg body))
+  | App (fe, arge) ->
+      Location.locate (App (subst_m term idg fe, subst_m term idg arge))
+  | Box e -> Location.locate (Box (subst_m term idg e))
   | Let (i, bound_e, body) ->
-      Let (i, subst_m term idg bound_e, subst_m term idg body)
-  | Letbox (i, boxed_e, body) -> (
-      if [%equal: Id.M.t] idg i then Letbox (i, subst_m term idg boxed_e, body)
-      else
-        match refresh_m i (free_vars_m term) with
-        | Some new_i ->
-            let body_with_renamed_bound_var = subst_m (VarG new_i) i body in
-            Letbox
-              ( new_i,
-                subst_m term idg boxed_e,
-                subst_m term idg body_with_renamed_bound_var )
-        | None ->
-            (* no need to rename the bound var *)
-            Letbox (i, subst_m term idg boxed_e, subst_m term idg body) )
+      Location.locate (Let (i, subst_m term idg bound_e, subst_m term idg body))
+  | Letbox (i, boxed_e, body) ->
+      Location.locate
+        ( if [%equal: Id.M.t] idg i then
+          Letbox (i, subst_m term idg boxed_e, body)
+        else
+          match refresh_m i (free_vars_m term) with
+          | Some new_i ->
+              let body_with_renamed_bound_var =
+                subst_m (Location.locate (VarG new_i)) i body
+              in
+              Letbox
+                ( new_i,
+                  subst_m term idg boxed_e,
+                  subst_m term idg body_with_renamed_bound_var )
+          | None ->
+              (* no need to rename the bound var *)
+              Letbox (i, subst_m term idg boxed_e, subst_m term idg body) )
 
-let rec eval_open gamma expr =
+let rec eval_open gamma Location.{ data = expr; _ } =
   let open Expr in
   match expr with
   | Unit -> return Val.Unit

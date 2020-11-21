@@ -5,45 +5,55 @@ open Ast.Expr
 
 type error = string
 
-let rec check_open delta gamma expr typ =
+let rec check_open delta gamma Location.{ data = expr; loc } typ =
   match expr with
   | Unit ->
       Result.ok_if_true
         ([%equal: Type.t] typ Type.Unit)
-        ~error:"Expected unit type"
+        ~error:(Location.pp ~msg:"Expected unit type" loc)
   | Pair (e1, e2) -> (
       match typ with
-      | Type.Prod (t1, t2) ->
-          let%map () = check_open delta gamma e1 t1
-          and () = check_open delta gamma e2 t2 in
+      | Type.Prod (ty1, ty2) ->
+          let%map () = check_open delta gamma e1 ty1
+          and () = check_open delta gamma e2 ty2 in
           ()
-      | _ -> Result.fail "Expected product type" )
+      | _ -> Result.fail @@ Location.pp ~msg:"Expected product type" loc )
   | Fst pe -> (
-      let%bind t = infer_open delta gamma pe in
-      match t with
-      | Type.Prod (t1, _t2) ->
+      let%bind ty = infer_open delta gamma pe in
+      match ty with
+      | Type.Prod (ty1, _ty2) ->
           Result.ok_if_true
-            ([%equal: Type.t] typ t1)
-            ~error:"fst error: inferred type is different from the input one"
-      | _ -> Result.fail "fst is applied to a non-product type" )
+            ([%equal: Type.t] typ ty1)
+            ~error:
+              (Location.pp
+                 ~msg:"fst error: inferred type is different from the input one"
+                 loc)
+      | _ ->
+          Result.fail
+          @@ Location.pp ~msg:"fst is applied to a non-product type" loc )
   | Snd pe -> (
-      let%bind t = infer_open delta gamma pe in
-      match t with
-      | Type.Prod (_t1, t2) ->
+      let%bind ty = infer_open delta gamma pe in
+      match ty with
+      | Type.Prod (_ty1, ty2) ->
           Result.ok_if_true
-            ([%equal: Type.t] typ t2)
-            ~error:"snd error: inferred type is different from the input one"
-      | _ -> Result.fail "snd is applied to a non-product type" )
+            ([%equal: Type.t] typ ty2)
+            ~error:
+              (Location.pp
+                 ~msg:"snd error: inferred type is different from the input one"
+                 loc)
+      | _ ->
+          Result.fail
+          @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
   | VarL idl ->
-      let%bind t = Env.lookup_r gamma idl in
+      let%bind ty = Env.lookup_r gamma idl in
       Result.ok_if_true
-        ([%equal: Type.t] typ t)
-        ~error:"Unexpected regular variable type"
+        ([%equal: Type.t] typ ty)
+        ~error:(Location.pp ~msg:"Unexpected regular variable type" loc)
   | VarG idg ->
-      let%bind t = Env.lookup_m delta idg in
+      let%bind ty = Env.lookup_m delta idg in
       Result.ok_if_true
-        ([%equal: Type.t] typ t)
-        ~error:"Unexpected modal variable type"
+        ([%equal: Type.t] typ ty)
+        ~error:(Location.pp ~msg:"Unexpected modal variable type" loc)
   | Fun (idl, t_of_id, body) -> (
       match typ with
       | Type.Arr (dom, cod) ->
@@ -51,71 +61,88 @@ let rec check_open delta gamma expr typ =
             check_open delta (Env.extend_r gamma idl dom) body cod
           else
             Result.fail
-              "Domain of arrow type is not the same as type of function \
-               parameter"
-      | _ -> Result.fail "Arror type expected" )
+            @@ Location.pp
+                 ~msg:
+                   "Domain of arrow type is not the same as type of function \
+                    parameter"
+                 loc
+      | _ -> Result.fail @@ Location.pp ~msg:"Arror type expected" loc )
   | App (fe, arge) -> (
-      let%bind t = infer_open delta gamma fe in
-      match t with
+      let%bind ty = infer_open delta gamma fe in
+      match ty with
       | Type.Arr (dom, cod) ->
           let%bind () = check_open delta gamma arge dom in
           Result.ok_if_true
             ([%equal: Type.t] typ cod)
-            ~error:"Unexpected function codomain"
-      | _ -> Result.fail "Inferred type is not an arrow type" )
+            ~error:(Location.pp ~msg:"Unexpected function codomain" loc)
+      | _ ->
+          Result.fail
+          @@ Location.pp ~msg:"Inferred type is not an arrow type" loc )
   | Box e -> (
       match typ with
       | Type.Box t -> check_open delta Env.emp_r e t
-      | _ -> Result.fail "Error: unboxed type" )
-  | Let (idr, binded_e, body) ->
-      let%bind ty = infer_open delta gamma binded_e in
+      | _ -> Result.fail @@ Location.pp ~msg:"Error: unboxed type" loc )
+  | Let (idr, bound_e, body) ->
+      let%bind ty = infer_open delta gamma bound_e in
       check_open delta (Env.extend_r gamma idr ty) body typ
   | Letbox (idg, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with
       | Type.Box t -> check_open (Env.extend_m delta idg t) gamma body typ
-      | _ -> Result.fail "Inferred type is not a box" )
+      | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" loc )
 
-and infer_open delta gamma expr =
+and infer_open delta gamma Location.{ data = expr; loc } =
   match expr with
   | Unit -> return Type.Unit
   | Pair (e1, e2) ->
-      let%map t1 = infer_open delta gamma e1
-      and t2 = infer_open delta gamma e2 in
-      Type.Prod (t1, t2)
+      let%map ty1 = infer_open delta gamma e1
+      and ty2 = infer_open delta gamma e2 in
+      Type.Prod (ty1, ty2)
   | Fst pe -> (
-      let%bind t = infer_open delta gamma pe in
-      match t with
-      | Type.Prod (t1, _t2) -> return t1
-      | _ -> Result.fail "fst is applied to a non-product type" )
+      let%bind ty = infer_open delta gamma pe in
+      match ty with
+      | Type.Prod (ty1, _ty2) -> return ty1
+      | _ ->
+          Result.fail
+          @@ Location.pp ~msg:"fst is applied to a non-product type" loc )
   | Snd pe -> (
-      let%bind t = infer_open delta gamma pe in
-      match t with
-      | Type.Prod (_t1, t2) -> return t2
-      | _ -> Result.fail "snd is applied to a non-product type" )
-  | VarL idl -> Env.lookup_r gamma idl
-  | VarG idg -> Env.lookup_m delta idg
+      let%bind ty = infer_open delta gamma pe in
+      match ty with
+      | Type.Prod (_ty1, ty2) -> return ty2
+      | _ ->
+          Result.fail
+          @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
+  | VarL idl -> (
+      match Env.lookup_r gamma idl with
+      | Ok res -> return res
+      | Error msg -> Result.fail @@ Location.pp ~msg loc )
+  | VarG idg -> (
+      match Env.lookup_m delta idg with
+      | Ok res -> return res
+      | Error msg -> Result.fail @@ Location.pp ~msg loc )
   | Fun (idl, dom, body) ->
       let%map cod = infer_open delta (Env.extend_r gamma idl dom) body in
       Type.Arr (dom, cod)
   | App (fe, arge) -> (
-      let%bind t = infer_open delta gamma fe in
-      match t with
+      let%bind ty = infer_open delta gamma fe in
+      match ty with
       | Type.Arr (dom, cod) ->
           let%bind () = check_open delta gamma arge dom in
           return cod
-      | _ -> Result.fail "Inferred type is not an arrow type" )
+      | _ ->
+          Result.fail
+          @@ Location.pp ~msg:"Inferred type is not an arrow type" loc )
   | Box e ->
-      let%map t = infer_open delta Env.emp_r e in
-      Type.Box t
-  | Let (idr, binded_e, body) ->
-      let%bind ty = infer_open delta gamma binded_e in
+      let%map ty = infer_open delta Env.emp_r e in
+      Type.Box ty
+  | Let (idr, bound_e, body) ->
+      let%bind ty = infer_open delta gamma bound_e in
       infer_open delta (Env.extend_r gamma idr ty) body
   | Letbox (idg, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with
       | Type.Box t -> infer_open (Env.extend_m delta idg t) gamma body
-      | _ -> Result.fail "Inferred type is not a box" )
+      | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" loc )
 
 let check expr typ = check_open Env.emp_m Env.emp_r expr typ
 

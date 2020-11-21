@@ -16,12 +16,12 @@ let generator =
            | 0 ->
                oneof
                  [
-                   return Expr.Unit;
+                   return Expr.unit;
                    (* won't work until expressions with free variables can be pretty-printed *)
                    (* map
                       (fun s -> Expr.VarL (Mtt.Id.R.mk s))
                       (string_size ~gen:(char_range 'a' 'z') (return 1)); *)
-                   map (fun idg -> Expr.VarG (modal_id idg)) lowercase_id;
+                   map (fun idg -> Expr.varg (modal_id idg)) lowercase_id;
                  ]
            | size ->
                let open Expr in
@@ -60,18 +60,20 @@ let arbitrary_ast =
       <+> (shrink_ast arg1 >|= fun arg1' -> cons arg1' arg2)
       <+> (shrink_ast arg2 >|= fun arg2' -> cons arg1 arg2')
     in
-    function
-    | Expr.Unit | Expr.VarL _ | Expr.VarG _ -> empty
-    | Expr.Fst pe -> shrink_unary Expr.fst pe
-    | Expr.Snd pe -> shrink_unary Expr.snd pe
-    | Expr.Pair (e1, e2) -> shrink_binary Expr.pair e1 e2
-    | Expr.Fun (idl, t_of_id, body) -> shrink_unary (Expr.func idl t_of_id) body
-    | Expr.App (fe, arge) -> shrink_binary Expr.app fe arge
-    | Expr.Box e -> shrink_unary Expr.box e
-    | Expr.Let (idl, bound_e, body) ->
-        shrink_binary (Expr.letc idl) bound_e body
-    | Expr.Letbox (idg, boxed_e, body) ->
-        shrink_binary (Expr.letbox idg) boxed_e body
+    fun Mtt.Location.{ data = expr; _ } ->
+      match expr with
+      | Expr.Unit | Expr.VarL _ | Expr.VarG _ -> empty
+      | Expr.Fst pe -> shrink_unary Expr.fst pe
+      | Expr.Snd pe -> shrink_unary Expr.snd pe
+      | Expr.Pair (e1, e2) -> shrink_binary Expr.pair e1 e2
+      | Expr.Fun (idl, t_of_id, body) ->
+          shrink_unary (Expr.func idl t_of_id) body
+      | Expr.App (fe, arge) -> shrink_binary Expr.app fe arge
+      | Expr.Box e -> shrink_unary Expr.box e
+      | Expr.Let (idl, bound_e, body) ->
+          shrink_binary (Expr.letc idl) bound_e body
+      | Expr.Letbox (idg, boxed_e, body) ->
+          shrink_binary (Expr.letbox idg) boxed_e body
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
 

@@ -71,44 +71,44 @@ typ:
 ident:
     (* Regular variables *)
   | name = IDR
-    { VarL (Id.R.mk name) }
+    { Location.locate_start_end (VarL (Id.R.mk name)) $symbolstartpos $endpos }
 
     (* Modal (i.e. valid) variables *)
   | name = IDM
-    { VarG (Id.M.mk name) }
+    { Location.locate_start_end (VarG (Id.M.mk name)) $symbolstartpos $endpos }
 
 expr:
     (* First projection *)
   | FST; e = parceled_expr
-    { Fst (e) }
+    { Location.locate_start_end (Fst (e)) $symbolstartpos $endpos }
 
     (* Second projection *)
   | SND; e = parceled_expr
-    { Snd (e) }
+    { Location.locate_start_end (Snd (e)) $symbolstartpos $endpos }
 
     (* anonymous function (lambda) *)
   | FUN; idr = IDR; COLON; t = typ; DARROW; e = expr
-    { Fun (Id.R.mk idr, t, e) }
+    { Location.locate_start_end (Fun (Id.R.mk idr, t, e)) $symbolstartpos $endpos }
 
     (* allow parenthesizing of the bound variable for lambdas *)
   | FUN; LPAREN; idr = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
-    { Fun (Id.R.mk idr, t, e) }
+    { Location.locate_start_end (Fun (Id.R.mk idr, t, e)) $symbolstartpos $endpos }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr
-    { App (fe, arge) }
+    { Location.locate_start_end (App (fe, arge)) $symbolstartpos $endpos }
 
     (* term-level box *)
   | BOX; e = parceled_expr
-    { Box e }
+    { Location.locate_start_end (Box e) $symbolstartpos $endpos }
 
     (* let idr = expr in expr *)
   | LET; idr = IDR; EQ; e = expr; IN; body = expr
-    { Let (Id.R.mk idr, e, body) }
+    { Location.locate_start_end (Let (Id.R.mk idr, e, body)) $symbolstartpos $endpos }
 
     (* letbox idg = expr in expr *)
   | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr
-    { Letbox (Id.M.mk idg, e, body) }
+    { Location.locate_start_end (Letbox (Id.M.mk idg, e, body)) $symbolstartpos $endpos }
 
   | e = parceled_expr
     { e }
@@ -116,7 +116,7 @@ expr:
 parceled_expr:
     (* Unit *)
   | UNIT
-    { Unit }
+    { Location.locate_start_end Unit $symbolstartpos $endpos }
 
     (* Identifiers *)
   | i = ident
@@ -128,7 +128,7 @@ parceled_expr:
 
     (* Pair of expressions *)
   | LANGLE; e1 = expr; COMMA; e2 = expr; RANGLE
-    { Pair (e1, e2) }
+    { Location.locate_start_end (Pair (e1, e2)) $symbolstartpos $endpos }
 
 expr_eof:
   | e = expr; EOF { e }
