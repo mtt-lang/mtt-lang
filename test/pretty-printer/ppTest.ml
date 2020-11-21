@@ -10,21 +10,21 @@ let generator =
            let lowercase_id =
              string_size ~gen:(char_range 'a' 'z') (return 1)
            in
-           let open Expr in
            let regular_id id = Mtt.Id.R.mk id in
            let modal_id id = Mtt.Id.M.mk (id ^ "'") in
            match size with
            | 0 ->
                oneof
                  [
-                   return unit;
+                   return Expr.unit;
                    (* won't work until expressions with free variables can be pretty-printed *)
                    (* map
                       (fun s -> Expr.VarL (Mtt.Id.R.mk s))
                       (string_size ~gen:(char_range 'a' 'z') (return 1)); *)
-                   map (fun idg -> varg (modal_id idg)) lowercase_id;
+                   map (fun idg -> Expr.varg (modal_id idg)) lowercase_id;
                  ]
            | size ->
+               let open Expr in
                let unary_node f = map f (self (size - 1)) in
                let binary_node f = map2 f (self (size / 2)) (self (size / 2)) in
                oneof
