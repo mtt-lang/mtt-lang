@@ -25,6 +25,7 @@ depends: [
   "sedlex"
   "sexplib"
   "stdio"
+  "zarith"
   "odoc" {with-doc}
 ]
 build: [

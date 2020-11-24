@@ -33,4 +33,5 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   sedlex
   sexplib
   stdio
+  zarith
   ))

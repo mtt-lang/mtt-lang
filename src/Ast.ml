@@ -23,6 +23,7 @@ module Expr = struct
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
     | Snd of t  (** second projection of a pair *)
+    | Int of Z.t  (** Temp for Numbers *)
     | VarL of Id.R.t  (** variables of the regular context *)
     | VarG of Id.M.t
         (** variables of the modal context (or "valid variables"),

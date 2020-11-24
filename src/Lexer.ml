@@ -14,6 +14,8 @@ let any_blank = [%sedlex.regexp? blank | newline]
 
 let digit = [%sedlex.regexp? '0' .. '9']
 
+let integer = [%sedlex.regexp? digit, Star digit]
+
 let lower_case_letter = [%sedlex.regexp? 'a' .. 'z']
 
 let upper_case_letter = [%sedlex.regexp? 'A' .. 'Z']
@@ -54,6 +56,7 @@ let token buf =
   | "let" -> LET
   | "box" -> BOX
   | "letbox" -> LETBOX
+  | integer -> INT (Z.of_string (Utf8.lexeme buf))
   | regular_ident -> IDR (Utf8.lexeme buf)
   | modal_ident -> IDM (Utf8.lexeme buf)
   | type_ident -> IDT (Utf8.lexeme buf)
