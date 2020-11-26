@@ -2,6 +2,12 @@ open Base
 
 type idT = string [@@deriving equal, sexp]
 
+(** Nat *)
+module Nat = struct
+  type t = string [@@deriving equal, compare, sexp]
+  let t_of_sexp = Z.string_of_big_int
+end
+
 (** Types *)
 module Type = struct
   type t =
@@ -23,7 +29,7 @@ module Expr = struct
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
     | Snd of t  (** second projection of a pair *)
-    | Int of Z.t  (** Temp for Numbers *)
+    | IntZ of Nat.t (** Temp for Numbers *)
     | VarL of Id.R.t  (** variables of the regular context *)
     | VarG of Id.M.t
         (** variables of the modal context (or "valid variables"),
@@ -64,6 +70,7 @@ end
 module Val = struct
   type t =
     | Unit  (** [unit] literal *)
+    | IntZ of Nat.t
     | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
     | Clos of Id.R.t * Expr.t * t Env.r  (** Deeply embedded closures *)
     | Box of Expr.t

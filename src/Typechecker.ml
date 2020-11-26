@@ -44,6 +44,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
+  | IntZ _i -> assert false
   | VarL idl ->
       let%bind ty = Env.lookup_r gamma idl in
       Result.ok_if_true
@@ -112,6 +113,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
+  | IntZ _i -> assert false
   | VarL idl -> (
       match Env.lookup_r gamma idl with
       | Ok res -> return res

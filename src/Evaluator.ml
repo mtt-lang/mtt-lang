@@ -10,6 +10,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Unit -> Set.empty (module Id.M)
   | Pair (e1, e2) -> Set.union (free_vars_m e1) (free_vars_m e2)
   | Fst pe | Snd pe -> free_vars_m pe
+  | IntZ _i -> Set.empty (module Id.M)
   | VarL _i -> Set.empty (module Id.M)
   | VarG i -> Set.singleton (module Id.M) i
   | Fun (_i, _t_of_id, body) -> free_vars_m body
@@ -37,6 +38,7 @@ let rec subst_m term idg Location.{ data = body; _ } =
       Location.locate (Pair (subst_m term idg e1, subst_m term idg e2))
   | Fst pe -> Location.locate (Fst (subst_m term idg pe))
   | Snd pe -> Location.locate (Snd (subst_m term idg pe))
+  | IntZ _i -> Location.locate body
   | VarL _i -> Location.locate body
   | VarG i -> if [%equal: Id.M.t] idg i then term else Location.locate body
   | Fun (idl, t_of_id, body) ->
@@ -81,6 +83,7 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       match pv with
       | Val.Pair (_v1, v2) -> return v2
       | _ -> Result.fail "snd is stuck" )
+  | IntZ i -> return @@ Val.IntZ i
   | VarL idl -> Env.lookup_r gamma idl
   | VarG _idg ->
       Result.fail "Modal variable access is not possible in a well-typed term"

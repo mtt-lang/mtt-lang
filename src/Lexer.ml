@@ -56,7 +56,8 @@ let token buf =
   | "let" -> LET
   | "box" -> BOX
   | "letbox" -> LETBOX
-  | integer -> INT (Z.of_string (Utf8.lexeme buf))
+  (* | integer -> INTZ (Z.big_int_of_string (Utf8.lexeme buf)) *)
+  | integer -> INTZ (Nat.mk (Utf8.lexeme buf))
   | regular_ident -> IDR (Utf8.lexeme buf)
   | modal_ident -> IDM (Utf8.lexeme buf)
   | type_ident -> IDT (Utf8.lexeme buf)

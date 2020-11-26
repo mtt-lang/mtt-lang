@@ -64,6 +64,7 @@ module Doc : DOC = struct
       | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
       | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
       | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
+      | IntZ _i -> assert false
       | VarL idl -> (
           if
             (* To print free regular variables we use a regular environment with literals *)
@@ -108,6 +109,7 @@ module Doc : DOC = struct
 
   and of_lit = function
     | Val.Unit -> unit_term
+    | Val.IntZ _i -> assert false
     | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
     | Val.Clos (idl, body, lenv) ->
         fun_kwd
