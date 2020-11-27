@@ -2,12 +2,6 @@ open Base
 
 type idT = string [@@deriving equal, sexp]
 
-(** Nat *)
-module Nat = struct
-  type t = string [@@deriving equal, compare, sexp]
-  let t_of_sexp = Z.string_of_big_int
-end
-
 (** Types *)
 module Type = struct
   type t =
@@ -22,6 +16,14 @@ end
 
 (** Expressions *)
 module Expr = struct
+  (* binary arithmetic operations *)
+  type binop =
+    | Add
+    | Sub
+    | Mul
+    | Div
+  [@@deriving equal, sexp]
+
   type t = t' Location.located
 
   and t' =
@@ -29,7 +31,8 @@ module Expr = struct
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
     | Snd of t  (** second projection of a pair *)
-    | IntZ of Nat.t (** Temp for Numbers *)
+    | IntZ of Nat.t (** numbers *)
+    | BinOp of binop * t * t  (** binary arithmetic operations *)
     | VarL of Id.R.t  (** variables of the regular context *)
     | VarG of Id.M.t
         (** variables of the modal context (or "valid variables"),

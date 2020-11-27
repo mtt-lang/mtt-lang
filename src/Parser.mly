@@ -13,7 +13,7 @@
 %token LANGLE RANGLE
 
 (* Type-level syntax *)
-%token CROSS
+%token CROSS (** Could be term-level *)
 %token TBOX
 %token COLON
 %token ARROW
@@ -81,6 +81,10 @@ ident:
     { Location.locate_start_end (VarG (Id.M.mk name)) $symbolstartpos $endpos }
 
 expr:
+    (* e1 * e2 *)
+  | e1 = parceled_expr; CROSS; e2 = parceled_expr
+    { Location.locate_start_end (BinOp Mul e1 e2) $symbolstartpos $endpos}
+
     (* First projection *)
   | FST; e = parceled_expr
     { Location.locate_start_end (Fst (e)) $symbolstartpos $endpos }
