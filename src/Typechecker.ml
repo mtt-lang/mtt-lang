@@ -44,7 +44,11 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | IntZ _i -> assert false
+  | IntZ _i ->
+      Result.ok_if_true
+        ([%equal: Type.t] typ Type.Nat)
+        ~error:(Location.pp ~msg:"Expected unit type" loc)
+  | BinOp (_op, _e1, _e2) -> failwith "unimplemented error"
   | VarL idl ->
       let%bind ty = Env.lookup_r gamma idl in
       Result.ok_if_true
@@ -113,7 +117,8 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | IntZ _i -> assert false
+  | IntZ _i -> return Type.Nat
+  | BinOp (_op, _e1, _e2) -> failwith "unimplemented error"
   | VarL idl -> (
       match Env.lookup_r gamma idl with
       | Ok res -> return res

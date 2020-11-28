@@ -11,6 +11,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Pair (e1, e2) -> Set.union (free_vars_m e1) (free_vars_m e2)
   | Fst pe | Snd pe -> free_vars_m pe
   | IntZ _i -> Set.empty (module Id.M)
+  | BinOp (_op, e1, e2) -> Set.union (free_vars_m e1) (free_vars_m e2)
   | VarL _i -> Set.empty (module Id.M)
   | VarG i -> Set.singleton (module Id.M) i
   | Fun (_i, _t_of_id, body) -> free_vars_m body
@@ -39,6 +40,8 @@ let rec subst_m term idg Location.{ data = body; _ } =
   | Fst pe -> Location.locate (Fst (subst_m term idg pe))
   | Snd pe -> Location.locate (Snd (subst_m term idg pe))
   | IntZ _i -> Location.locate body
+  | BinOp (op, e1, e2) ->
+      Location.locate (BinOp (op, subst_m term idg e1, subst_m term idg e2))
   | VarL _i -> Location.locate body
   | VarG i -> if [%equal: Id.M.t] idg i then term else Location.locate body
   | Fun (idl, t_of_id, body) ->
@@ -84,6 +87,18 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | Val.Pair (_v1, v2) -> return v2
       | _ -> Result.fail "snd is stuck" )
   | IntZ i -> return @@ Val.IntZ i
+  | BinOp (op, e1, e2) -> (
+      let%bind lhs = eval_open gamma e1 in
+      let%bind rhs = eval_open gamma e2 in
+      match (lhs, rhs) with
+      | Val.IntZ i1, Val.IntZ i2 -> (
+          match op with
+          | Add -> return @@ Val.IntZ (Nat.add i1 i2)
+          | Sub -> return @@ Val.IntZ (Nat.sub i1 i2)
+          | Mul -> return @@ Val.IntZ (Nat.mul i1 i2)
+          | Div -> return @@ Val.IntZ (Nat.div i1 i2) )
+      (* only numbers can be multiplied *)
+      | _, _ -> Result.fail "Only numbers can be multiplied" )
   | VarL idl -> Env.lookup_r gamma idl
   | VarG _idg ->
       Result.fail "Modal variable access is not possible in a well-typed term"

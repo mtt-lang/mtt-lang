@@ -6,6 +6,7 @@ type idT = string [@@deriving equal, sexp]
 module Type = struct
   type t =
     | Unit  (** Unit type *)
+    | Nat  (** Type for numbers *)
     | Base of idT
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
     | Prod of t * t  (** Type of pairs *)
@@ -17,12 +18,7 @@ end
 (** Expressions *)
 module Expr = struct
   (* binary arithmetic operations *)
-  type binop =
-    | Add
-    | Sub
-    | Mul
-    | Div
-  [@@deriving equal, sexp]
+  type binop = Add | Sub | Mul | Div [@@deriving equal, sexp]
 
   type t = t' Location.located
 
@@ -31,7 +27,7 @@ module Expr = struct
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
     | Snd of t  (** second projection of a pair *)
-    | IntZ of Nat.t (** numbers *)
+    | IntZ of Nat.t  (** numbers *)
     | BinOp of binop * t * t  (** binary arithmetic operations *)
     | VarL of Id.R.t  (** variables of the regular context *)
     | VarG of Id.M.t

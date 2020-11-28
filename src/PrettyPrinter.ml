@@ -18,6 +18,14 @@ module Doc : DOC = struct
 
   let cross = !^"×"
 
+  let plus = !^"+"
+
+  let minus = !^"-"
+
+  let star = !^"*"
+
+  let slash = !^"/"
+
   let unit_type = !^"()"
 
   let unit_term = !^"()"
@@ -25,6 +33,8 @@ module Doc : DOC = struct
   let arrow = !^"→"
 
   let box_type = !^"□"
+
+  let nat_type = !^"Nat"
 
   (* keywords *)
   let fst_kwd = !^"π₁"
@@ -47,6 +57,7 @@ module Doc : DOC = struct
     let open Type in
     let rec walk p = function
       | Unit -> unit_type
+      | Nat -> nat_type
       | Base idT -> !^idT
       | Prod (t1, t2) -> parens_if (p > 1) (walk 1 t1 ^^ cross ^^ walk 2 t2)
       | Arr (dom, cod) -> parens_if (p > 0) (walk 1 dom ^^^ arrow ^^^ walk 0 cod)
@@ -64,7 +75,17 @@ module Doc : DOC = struct
       | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
       | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
       | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
-      | IntZ _i -> assert false
+      | IntZ i -> !^(Nat.to_string i)
+      | BinOp (op, e1, e2) ->
+          let symb_op =
+            match op with
+            | Add -> plus
+            | Sub -> minus
+            | Mul -> star
+            | Div -> slash
+          in
+          (parens_if (p > 1))
+            (group (walk bvs 2 e1) ^^^ symb_op ^^^ walk bvs 1 e2)
       | VarL idl -> (
           if
             (* To print free regular variables we use a regular environment with literals *)
@@ -109,7 +130,7 @@ module Doc : DOC = struct
 
   and of_lit = function
     | Val.Unit -> unit_term
-    | Val.IntZ _i -> assert false
+    | Val.IntZ i -> !^(Nat.to_string i)
     | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
     | Val.Clos (idl, body, lenv) ->
         fun_kwd

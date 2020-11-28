@@ -8,6 +8,12 @@
 (* Arithmetic *)
 %token <Nat.t> INTZ
 
+(* Arithmetic *)
+%token ADD
+%token SUB
+(* multiplication is `CROSS` token *)
+%token DIV
+
 (* Parentheses *)
 %token LPAREN RPAREN
 %token LANGLE RANGLE
@@ -32,8 +38,10 @@
 %token LETBOX
 %token IN
 
+%left ADD SUB
 %right ARROW   (* Type arrows associate to the right *)
-%left CROSS    (* Type products have higher precedence than arrow types *)
+%left CROSS DIV   (* Type products have higher precedence than arrow types *)
+                  (* Multiplication and division have greater priority *)
 %nonassoc TBOX (* Highest precedence *)
 
 %{
@@ -81,10 +89,6 @@ ident:
     { Location.locate_start_end (VarG (Id.M.mk name)) $symbolstartpos $endpos }
 
 expr:
-    (* e1 * e2 *)
-  | e1 = parceled_expr; CROSS; e2 = parceled_expr
-    { Location.locate_start_end (BinOp Mul e1 e2) $symbolstartpos $endpos}
-
     (* First projection *)
   | FST; e = parceled_expr
     { Location.locate_start_end (Fst (e)) $symbolstartpos $endpos }
@@ -116,18 +120,15 @@ expr:
     (* letbox idg = expr in expr *)
   | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr
     { Location.locate_start_end (Letbox (Id.M.mk idg, e, body)) $symbolstartpos $endpos }
-
+  
   | e = parceled_expr
     { e }
+  
 
 parceled_expr:
     (* Unit *)
   | UNIT
     { Location.locate_start_end Unit $symbolstartpos $endpos }
-
-    (* Numbers *)
-  | i = INTZ
-    { Location.locate_start_end (IntZ i) $symbolstartpos $endpos }
 
     (* Identifiers *)
   | i = ident
@@ -136,6 +137,26 @@ parceled_expr:
     (* Parenthesized expressions *)
   | LPAREN; e = expr; RPAREN
     { e }
+
+    (* Arithmetic *)
+  | i = INTZ
+    { Location.locate_start_end (IntZ i) $symbolstartpos $endpos }
+
+    (* e1 + e2 *)
+  | e1 = parceled_expr; ADD; e2 = parceled_expr
+    { Location.locate_start_end (BinOp (Add, e1, e2)) $symbolstartpos $endpos }
+
+    (* e1 - e2 *)
+  | e1 = parceled_expr; SUB; e2 = parceled_expr
+    { Location.locate_start_end (BinOp (Sub, e1, e2)) $symbolstartpos $endpos }
+
+    (* e1 * e2 *)
+  | e1 = parceled_expr; CROSS; e2 = parceled_expr
+    { Location.locate_start_end (BinOp (Mul, e1, e2)) $symbolstartpos $endpos }
+
+    (* e1 / e2 *)
+  | e1 = parceled_expr; DIV; e2 = parceled_expr
+    { Location.locate_start_end (BinOp (Div, e1, e2)) $symbolstartpos $endpos }
 
     (* Pair of expressions *)
   | LANGLE; e1 = expr; COMMA; e2 = expr; RANGLE
