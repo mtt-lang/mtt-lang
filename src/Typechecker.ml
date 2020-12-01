@@ -131,8 +131,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | Type.Nat, Type.Nat -> return Type.Nat
       | _, _ ->
           Result.fail
-          @@ Location.pp ~msg:"binary operator's operands must be numbers" loc
-      )
+          @@ Location.pp ~msg:"binary operator's operands must be numbers" loc )
   | VarL idl -> (
       match Env.lookup_r gamma idl with
       | Ok res -> return res

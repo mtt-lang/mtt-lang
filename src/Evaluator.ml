@@ -97,7 +97,6 @@ let rec eval_open gamma Location.{ data = expr; _ } =
           | Sub -> return @@ Val.Nat (Nat.sub n1 n2)
           | Mul -> return @@ Val.Nat (Nat.mul n1 n2)
           | Div -> return @@ Val.Nat (Nat.div n1 n2) )
-      (* only numbers can be multiplied *)
       | _, _ -> Result.fail "Only numbers can be multiplied" )
   | VarL idl -> Env.lookup_r gamma idl
   | VarG _idg ->
