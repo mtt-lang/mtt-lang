@@ -123,7 +123,6 @@ expr:
   
   | e = parceled_expr
     { e }
-  
 
 parceled_expr:
     (* Unit *)
