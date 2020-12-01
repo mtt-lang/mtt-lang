@@ -23,8 +23,8 @@ module Expr = struct
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
     | Snd of t  (** second projection of a pair *)
-    | VarL of Id.R.t  (** variables of the regular context *)
-    | VarG of Id.M.t
+    | VarR of Id.R.t  (** variables of the regular context *)
+    | VarM of Id.M.t
         (** variables of the modal context (or "valid variables"),
         these are syntactically distinct from the regular (ordinary) variables *)
     | Fun of Id.R.t * Type.t * t
@@ -44,19 +44,19 @@ module Expr = struct
 
   let snd pe = Location.locate @@ Snd pe
 
-  let varl idl = Location.locate @@ VarL idl
+  let varl idr = Location.locate @@ VarR idr
 
-  let varg idg = Location.locate @@ VarG idg
+  let varg idm = Location.locate @@ VarM idm
 
-  let func idl t_of_id body = Location.locate @@ Fun (idl, t_of_id, body)
+  let func idr t_of_id body = Location.locate @@ Fun (idr, t_of_id, body)
 
   let app fe arge = Location.locate @@ App (fe, arge)
 
   let box e = Location.locate @@ Box e
 
-  let letc idl bound_e body = Location.locate @@ Let (idl, bound_e, body)
+  let letc idr bound_e body = Location.locate @@ Let (idr, bound_e, body)
 
-  let letbox idg boxed_e body = Location.locate @@ Letbox (idg, boxed_e, body)
+  let letbox idm boxed_e body = Location.locate @@ Letbox (idm, boxed_e, body)
 end
 
 (** Values *)

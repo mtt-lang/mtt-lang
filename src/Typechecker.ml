@@ -44,21 +44,21 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | VarL idl ->
-      let%bind ty = Env.R.lookup gamma idl in
+  | VarR idr ->
+      let%bind ty = Env.R.lookup gamma idr in
       Result.ok_if_true
         ([%equal: Type.t] typ ty)
         ~error:(Location.pp ~msg:"Unexpected regular variable type" loc)
-  | VarG idg ->
-      let%bind ty = Env.M.lookup delta idg in
+  | VarM idm ->
+      let%bind ty = Env.M.lookup delta idm in
       Result.ok_if_true
         ([%equal: Type.t] typ ty)
         ~error:(Location.pp ~msg:"Unexpected modal variable type" loc)
-  | Fun (idl, t_of_id, body) -> (
+  | Fun (idr, t_of_id, body) -> (
       match typ with
       | Type.Arr (dom, cod) ->
           if [%equal: Type.t] dom t_of_id then
-            check_open delta (Env.R.extend gamma idl dom) body cod
+            check_open delta (Env.R.extend gamma idr dom) body cod
           else
             Result.fail
             @@ Location.pp
@@ -85,10 +85,10 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
   | Let (idr, bound_e, body) ->
       let%bind ty = infer_open delta gamma bound_e in
       check_open delta (Env.R.extend gamma idr ty) body typ
-  | Letbox (idg, boxed_e, body) -> (
+  | Letbox (idm, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with
-      | Type.Box t -> check_open (Env.M.extend delta idg t) gamma body typ
+      | Type.Box t -> check_open (Env.M.extend delta idm t) gamma body typ
       | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" loc )
 
 and infer_open delta gamma Location.{ data = expr; loc } =
@@ -112,14 +112,14 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | VarL idl ->
-      Env.R.lookup gamma idl
+  | VarR idr ->
+      Env.R.lookup gamma idr
       |> Result.map_error ~f:(fun msg -> Location.pp ~msg loc)
-  | VarG idg ->
-      Env.M.lookup delta idg
+  | VarM idm ->
+      Env.M.lookup delta idm
       |> Result.map_error ~f:(fun msg -> Location.pp ~msg loc)
-  | Fun (idl, dom, body) ->
-      let%map cod = infer_open delta (Env.R.extend gamma idl dom) body in
+  | Fun (idr, dom, body) ->
+      let%map cod = infer_open delta (Env.R.extend gamma idr dom) body in
       Type.Arr (dom, cod)
   | App (fe, arge) -> (
       let%bind ty = infer_open delta gamma fe in
@@ -136,10 +136,10 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Let (idr, bound_e, body) ->
       let%bind ty = infer_open delta gamma bound_e in
       infer_open delta (Env.R.extend gamma idr ty) body
-  | Letbox (idg, boxed_e, body) -> (
+  | Letbox (idm, boxed_e, body) -> (
       let%bind ty = infer_open delta gamma boxed_e in
       match ty with
-      | Type.Box t -> infer_open (Env.M.extend delta idg t) gamma body
+      | Type.Box t -> infer_open (Env.M.extend delta idm t) gamma body
       | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" loc )
 
 let check expr typ = check_open Env.M.emp Env.R.emp expr typ
