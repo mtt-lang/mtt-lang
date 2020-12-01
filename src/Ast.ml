@@ -6,11 +6,11 @@ type idT = string [@@deriving equal, sexp]
 module Type = struct
   type t =
     | Unit  (** Unit type *)
-    | Base of idT
+    | Base of { idt : idT }
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
-    | Prod of t * t  (** Type of pairs *)
-    | Arr of t * t  (** Type of functions *)
-    | Box of t  (** Type-level box *)
+    | Prod of { ty1 : t; ty2 : t }  (** Type of pairs *)
+    | Arr of { dom : t; cod : t }  (** Type of functions *)
+    | Box of { ty : t }  (** Type-level box *)
   [@@deriving equal, sexp]
 end
 

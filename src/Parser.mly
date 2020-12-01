@@ -49,24 +49,24 @@ typ:
     { Type.Unit }
 
     (* Uninterpreted base types *)
-  | name = IDT
-    { Type.Base name }
+  | idt = IDT
+    { Type.Base {idt} }
 
     (* Type of pairs *)
-  | t1 = typ; CROSS; t2 = typ
-    { Type.Prod (t1, t2) }
+  | ty1 = typ; CROSS; ty2 = typ
+    { Type.Prod {ty1; ty2} }
 
     (* Type of functions *)
   | dom = typ; ARROW; cod = typ
-    { Type.Arr (dom, cod) }
+    { Type.Arr {dom; cod} }
 
     (* Type-level box *)
-  | TBOX; t = typ
-    { Type.Box t }
+  | TBOX; ty = typ
+    { Type.Box {ty} }
 
     (* Parenthesized type expressions *)
-  | LPAREN; t = typ; RPAREN
-    { t }
+  | LPAREN; ty = typ; RPAREN
+    { ty }
 
 ident:
     (* Regular variables *)

@@ -47,10 +47,12 @@ module Doc : DOC = struct
     let open Type in
     let rec walk p = function
       | Unit -> unit_type
-      | Base idT -> !^idT
-      | Prod (t1, t2) -> parens_if (p > 1) (walk 1 t1 ^^ cross ^^ walk 2 t2)
-      | Arr (dom, cod) -> parens_if (p > 0) (walk 1 dom ^^^ arrow ^^^ walk 0 cod)
-      | Box t -> box_type ^^ walk 2 t
+      | Base { idt } -> !^idt
+      | Prod { ty1; ty2 } ->
+          parens_if (p > 1) (walk 1 ty1 ^^ cross ^^ walk 2 ty2)
+      | Arr { dom; cod } ->
+          parens_if (p > 0) (walk 1 dom ^^^ arrow ^^^ walk 0 cod)
+      | Box { ty } -> box_type ^^ walk 2 ty
     in
     walk 0
 
