@@ -64,10 +64,12 @@ end
 (** Values *)
 module Val = struct
   type t =
-    | Unit  (** [unit] literal *)
-    | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
-    | Clos of Id.R.t * Expr.t * t Env.R.t  (** Deeply embedded closures *)
-    | Box of Expr.t
-        (** [box] literal, basically it's an unevaluated expression *)
+    | Unit  (** [unit] value *)
+    | Pair of { v1 : t; v2 : t }
+        (** [(lit1, lit2)] -- a pair of values is a value *)
+    | Clos of { idr : Id.R.t; body : Expr.t; env : t Env.R.t }
+        (** Deeply embedded closures *)
+    | Box of { e : Expr.t }
+        (** [box] value, basically it's an unevaluated expression *)
   [@@deriving sexp]
 end

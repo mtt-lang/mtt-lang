@@ -75,36 +75,37 @@ let rec eval_open gamma Location.{ data = expr; _ } =
   | Unit -> return Val.Unit
   | Pair { e1; e2 } ->
       let%map v1 = eval_open gamma e1 and v2 = eval_open gamma e2 in
-      Val.Pair (v1, v2)
+      Val.Pair { v1; v2 }
   | Fst { e } -> (
       let%bind pv = eval_open gamma e in
       match pv with
-      | Val.Pair (v1, _v2) -> return v1
+      | Val.Pair { v1; v2 = _ } -> return v1
       | _ -> Result.fail "fst is stuck" )
   | Snd { e } -> (
       let%bind pv = eval_open gamma e in
       match pv with
-      | Val.Pair (_v1, v2) -> return v2
+      | Val.Pair { v1 = _; v2 } -> return v2
       | _ -> Result.fail "snd is stuck" )
   | VarR { idr } -> Env.R.lookup gamma idr
   | VarM _ ->
       Result.fail "Modal variable access is not possible in a well-typed term"
-  | Fun { idr; ty_id = _; body } -> return @@ Val.Clos (idr, body, gamma)
+  | Fun { idr; ty_id = _; body } ->
+      return @@ Val.Clos { idr; body; env = gamma }
   | App { fe; arge } -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
       match fv with
-      | Val.Clos (idr, body, c_gamma) ->
-          eval_open (Env.R.extend c_gamma idr argv) body
+      | Val.Clos { idr; body; env } ->
+          eval_open (Env.R.extend env idr argv) body
       | _ -> Result.fail "Trying to apply an argument to a non-function" )
-  | Box { e } -> return @@ Val.Box e
+  | Box { e } -> return @@ Val.Box { e }
   | Let { idr; bound; body } ->
       let%bind bound_v = eval_open gamma bound in
       eval_open (Env.R.extend gamma idr bound_v) body
   | Letbox { idm; boxed; body } -> (
       let%bind boxed_v = eval_open gamma boxed in
       match boxed_v with
-      | Val.Box e -> eval_open gamma (subst_m e idm body)
+      | Val.Box { e } -> eval_open gamma (subst_m e idm body)
       | _ -> Result.fail "Trying to unbox a non-box expression" )
 
 let eval expr = eval_open Env.R.emp expr

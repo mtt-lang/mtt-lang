@@ -8,7 +8,7 @@ module type DOC = sig
 
   val of_expr : Expr.t -> PPrint.document
 
-  val of_lit : Val.t -> PPrint.document
+  val of_val : Val.t -> PPrint.document
 end
 
 (** Convert ASTs to [doc] *)
@@ -68,12 +68,12 @@ module Doc : DOC = struct
       | Snd { e } -> group (parens (snd_kwd ^^ walk bvs 2 e))
       | VarR { idr } -> (
           if
-            (* To print free regular variables we use a regular environment with literals *)
+            (* To print free regular variables we use a regular environment with values *)
             Set.mem bvs idr
           then !^(Id.R.to_string idr)
           else
             match Env.R.lookup lenv idr with
-            | Ok literal -> parens (of_lit literal)
+            | Ok v -> parens (of_val v)
             | Error _msg ->
                 failwith
                   "The precondition for calling Doc.of_expr_with_free_vars_r \
@@ -108,17 +108,17 @@ module Doc : DOC = struct
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
   and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.R.emp e
 
-  and of_lit = function
+  and of_val = function
     | Val.Unit -> unit_term
-    | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
-    | Val.Clos (idr, body, lenv) ->
+    | Val.Pair { v1; v2 } -> group (angles (of_val v1 ^^ comma ^/^ of_val v2))
+    | Val.Clos { idr; body; env } ->
         fun_kwd
         ^^ !^(Id.R.to_string idr)
         ^^ dot
         ^^^
         (* when print out closures, substitute the free vars in its body with
-           the corresponding literals from the closures' regular environment *)
+           the corresponding values from the closures' regular environment *)
         let bound_vars = Set.singleton (module Id.R) idr in
-        of_expr_with_free_vars_r bound_vars lenv body
-    | Val.Box e -> box_kwd ^^^ of_expr e
+        of_expr_with_free_vars_r bound_vars env body
+    | Val.Box { e } -> box_kwd ^^^ of_expr e
 end

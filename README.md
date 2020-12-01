@@ -214,7 +214,7 @@ the Unicode ones.
 |         | `box` *t*                         | Staged computations                                     |
 |         | `letbox` *Gid* `=` *t* `in` *t*   | Running staged computations                             |
 
-#### Values (literals)
+#### Values
 
 | *v* ::= |                                 | Meaning                              |
 |:-------:|:-------------------------------:|:------------------------------------:|

@@ -83,8 +83,8 @@ let eval_expr source_file source_arg =
   | None -> `Error (true, "Please provide exactly one expression to evaluate")
   | Some source -> (
       match parse_and_eval source with
-      | Ok literal ->
-          let document = PrettyPrinter.Doc.of_lit literal in
+      | Ok value ->
+          let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
