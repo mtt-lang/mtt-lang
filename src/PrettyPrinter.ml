@@ -63,10 +63,10 @@ module Doc : DOC = struct
     let rec walk bvs p Location.{ data = e; _ } =
       match e with
       | Unit -> unit_term
-      | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
-      | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
-      | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
-      | VarR idr -> (
+      | Pair { e1; e2 } -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
+      | Fst { e } -> group (parens (fst_kwd ^^ walk bvs 2 e))
+      | Snd { e } -> group (parens (snd_kwd ^^ walk bvs 2 e))
+      | VarR { idr } -> (
           if
             (* To print free regular variables we use a regular environment with literals *)
             Set.mem bvs idr
@@ -78,30 +78,30 @@ module Doc : DOC = struct
                 failwith
                   "The precondition for calling Doc.of_expr_with_free_vars_r \
                    function is violated" )
-      | VarM idm -> !^(Id.M.to_string idm)
-      | Fun (idr, t_of_id, body) ->
+      | VarM { idm } -> !^(Id.M.to_string idm)
+      | Fun { idr; ty_id; body } ->
           (parens_if (p > 1))
             ( fun_kwd
             ^^ !^(Id.R.to_string idr)
-            ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
+            ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space
             ^^ walk (Set.add bvs idr) 1 body )
-      | App (fe, arge) ->
+      | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
-      | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
-      | Let (idr, bound_e, body) ->
+      | Box { e } ->
+          group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
+      | Let { idr; bound; body } ->
           (parens_if (p > 1))
             (group
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk bvs 2 bound_e ^^^ in_kwd
+               ^^^ equals ^^^ walk bvs 2 bound ^^^ in_kwd
                ^/^ walk (Set.add bvs idr) 1 body ))
-      | Letbox (idm, boxed_e, body) ->
+      | Letbox { idm; boxed; body } ->
           (parens_if (p > 1))
             (group
                ( letbox_kwd
                ^^^ !^(Id.M.to_string idm)
-               ^^^ equals ^^^ walk bvs 2 boxed_e ^^^ in_kwd ^/^ walk bvs 1 body
-               ))
+               ^^^ equals ^^^ walk bvs 2 boxed ^^^ in_kwd ^/^ walk bvs 1 body ))
     in
     walk bound_vars 0 expr
 
