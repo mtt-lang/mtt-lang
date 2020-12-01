@@ -27,7 +27,7 @@ module Expr = struct
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
     | Snd of t  (** second projection of a pair *)
-    | IntZ of Nat.t  (** numbers *)
+    | Nat of Nat.t  (** numbers *)
     | BinOp of binop * t * t  (** binary arithmetic operations *)
     | VarL of Id.R.t  (** variables of the regular context *)
     | VarG of Id.M.t
@@ -69,7 +69,7 @@ end
 module Val = struct
   type t =
     | Unit  (** [unit] literal *)
-    | IntZ of Nat.t
+    | Nat of Nat.t
     | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
     | Clos of Id.R.t * Expr.t * t Env.r  (** Deeply embedded closures *)
     | Box of Expr.t

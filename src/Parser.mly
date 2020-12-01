@@ -6,13 +6,13 @@
 %token <string> IDT
 
 (* Arithmetic *)
-%token <Nat.t> INTZ
+%token <Nat.t> UINTZ
 
 (* Arithmetic *)
-%token ADD
-%token SUB
+%token PLUS
+%token MINUS
 (* multiplication is `CROSS` token *)
-%token DIV
+%token SLASH
 
 (* Parentheses *)
 %token LPAREN RPAREN
@@ -38,9 +38,9 @@
 %token LETBOX
 %token IN
 
-%left ADD SUB
+%left PLUS MINUS
 %right ARROW   (* Type arrows associate to the right *)
-%left CROSS DIV   (* Type products have higher precedence than arrow types *)
+%left CROSS SLASH   (* Type products have higher precedence than arrow types *)
                   (* Multiplication and division have greater priority *)
 %nonassoc TBOX (* Highest precedence *)
 
@@ -139,15 +139,15 @@ parceled_expr:
     { e }
 
     (* Arithmetic *)
-  | i = INTZ
-    { Location.locate_start_end (IntZ i) $symbolstartpos $endpos }
+  | n = UINTZ
+    { Location.locate_start_end (Nat n) $symbolstartpos $endpos }
 
     (* e1 + e2 *)
-  | e1 = parceled_expr; ADD; e2 = parceled_expr
+  | e1 = parceled_expr; PLUS; e2 = parceled_expr
     { Location.locate_start_end (BinOp (Add, e1, e2)) $symbolstartpos $endpos }
 
     (* e1 - e2 *)
-  | e1 = parceled_expr; SUB; e2 = parceled_expr
+  | e1 = parceled_expr; MINUS; e2 = parceled_expr
     { Location.locate_start_end (BinOp (Sub, e1, e2)) $symbolstartpos $endpos }
 
     (* e1 * e2 *)
@@ -155,7 +155,7 @@ parceled_expr:
     { Location.locate_start_end (BinOp (Mul, e1, e2)) $symbolstartpos $endpos }
 
     (* e1 / e2 *)
-  | e1 = parceled_expr; DIV; e2 = parceled_expr
+  | e1 = parceled_expr; SLASH; e2 = parceled_expr
     { Location.locate_start_end (BinOp (Div, e1, e2)) $symbolstartpos $endpos }
 
     (* Pair of expressions *)
