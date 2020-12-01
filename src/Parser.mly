@@ -49,66 +49,66 @@ typ:
     { Type.Unit }
 
     (* Uninterpreted base types *)
-  | name = IDT
-    { Type.Base name }
+  | idt = IDT
+    { Type.Base {idt} }
 
     (* Type of pairs *)
-  | t1 = typ; CROSS; t2 = typ
-    { Type.Prod (t1, t2) }
+  | ty1 = typ; CROSS; ty2 = typ
+    { Type.Prod {ty1; ty2} }
 
     (* Type of functions *)
   | dom = typ; ARROW; cod = typ
-    { Type.Arr (dom, cod) }
+    { Type.Arr {dom; cod} }
 
     (* Type-level box *)
-  | TBOX; t = typ
-    { Type.Box t }
+  | TBOX; ty = typ
+    { Type.Box {ty} }
 
     (* Parenthesized type expressions *)
-  | LPAREN; t = typ; RPAREN
-    { t }
+  | LPAREN; ty = typ; RPAREN
+    { ty }
 
 ident:
     (* Regular variables *)
   | name = IDR
-    { Location.locate_start_end (VarR (Id.R.mk name)) $symbolstartpos $endpos }
+    { Location.locate_start_end (VarR {idr = Id.R.mk name}) $symbolstartpos $endpos }
 
     (* Modal (i.e. valid) variables *)
   | name = IDM
-    { Location.locate_start_end (VarM (Id.M.mk name)) $symbolstartpos $endpos }
+    { Location.locate_start_end (VarM {idm = Id.M.mk name}) $symbolstartpos $endpos }
 
 expr:
     (* First projection *)
   | FST; e = parceled_expr
-    { Location.locate_start_end (Fst (e)) $symbolstartpos $endpos }
+    { Location.locate_start_end (Fst {e}) $symbolstartpos $endpos }
 
     (* Second projection *)
   | SND; e = parceled_expr
-    { Location.locate_start_end (Snd (e)) $symbolstartpos $endpos }
+    { Location.locate_start_end (Snd {e}) $symbolstartpos $endpos }
 
     (* anonymous function (lambda) *)
-  | FUN; idr = IDR; COLON; t = typ; DARROW; e = expr
-    { Location.locate_start_end (Fun (Id.R.mk idr, t, e)) $symbolstartpos $endpos }
+  | FUN; idr = IDR; COLON; ty_id = typ; DARROW; body = expr
+    { Location.locate_start_end (Fun {idr = Id.R.mk idr; ty_id; body}) $symbolstartpos $endpos }
 
     (* allow parenthesizing of the bound variable for lambdas *)
-  | FUN; LPAREN; idr = IDR; COLON; t = typ; RPAREN; DARROW; e = expr
-    { Location.locate_start_end (Fun (Id.R.mk idr, t, e)) $symbolstartpos $endpos }
+  | FUN; LPAREN; idr = IDR; COLON; ty_id = typ; RPAREN; DARROW; body = expr
+    { Location.locate_start_end (Fun {idr = Id.R.mk idr; ty_id; body}) $symbolstartpos $endpos }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr
-    { Location.locate_start_end (App (fe, arge)) $symbolstartpos $endpos }
+    { Location.locate_start_end (App {fe; arge}) $symbolstartpos $endpos }
 
     (* term-level box *)
   | BOX; e = parceled_expr
-    { Location.locate_start_end (Box e) $symbolstartpos $endpos }
+    { Location.locate_start_end (Box {e}) $symbolstartpos $endpos }
 
     (* let idr = expr in expr *)
-  | LET; idr = IDR; EQ; e = expr; IN; body = expr
-    { Location.locate_start_end (Let (Id.R.mk idr, e, body)) $symbolstartpos $endpos }
+  | LET; idr = IDR; EQ; bound = expr; IN; body = expr
+    { Location.locate_start_end (Let {idr = Id.R.mk idr; bound; body}) $symbolstartpos $endpos }
 
     (* letbox idm = expr in expr *)
-  | LETBOX; idm = IDM; EQ; e = expr; IN; body = expr
-    { Location.locate_start_end (Letbox (Id.M.mk idm, e, body)) $symbolstartpos $endpos }
+  | LETBOX; idm = IDM; EQ; boxed = expr; IN; body = expr
+    { Location.locate_start_end (Letbox {idm = Id.M.mk idm; boxed; body}) $symbolstartpos $endpos }
 
   | e = parceled_expr
     { e }
@@ -128,7 +128,7 @@ parceled_expr:
 
     (* Pair of expressions *)
   | LANGLE; e1 = expr; COMMA; e2 = expr; RANGLE
-    { Location.locate_start_end (Pair (e1, e2)) $symbolstartpos $endpos }
+    { Location.locate_start_end (Pair {e1; e2}) $symbolstartpos $endpos }
 
 expr_eof:
   | e = expr; EOF { e }
