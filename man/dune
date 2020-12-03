@@ -1,0 +1,34 @@
+(rule
+ (with-stdout-to
+  mtt.1
+  (run %{bin:mtt} --help=groff)))
+
+(rule
+ (with-stdout-to
+  mtt-parse.1
+  (run %{bin:mtt} parse --help=groff)))
+
+(rule
+ (with-stdout-to
+  mtt-check.1
+  (run %{bin:mtt} check --help=groff)))
+
+(rule
+ (with-stdout-to
+  mtt-infer.1
+  (run %{bin:mtt} infer --help=groff)))
+
+(rule
+ (with-stdout-to
+  mtt-eval.1
+  (run %{bin:mtt} eval --help=groff)))
+
+(rule
+ (with-stdout-to
+  mtt-help.1
+  (run %{bin:mtt} help --help=groff)))
+
+(install
+ (section man)
+ (package mtt)
+ (files mtt.1 mtt-parse.1 mtt-check.1 mtt-infer.1 mtt-eval.1 mtt-help.1))
