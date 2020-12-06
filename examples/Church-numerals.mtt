@@ -36,6 +36,11 @@ let mult = λn:A -> A -> A. λm:A -> A -> A. λx:A -> A. λy:A. (n (m x)) y in
 let test5 = (eq n2) ((mult n2) n1) in
 let test6 = (eq n4) ((mult n2) n2) in
 
-let fact = λf:[](A->A->A->A) . λn:A->A->A. ((if (iszero n)) n1) ((mult n) (f (pred n))) in 
+let fact = λf:A->A->A->A. λn:A->A->A. ((if (iszero n)) n1) ((mult n) (f (pred n))) in
 
-let test7 = (eq ((fact (λx:A. x)) n2)) n2 in test7
+let test7 = (eq ((fact (λx:A. x)) n2)) n2 in
+
+let fix = λf:A. (λx:B. f (λy:C. (x x) y )) (λx:B. f (λy:C. (x x) y )) in
+let factorial = fix fact in
+
+let test8 = (eq n1) (factorial n0) in test8
