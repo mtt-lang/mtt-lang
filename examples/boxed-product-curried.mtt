@@ -2,4 +2,3 @@ fun x:[]A. fun y:[]B.
   letbox x' = x in
   letbox y' = y in
   box <x', y'>
-
