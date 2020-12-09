@@ -20,9 +20,9 @@ let mk s_pos e_pos =
     {
       filename = s_pos.pos_fname;
       start_line = s_pos.pos_lnum;
-      start_column = s_pos.pos_cnum;
+      start_column = s_pos.pos_cnum - s_pos.pos_bol;
       end_line = e_pos.pos_lnum;
-      end_column = e_pos.pos_cnum;
+      end_column = e_pos.pos_cnum - e_pos.pos_bol;
     }
 
 let locate_start_end data s_pos e_pos =
