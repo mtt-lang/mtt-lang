@@ -1,0 +1,32 @@
+let n0 = λf:A -> A. λx:A . x in
+let n1 = λf:A -> A. λx:A . f x in
+let n2 = λf:A -> A. λx:A . f (f x) in
+let n3 = λf:A -> A. λx:A . f (f (f x)) in
+let n4 = λf:A -> A. λx:A . f (f (f (f x))) in
+
+let true = λx:(A → A) → A → A. λy:(A → A) → A → A . x in
+let false = λx:(A → A) → A → A . λy:(A → A) → A → A . y in
+let if = 
+  λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A). 
+  λt:(A → A) → A → A. 
+  λe:(A → A) → A → A. 
+  (p t) e in
+
+let pair = 
+  λa:(A → A) → A → A. 
+  λb:(A → A) → A → A. 
+  λt:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A). 
+  (t a) b in
+let fstt = 
+  λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A) → (A → A) → A → A.
+  p true in
+let sndd = 
+  λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A) → (A → A) → A → A.
+  p false in
+
+let succ = λn:(A → A) → A → A. λx:A -> A. λy:(A -> A) -> A -> A. x ((n x) y) in
+let pred = 
+  λn:(A -> A) -> A -> A. 
+  λx:A -> A . 
+  λy:(A -> A) -> A -> A. 
+  sndd ( ( n (λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A) → (A → A) → A → A. ( pair (x (fstt p)) ) (fstt p) ) ) ( (pair y) y ) ) in true
