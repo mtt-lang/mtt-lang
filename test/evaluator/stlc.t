@@ -83,3 +83,10 @@ Church numerals
   > let runtest = (and ((and ((and eqtests) plustest)) multest)) factest in runtest
   > EOF
   λx. λy : B. x
+
+let succ = λn:(A → A) → A → A. λx:A -> A. λy:(A -> A) -> A -> A. x ((n x) y) in
+let pred = 
+  λn:(A -> A) -> A -> A. 
+  λx:A -> A . 
+  λy:(A -> A) -> A -> A. 
+  sndd ( ( n (λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A) → (A → A) → A → A. ( pair (x (fstt p)) ) (fstt p) ) ) ( (pair y) y ) ) in true

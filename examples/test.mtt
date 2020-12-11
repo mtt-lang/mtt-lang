@@ -24,9 +24,15 @@ let sndd =
   λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A) → (A → A) → A → A.
   p false in
 
-let succ = λn:(A → A) → A → A. λx:A -> A. λy:(A -> A) -> A -> A. x ((n x) y) in
+let true1 = λx:A. λy:A. x in
+let false1 = λx:A. λy:A. y in
+let pair1 = λa:A. λb:A. λt:A -> A -> A . (t a) b in
+let fstt1 = λp:(A → A → A) → A. p true1 in
+let sndd1 = λp:(A → A → A) → A. p false1 in
+
+let succ = λn:(A → A) → A → A. λx:A -> A. λy:A. x ((n x) y) in
 let pred = 
-  λn:(A -> A) -> A -> A. 
-  λx:A -> A . 
-  λy:(A -> A) -> A -> A. 
-  sndd ( ( n (λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A) → (A → A) → A → A. ( pair (x (fstt p)) ) (fstt p) ) ) ( (pair y) y ) ) in true
+  λn:(((A → A → A) → A) -> (A → A → A) → A) -> A. 
+  λx:A -> A. 
+  λy:A. 
+  (n (λp:(A → A → A) → A. ( pair1 (x (fstt1 p)) ) (fstt1 p) ) ) ( (pair1 y) y ) in pred
