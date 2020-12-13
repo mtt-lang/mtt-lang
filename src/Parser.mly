@@ -139,23 +139,23 @@ parceled_expr:
 
     (* Arithmetic *)
   | n = UINTZ
-    { Location.locate_start_end (Nat n) $symbolstartpos $endpos }
+    { Location.locate_start_end (Nat {n}) $symbolstartpos $endpos }
 
     (* e1 + e2 *)
   | e1 = parceled_expr; PLUS; e2 = parceled_expr
-    { Location.locate_start_end (BinOp (Add, e1, e2)) $symbolstartpos $endpos }
+    { Location.locate_start_end (BinOp {op = Add; e1; e2}) $symbolstartpos $endpos }
 
     (* e1 - e2 *)
   | e1 = parceled_expr; MINUS; e2 = parceled_expr
-    { Location.locate_start_end (BinOp (Sub, e1, e2)) $symbolstartpos $endpos }
+    { Location.locate_start_end (BinOp {op = Sub; e1; e2}) $symbolstartpos $endpos }
 
     (* e1 * e2 *)
   | e1 = parceled_expr; CROSS; e2 = parceled_expr
-    { Location.locate_start_end (BinOp (Mul, e1, e2)) $symbolstartpos $endpos }
+    { Location.locate_start_end (BinOp {op = Mul; e1; e2}) $symbolstartpos $endpos }
 
     (* e1 / e2 *)
   | e1 = parceled_expr; SLASH; e2 = parceled_expr
-    { Location.locate_start_end (BinOp (Div, e1, e2)) $symbolstartpos $endpos }
+    { Location.locate_start_end (BinOp {op = Div; e1; e2}) $symbolstartpos $endpos }
 
     (* Pair of expressions *)
   | LANGLE; e1 = expr; COMMA; e2 = expr; RANGLE
