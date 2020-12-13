@@ -40,34 +40,35 @@ Shadowing x
 
 Church numerals
   $ mtt eval <<EOF
-  > let n0 = λf:A -> A. λx:A . x in
-  > let n1 = λf:A -> A. λx:A . f x in
-  > let n2 = λf:A -> A. λx:A . f (f x) in
-  > let n3 = λf:A -> A. λx:A . f (f (f x)) in
-  > let n4 = λf:A -> A. λx:A . f (f (f (f x))) in
+  > let n0 = λf:F. λx:X . x in
+  > let n1 = λf:F. λx:X . f x in
+  > let n2 = λf:F. λx:X . f (f x) in
+  > let n3 = λf:F. λx:X . f (f (f x)) in
+  > let n4 = λf:F. λx:X . f (f (f (f x))) in
   > 
   > let true = λx:A. λy:B . x in
   > let false = λx:A . λy:B . y in
-  > let if = λp:A -> B -> C . λt:B . λe:B. (p t) e in
+  > let if = λp:P. λt:A. λe:B. (p t) e in
   > 
-  > let pair = λa:A. λb:B. λt:A -> B -> C . (t a) b in
-  > let fstt = λp:A -> B -> C. p true in
-  > let sndd = λp:A -> B -> C. p false in 
+  > let pair = λa:A . λb:B . λt:A -> B -> C . (t a) b in
+  > let fstt = λp:A -> B -> C. p (λx:A. λy:B . x) in
+  > let sndd = λp:A -> B -> C. p (λx:A . λy:B . y) in
   > 
-  > let succ = λn:(A -> A) -> A -> A. λx:A -> A. λy:A. x ((n x) y) in
-  > let pred = λn:(A -> A) -> A -> A. λx:A -> A . λy:A. sndd ( ( n (λp:P . ( pair (x (fstt p)) ) (fstt p) ) ) ( (pair y) y ) ) in
-  > let minus = λn:(A -> A) -> A -> A. λm:(A -> A) -> A -> A. (m pred) n in 
+  > let succ = λn:N. λf:F. λx:X. f ((n f) x) in
+  > let pred = λn:N. λf:F. λx:X. sndd ( ( n (λp:P . ( pair (f (fstt p)) ) (fstt p) ) ) ( (pair x) x ) ) in
+  > let minus = λn:N. λm:N. (m pred) n in 
   > 
-  > let not = λb:A -> B -> C . ((if b) false) true in
-  > let iszero = λn:(A -> A) -> A -> A. (n (λx:A -> A -> A. false)) true in
-  > let and = λn:(A -> A) -> A -> A. λm:(A -> A) -> A -> A. ((if n) m) false in
-  > let eq = λn:(A -> A) -> A -> A. λm:(A -> A) -> A -> A. ( and (iszero ( (minus n) m)) ) (iszero ( (minus m) n)) in
+  > let not = λb:B . ((if b) false) true in
+  > let iszero = λn:N. (n (λx:N. false)) true in
+  > let and = λn:N. λm:N. ((if n) m) false in
+  > let eq = λn:N. λm:N. ( and (iszero ( (minus n) m)) ) (iszero ( (minus m) n)) in
   > 
-  > let plus = λn:(A -> A) -> A -> A. λm:(A -> A) -> A -> A. λx:A -> A. λy:A. (n x) ((m x) y) in
+  > let plus = λn:N. λm:N. λf:F. λx:X. (n f) ((m f) x) in
+  > let mult = λn:N. λm:N. λf:F. λx:X. (n (m f)) x in
   > 
-  > let mult = λn:(A -> A) -> A -> A. λm:(A -> A) -> A -> A. λx:A -> A. λy:A. (n (m x)) y in
-  > 
-  > let fact = λf:(A -> A) -> A -> A -> A. λn:(A -> A) -> A -> A. ((if (iszero n)) n1) ((mult n) (f (pred n))) in
+  > let fix = λf:F. (λx:X. f (λv:V. (x x) v)) (λx:X. f (λv:V. (x x) v)) in
+  > let fact = λfact:F. λn:N. (((if (iszero n)) (λu:(). n1)) (λu:(). (mult n) (fact (pred n)))) () in
+  > let factorial = fix fact in
   > 
   > let test1 = (eq n3) n2 in
   > let test2 = (eq n2) n3 in
@@ -79,14 +80,7 @@ Church numerals
   > let test6 = (eq n2) ((mult n2) n1) in
   > let test7 = (eq n4) ((mult n2) n2) in
   > let multest = (and test6) test7 in
-  > let factest = (eq ((fact (λx:A. x)) n2)) n2 in
+  > let factest = (eq ((mult n2) n3)) (factorial n3) in
   > let runtest = (and ((and ((and eqtests) plustest)) multest)) factest in runtest
   > EOF
   λx. λy : B. x
-
-let succ = λn:(A → A) → A → A. λx:A -> A. λy:(A -> A) -> A -> A. x ((n x) y) in
-let pred = 
-  λn:(A -> A) -> A -> A. 
-  λx:A -> A . 
-  λy:(A -> A) -> A -> A. 
-  sndd ( ( n (λp:(((A → A) → A → A) → ((A → A) → A → A) → (A → A) → A → A) → (A → A) → A → A. ( pair (x (fstt p)) ) (fstt p) ) ) ( (pair y) y ) ) in true
