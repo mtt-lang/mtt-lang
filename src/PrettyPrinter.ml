@@ -8,7 +8,7 @@ module type DOC = sig
 
   val of_expr : Expr.t -> PPrint.document
 
-  val of_lit : Val.t -> PPrint.document
+  val of_val : Val.t -> PPrint.document
 end
 
 (** Convert ASTs to [doc] *)
@@ -67,9 +67,9 @@ module Doc : DOC = struct
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
-  let rec of_expr_with_free_vars_r bound_vars lenv expr =
+  let rec of_expr_with_free_vars renv expr =
     let open Expr in
-    let rec walk bvs p Location.{ data = e; _ } =
+    let rec walk p Location.{ data = e; _ } =
       match e with
       | Unit -> unit_term
       | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
@@ -102,44 +102,39 @@ module Doc : DOC = struct
       | Fun (idl, t_of_id, body) ->
           (parens_if (p > 1))
             ( fun_kwd
-            ^^ !^(Id.R.to_string idl)
-            ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
-            ^^ walk (Set.add bvs idl) 1 body )
-      | App (fe, arge) ->
-          group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
-      | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
-      | Let (idr, bound_e, body) ->
+            ^^ !^(Id.R.to_string idr)
+            ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body )
+      | App { fe; arge } ->
+          group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
+      | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
+      | Let { idr; bound; body } ->
           (parens_if (p > 1))
             (group
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk bvs 2 bound_e ^^^ in_kwd
-               ^/^ walk (Set.add bvs idr) 1 body ))
-      | Letbox (idg, boxed_e, body) ->
+               ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body ))
+      | Letbox { idm; boxed; body } ->
           (parens_if (p > 1))
             (group
                ( letbox_kwd
-               ^^^ !^(Id.M.to_string idg)
-               ^^^ equals ^^^ walk bvs 2 boxed_e ^^^ in_kwd ^/^ walk bvs 1 body
-               ))
+               ^^^ !^(Id.M.to_string idm)
+               ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
     in
-    walk bound_vars 0 expr
+    walk 0 expr
 
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
-  and of_expr e = of_expr_with_free_vars_r (Set.empty (module Id.R)) Env.emp_r e
+  and of_expr e = of_expr_with_free_vars Env.R.emp e
 
-  and of_lit = function
+  and of_val = function
     | Val.Unit -> unit_term
     | Val.Nat n -> !^(Nat.to_string n)
     | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
     | Val.Clos (idl, body, lenv) ->
         fun_kwd
-        ^^ !^(Id.R.to_string idl)
+        ^^ !^(Id.R.to_string idr)
         ^^ dot
-        ^^^
-        (* when print out closures, substitute the free vars in its body with
-           the corresponding literals from the closures' regular environment *)
-        let bound_vars = Set.singleton (module Id.R) idl in
-        of_expr_with_free_vars_r bound_vars lenv body
-    | Val.Box e -> box_kwd ^^^ of_expr e
+        ^^^ (* when print out closures, substitute the free vars in its body with
+               the corresponding values from the closures' regular environment *)
+        of_expr_with_free_vars env body
+    | Val.Box { e } -> box_kwd ^^^ of_expr e
 end

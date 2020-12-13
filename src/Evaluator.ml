@@ -23,15 +23,15 @@ let rec free_vars_m Location.{ data = term; _ } =
       Set.union (free_vars_m boxed_e)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) i))
 
-let refresh_m idg fvs =
-  let rec loop (idg : Id.M.t) =
-    if Set.mem fvs idg then loop (Id.M.mk (Id.M.to_string idg ^ "'")) else idg
+let refresh_m idm fvs =
+  let rec loop (idm : Id.M.t) =
+    if Set.mem fvs idm then loop (Id.M.mk (Id.M.to_string idm ^ "'")) else idm
     (* it's fresh enough already :) *)
   in
-  if Set.mem fvs idg then Some (loop idg) else None
+  if Set.mem fvs idm then Some (loop idm) else None
 
 (* modal (modal) substitution *)
-let rec subst_m term idg Location.{ data = body; _ } =
+let rec subst_m term identm Location.{ data = body; _ } =
   let open Expr in
   match body with
   | Unit -> Location.locate body
@@ -53,38 +53,45 @@ let rec subst_m term idg Location.{ data = body; _ } =
       Location.locate (Let (i, subst_m term idg bound_e, subst_m term idg body))
   | Letbox (i, boxed_e, body) ->
       Location.locate
-        ( if [%equal: Id.M.t] idg i then
-          Letbox (i, subst_m term idg boxed_e, body)
+        ( if [%equal: Id.M.t] identm idm then
+          Letbox { idm; boxed = subst_m term identm boxed; body }
         else
-          match refresh_m i (free_vars_m term) with
+          match refresh_m idm (free_vars_m term) with
           | Some new_i ->
               let body_with_renamed_bound_var =
-                subst_m (Location.locate (VarG new_i)) i body
+                subst_m (var_m new_i) idm body
               in
               Letbox
-                ( new_i,
-                  subst_m term idg boxed_e,
-                  subst_m term idg body_with_renamed_bound_var )
+                {
+                  idm = new_i;
+                  boxed = subst_m term identm boxed;
+                  body = subst_m term identm body_with_renamed_bound_var;
+                }
           | None ->
               (* no need to rename the bound var *)
-              Letbox (i, subst_m term idg boxed_e, subst_m term idg body) )
+              Letbox
+                {
+                  idm;
+                  boxed = subst_m term identm boxed;
+                  body = subst_m term identm body;
+                } )
 
 let rec eval_open gamma Location.{ data = expr; _ } =
   let open Expr in
   match expr with
   | Unit -> return Val.Unit
-  | Pair (e1, e2) ->
+  | Pair { e1; e2 } ->
       let%map v1 = eval_open gamma e1 and v2 = eval_open gamma e2 in
-      Val.Pair (v1, v2)
-  | Fst pe -> (
-      let%bind pv = eval_open gamma pe in
+      Val.Pair { v1; v2 }
+  | Fst { e } -> (
+      let%bind pv = eval_open gamma e in
       match pv with
-      | Val.Pair (v1, _v2) -> return v1
+      | Val.Pair { v1; v2 = _ } -> return v1
       | _ -> Result.fail "fst is stuck" )
-  | Snd pe -> (
-      let%bind pv = eval_open gamma pe in
+  | Snd { e } -> (
+      let%bind pv = eval_open gamma e in
       match pv with
-      | Val.Pair (_v1, v2) -> return v2
+      | Val.Pair { v1 = _; v2 } -> return v2
       | _ -> Result.fail "snd is stuck" )
   | Nat n -> return @@ Val.Nat n
   | BinOp (op, e1, e2) -> (
@@ -101,22 +108,23 @@ let rec eval_open gamma Location.{ data = expr; _ } =
   | VarL idl -> Env.lookup_r gamma idl
   | VarG _idg ->
       Result.fail "Modal variable access is not possible in a well-typed term"
-  | Fun (idl, _t_of_id, body) -> return @@ Val.Clos (idl, body, gamma)
-  | App (fe, arge) -> (
+  | Fun { idr; ty_id = _; body } ->
+      return @@ Val.Clos { idr; body; env = gamma }
+  | App { fe; arge } -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
       match fv with
-      | Val.Clos (idl, body, c_gamma) ->
-          eval_open (Env.extend_r c_gamma idl argv) body
+      | Val.Clos { idr; body; env } ->
+          eval_open (Env.R.extend env idr argv) body
       | _ -> Result.fail "Trying to apply an argument to a non-function" )
-  | Box e -> return @@ Val.Box e
-  | Let (idr, bound_e, body) ->
-      let%bind bound_v = eval_open gamma bound_e in
-      eval_open (Env.extend_r gamma idr bound_v) body
-  | Letbox (idg, boxed_e, body) -> (
-      let%bind boxed_v = eval_open gamma boxed_e in
+  | Box { e } -> return @@ Val.Box { e }
+  | Let { idr; bound; body } ->
+      let%bind bound_v = eval_open gamma bound in
+      eval_open (Env.R.extend gamma idr bound_v) body
+  | Letbox { idm; boxed; body } -> (
+      let%bind boxed_v = eval_open gamma boxed in
       match boxed_v with
-      | Val.Box e -> eval_open gamma (subst_m e idg body)
+      | Val.Box { e } -> eval_open gamma (subst_m e idm body)
       | _ -> Result.fail "Trying to unbox a non-box expression" )
 
-let eval expr = eval_open Env.emp_r expr
+let eval expr = eval_open Env.R.emp expr
