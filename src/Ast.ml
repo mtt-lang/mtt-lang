@@ -27,8 +27,9 @@ module Expr = struct
     | Pair of { e1 : t; e2 : t }  (** pairs [(expr1, expr2)] *)
     | Fst of { e : t }  (** first projection of a pair *)
     | Snd of { e : t }  (** second projection of a pair *)
-    | Nat of { n : Nat.t } (** numbers *)
-    | BinOp of { op : binop; e1 : t; e2 : t } (** binary arithmetic operations *)
+    | Nat of { n : Nat.t }  (** numbers *)
+    | BinOp of { op : binop; e1 : t; e2 : t }
+        (** binary arithmetic operations *)
     | VarR of { idr : Id.R.t }  (** variables of the regular context *)
     | VarM of { idm : Id.M.t }
         (** variables of the modal context (or "valid variables"),
@@ -73,7 +74,7 @@ end
 module Val = struct
   type t =
     | Unit  (** [unit] value *)
-    | Nat of { n : Nat.t } (** nat *)
+    | Nat of { n : Nat.t }  (** nat *)
     | Pair of { v1 : t; v2 : t }
         (** [(lit1, lit2)] -- a pair of values is a value *)
     | Clos of { idr : Id.R.t; body : Expr.t; env : t Env.R.t }

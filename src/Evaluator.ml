@@ -39,7 +39,8 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | Fst { e } -> fst (subst_m term identm e)
   | Snd { e } -> snd (subst_m term identm e)
   | Nat _n -> Location.locate body
-  | BinOp { op; e1; e2 } -> binop op (subst_m term identm e1) (subst_m term identm e2)
+  | BinOp { op; e1; e2 } ->
+      binop op (subst_m term identm e1) (subst_m term identm e2)
   | VarR _i -> Location.locate body
   | VarM { idm } ->
       if [%equal: Id.M.t] identm idm then term else Location.locate body
@@ -98,9 +99,9 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | Val.Nat { n = n1 }, Val.Nat { n = n2 } -> (
           match op with
           | Add -> return @@ Val.Nat { n = Nat.add n1 n2 }
-          | Sub -> return @@ Val.Nat { n = (Nat.sub n1 n2) }
-          | Mul -> return @@ Val.Nat { n = (Nat.mul n1 n2) }
-          | Div -> return @@ Val.Nat { n = (Nat.div n1 n2) })
+          | Sub -> return @@ Val.Nat { n = Nat.sub n1 n2 }
+          | Mul -> return @@ Val.Nat { n = Nat.mul n1 n2 }
+          | Div -> return @@ Val.Nat { n = Nat.div n1 n2 } )
       | _, _ -> Result.fail "Only numbers can be multiplied" )
   | VarR { idr } -> Env.R.lookup gamma idr
   | VarM _ ->

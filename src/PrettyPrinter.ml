@@ -86,8 +86,7 @@ module Doc : DOC = struct
             | Mul -> star
             | Div -> slash
           in
-          (parens_if (p > 1))
-            (group (walk 2 e1) ^^^ symb_op ^^^ walk 1 e2)
+          (parens_if (p > 1)) (group (walk 2 e1) ^^^ symb_op ^^^ walk 1 e2)
       | VarR { idr } -> (
           match Env.R.lookup renv idr with
           | Ok v -> parens (of_val v)
