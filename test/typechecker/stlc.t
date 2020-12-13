@@ -110,12 +110,14 @@ Church numerals
   > let n2 = λf:A -> A. λx:A . f (f x) in
   > let n3 = λf:A -> A. λx:A . f (f (f x)) in
   > let n4 = λf:A -> A. λx:A . f (f (f (f x))) in n4
+  > EOF
   (A → A) → A → A
 
   $ mtt infer <<EOF
   > let true = λx:A. λy:A. x in
   > let false = λx:A. λy:A. y in
   > let if = λp:(A → A → A). λt:A. λe:A. (p t) e in if
+  > EOF
   (A → A → A) → A → A → A
 
   $ mtt infer <<EOF
@@ -124,6 +126,7 @@ Church numerals
   > let pair = λa:A. λb:A. λt:A -> A -> A . (t a) b in
   > let fstt = λp:(A → A → A) → A. p true in
   > let sndd = λp:(A → A → A) → A. p false in λx:A. fstt ((pair x) x)
+  > EOF
   A → A
 
 
