@@ -102,3 +102,4 @@ tests for location
   mtt: Type inference error: Unexpected regular variable type
        file name :  Not a file, lines :  3 - 3, column :  42 - 43
   [1]
+
