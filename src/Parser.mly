@@ -24,6 +24,7 @@
 %token FST
 %token SND
 %token FUN
+%token FIX
 %token BOX
 %token LET
 %token LETBOX
@@ -105,6 +106,9 @@ expr:
     (* let idr = expr in expr *)
   | LET; idr = IDR; EQ; bound = expr; IN; body = expr
     { Location.locate_start_end (Let {idr = Id.R.mk idr; bound; body}) $symbolstartpos $endpos }
+  
+  | FIX; idr = IDR; EQ; bound = expr; IDR; IN; body = expr
+    { Location.locate_start_end (Fix {idr = Id.R.mk idr; bound; body}) $symbolstartpos $endpos }
 
     (* letbox idm = expr in expr *)
   | LETBOX; idm = IDM; EQ; boxed = expr; IN; body = expr

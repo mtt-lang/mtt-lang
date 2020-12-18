@@ -33,6 +33,7 @@ module Expr = struct
     | Box of { e : t }  (** term-level box: [box expr1] *)
     | Let of { idr : Id.R.t; bound : t; body : t }
         (** [let u = expr1 in expr2] *)
+    | Fix of { idr : Id.R.t; bound : t; body : t }
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
   [@@deriving equal, sexp]
@@ -57,6 +58,8 @@ module Expr = struct
   let box e = Location.locate @@ Box { e }
 
   let letc idr bound body = Location.locate @@ Let { idr; bound; body }
+
+  let fixc idr bound body = Location.locate @@ Fix { idr; bound; body }
 
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 end

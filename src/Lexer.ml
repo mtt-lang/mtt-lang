@@ -53,6 +53,7 @@ let token buf =
   | "fun" | 0x03BB -> FUN
   | "let" -> LET
   | "box" -> BOX
+  | "let fix" -> FIX
   | "letbox" -> LETBOX
   | regular_ident -> IDR (Utf8.lexeme buf)
   | modal_ident -> IDM (Utf8.lexeme buf)

@@ -85,6 +85,9 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
   | Let { idr; bound; body } ->
       let%bind ty = infer_open delta gamma bound in
       check_open delta (Env.R.extend gamma idr ty) body typ
+  | Fix { idr; bound; body } ->
+      let%bind ty = infer_open delta gamma bound in
+      check_open delta (Env.R.extend gamma idr ty) body typ
   | Letbox { idm; boxed; body } -> (
       let%bind ty = infer_open delta gamma boxed in
       match ty with
@@ -134,6 +137,9 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       let%map ty = infer_open delta Env.R.emp e in
       Type.Box { ty }
   | Let { idr; bound; body } ->
+      let%bind ty = infer_open delta gamma bound in
+      infer_open delta (Env.R.extend gamma idr ty) body
+  | Fix { idr; bound; body } ->
       let%bind ty = infer_open delta gamma bound in
       infer_open delta (Env.R.extend gamma idr ty) body
   | Letbox { idm; boxed; body } -> (

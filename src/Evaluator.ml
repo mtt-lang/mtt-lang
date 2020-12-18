@@ -17,6 +17,8 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Box { e } -> free_vars_m e
   | Let { idr = _; bound; body } ->
       Set.union (free_vars_m bound) (free_vars_m body)
+  | Fix { idr = _; bound; body } ->
+      Set.union (free_vars_m bound) (free_vars_m body)    
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
@@ -44,6 +46,8 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | Box { e } -> box (subst_m term identm e)
   | Let { idr; bound; body } ->
       letc idr (subst_m term identm bound) (subst_m term identm body)
+  | Fix { idr; bound; body } ->
+      fixc idr (subst_m term identm bound) (subst_m term identm body)
   | Letbox { idm; boxed; body } ->
       Location.locate
         ( if [%equal: Id.M.t] identm idm then
@@ -100,6 +104,9 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | _ -> Result.fail "Trying to apply an argument to a non-function" )
   | Box { e } -> return @@ Val.Box { e }
   | Let { idr; bound; body } ->
+      let%bind bound_v = eval_open gamma bound in
+      eval_open (Env.R.extend gamma idr bound_v) body
+  | Fix { idr; bound; body } ->
       let%bind bound_v = eval_open gamma bound in
       eval_open (Env.R.extend gamma idr bound_v) body
   | Letbox { idm; boxed; body } -> (

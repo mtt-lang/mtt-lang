@@ -37,6 +37,8 @@ module Doc : DOC = struct
 
   let let_kwd = !^"let"
 
+  let fix_kwd = !^"let fix"
+
   let letbox_kwd = !^"letbox"
 
   let in_kwd = !^"in"
@@ -85,6 +87,12 @@ module Doc : DOC = struct
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
                ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body ))
+      | Fix { idr; bound; body } ->
+               (parens_if (p > 1))
+                 (group
+                    ( fix_kwd
+                    ^^^ !^(Id.R.to_string idr)
+                    ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body ))
       | Letbox { idm; boxed; body } ->
           (parens_if (p > 1))
             (group
