@@ -1,6 +1,10 @@
 open Base
 open Result.Let_syntax
 
+type error = [ `EnvUnboundVariableError of string (* name of variable *)
+                                        * string (* message *)
+             ]
+
 module Make (Key : sig
   type t [@@deriving_inline sexp]
 
@@ -32,7 +36,8 @@ struct
     | Some t -> return t
     | None ->
         let var_name = [%sexp_of: Key.t] k |> Sexp.to_string in
-        Result.fail [%string "$(var_name) is not found in the environment!"]
+        Result.fail @@ `EnvUnboundVariableError (var_name,
+          [%string "$(var_name) is not found in the environment!"])
 end
 
 module R = Make (Id.R)
