@@ -31,6 +31,17 @@ let locate_start_end data s_pos e_pos =
 
 let locate ?(loc = NoSource) data = { data; loc }
 
+let empty pos =
+  match pos with
+  | NoSource -> true
+  | Source _ -> false
+
+
+let pp_column_range pos =
+  match pos with
+  | Source pos -> [%string "$(Int.to_string pos.start_column):$(Int.to_string \ pos.end_column)"]
+  | NoSource -> ""
+
 let show_pos pos' =
   match pos' with
   | Source pos ->

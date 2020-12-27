@@ -87,7 +87,14 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           @@ `TypeMismatchError "Inferred type is not an arrow type")
   | Box { e } -> (
       match typ with
-      | Type.Box { ty } -> check_open delta Env.R.emp e ty
+      | Type.Box { ty } -> (
+          match check_open delta Env.R.emp e ty with
+          | Error ({data = (`EnvUnboundVariableError (var_name, _)); loc = var_loc}) -> fail_in loc
+              @@ `UnboundRegularVarInsideBoxError
+                (var_loc, [%string "regular variable $(var_name) \
+                                    (bound at $(Location.pp_column_range var_loc)) \
+                                    cannot accessed from boxed expression"])
+          | x -> x)
       | _ -> fail_in loc
           @@ `TypeMismatchError "Error: unboxed type")
   | Let { idr; bound; body } ->
@@ -133,8 +140,14 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | _ -> fail_in loc
           @@ `TypeMismatchError "Inferred type is not an arrow type" )
   | Box { e } ->
-      let%map ty = infer_open delta Env.R.emp e in
-      Type.Box { ty }
+      let%map ty = (match infer_open delta Env.R.emp e with
+        | Error ({data = (`EnvUnboundVariableError (var_name, _)); loc = var_loc}) -> fail_in loc
+            @@ `UnboundRegularVarInsideBoxError
+              (var_loc, [%string "regular variable $(var_name) \
+                              (bound at $(Location.pp_column_range var_loc)) \
+                              cannot accessed from boxed expression"])
+        | x -> x)
+      in Type.Box { ty }
   | Let { idr; bound; body } ->
       let%bind ty = infer_open delta gamma bound in
       infer_open delta (Env.R.extend gamma idr ty) body
