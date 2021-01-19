@@ -82,10 +82,10 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       match typ with
       | Type.Box { ty } -> check_open delta Env.R.emp e ty
       | _ -> Result.fail @@ Location.pp ~msg:"Error: unboxed type" loc )
-  | Let { idr; bound; body } ->
+  | Fix { idr; bound; body } ->
       let%bind ty = infer_open delta gamma bound in
       check_open delta (Env.R.extend gamma idr ty) body typ
-  | Fix { idr; bound; body } ->
+  | Let { idr; bound; body } ->
       let%bind ty = infer_open delta gamma bound in
       check_open delta (Env.R.extend gamma idr ty) body typ
   | Letbox { idm; boxed; body } -> (

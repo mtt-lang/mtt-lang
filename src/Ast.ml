@@ -59,7 +59,7 @@ module Expr = struct
 
   let letc idr bound body = Location.locate @@ Let { idr; bound; body }
 
-  let fixc idr bound body = Location.locate @@ Fix { idr; bound; body }
+  let fix idr bound body = Location.locate @@ Fix { idr; bound; body }
 
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 end

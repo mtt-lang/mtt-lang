@@ -18,7 +18,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Let { idr = _; bound; body } ->
       Set.union (free_vars_m bound) (free_vars_m body)
   | Fix { idr = _; bound; body } ->
-      Set.union (free_vars_m bound) (free_vars_m body)    
+      Set.union (free_vars_m bound) (free_vars_m body)
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
@@ -47,7 +47,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | Let { idr; bound; body } ->
       letc idr (subst_m term identm bound) (subst_m term identm body)
   | Fix { idr; bound; body } ->
-      fixc idr (subst_m term identm bound) (subst_m term identm body)
+      letc idr (subst_m term identm bound) (subst_m term identm body)
   | Letbox { idm; boxed; body } ->
       Location.locate
         ( if [%equal: Id.M.t] identm idm then
@@ -73,20 +73,20 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   body = subst_m term identm body;
                 } )
 
-let rec eval_open gamma Location.{ data = expr; _ } =
+let rec eval_open gamma betta Location.{ data = expr; _ } =
   let open Expr in
   match expr with
   | Unit -> return Val.Unit
   | Pair { e1; e2 } ->
-      let%map v1 = eval_open gamma e1 and v2 = eval_open gamma e2 in
+      let%map v1 = eval_open gamma betta e1 and v2 = eval_open gamma betta e2 in
       Val.Pair { v1; v2 }
   | Fst { e } -> (
-      let%bind pv = eval_open gamma e in
+      let%bind pv = eval_open gamma betta e in
       match pv with
       | Val.Pair { v1; v2 = _ } -> return v1
       | _ -> Result.fail "fst is stuck" )
   | Snd { e } -> (
-      let%bind pv = eval_open gamma e in
+      let%bind pv = eval_open gamma betta e in
       match pv with
       | Val.Pair { v1 = _; v2 } -> return v2
       | _ -> Result.fail "snd is stuck" )
@@ -96,23 +96,34 @@ let rec eval_open gamma Location.{ data = expr; _ } =
   | Fun { idr; ty_id = _; body } ->
       return @@ Val.Clos { idr; body; env = gamma }
   | App { fe; arge } -> (
-      let%bind fv = eval_open gamma fe in
-      let%bind argv = eval_open gamma arge in
-      match fv with
+      let%bind fv = eval_open gamma betta fe in
+      let%bind argv = eval_open gamma betta arge in
+      let eval_body = function
+        | Val.Clos { idr; body; _ } -> (
+          match Env.R.lookup betta idr with
+          | Ok body_v -> Ok (app body_v body)
+          | Error _ -> Ok body )
+        | _ -> Error (Result.fail "Trying to apply an argument to a non-function") in
+      let%bind body_fv = eval_body fv in
+      let%bind body_argv = eval_body argv in
+      let%bind fv_rec = eval_open gamma betta body_fv in
+      let%bind argv_rec = eval_open gamma betta body_argv in
+      match fv_rec with
       | Val.Clos { idr; body; env } ->
-          eval_open (Env.R.extend env idr argv) body
+          eval_open (Env.R.extend env idr argv_rec) betta body
       | _ -> Result.fail "Trying to apply an argument to a non-function" )
   | Box { e } -> return @@ Val.Box { e }
   | Let { idr; bound; body } ->
-      let%bind bound_v = eval_open gamma bound in
-      eval_open (Env.R.extend gamma idr bound_v) body
+      let%bind bound_v = eval_open gamma betta bound in
+      eval_open (Env.R.extend gamma idr bound_v) betta body
   | Fix { idr; bound; body } ->
-      let%bind bound_v = eval_open gamma bound in
-      eval_open (Env.R.extend gamma idr bound_v) body
+      let new_betta = Env.R.extend betta idr bound in
+      let%bind bound_v = eval_open gamma new_betta bound in
+      eval_open (Env.R.extend gamma idr bound_v) betta body
   | Letbox { idm; boxed; body } -> (
-      let%bind boxed_v = eval_open gamma boxed in
+      let%bind boxed_v = eval_open gamma betta boxed in
       match boxed_v with
-      | Val.Box { e } -> eval_open gamma (subst_m e idm body)
+      | Val.Box { e } -> eval_open gamma betta (subst_m e idm body)
       | _ -> Result.fail "Trying to unbox a non-box expression" )
 
-let eval expr = eval_open Env.R.emp expr
+let eval expr = eval_open Env.R.emp Env.R.emp expr
