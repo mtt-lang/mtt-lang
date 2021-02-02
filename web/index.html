@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Modal Type Theory</title>
+  <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="ace/mode-mtt.js" type="text/javascript" charset="utf-8"></script>
+  <script src="ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="mttweb.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="west" class="west">
+    <div id="editor" class="editor"></div>
+    <div id="panel" class="panel">
+      <div id="operation" class="operation">
+        <a title="Eval term" href="#" onclick="jsEval(); return false;">Eval</a>
+        <a title="Infer type" href="#" onclick="jsInfer(); return false;">Infer</a>
+        <a title="Typecheck" href="#" onclick="jsTypecheck(); return false;">Typecheck</a>
+      </div>
+    </div>
+    <div id="terminal" class="terminal"></div>
+  </div>
+  <div id="east" class="east">
+    <div id="text">
+      <h1 id="lang">MTT</h1>
+      <div id="content"></div>
+      <h1>List of examples</h1>
+      <div id="examples"></div>
+    </div>
+  </div>
+  </div>
+</body>
+</html>

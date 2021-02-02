@@ -21,6 +21,10 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   (base (and (>= v0.12.2) (< v0.15.0)))
   cmdliner
   (dune (>= 2.0))
+  js_of_ocaml
+  js_of_ocaml-compiler
+  js_of_ocaml-lwt
+  js_of_ocaml-ppx
   menhir
   (ocaml (>= 4.07.0))
   (ocamlformat (and :with-test (= 0.15.0)))
