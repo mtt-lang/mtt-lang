@@ -1,5 +1,50 @@
+(* start copy-paste from ../bin/mtt.ml *)
+open Mtt
+open Base
+(* open Result.Let_syntax *)
+open ParserInterface
+open Stdio
+
+let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
+ fun ast_kind source ->
+  parse_from ast_kind source
+  |> Result.map_error ~f:(fun parse_error ->
+         [%string "Parse error: $parse_error"])
+
+let parse_and_eval source =
+  let open Result.Let_syntax in
+  let%bind ast = parse_from_e Term source in
+  Evaluator.eval ast
+  |> Result.map_error ~f:(fun eval_err ->
+          [%string "Evaluation error: $eval_err"])
+
+let osource source_file source_arg =
+  match (source_file, source_arg) with
+  | Some filename, None -> Some (File filename)
+  | None, Some string -> Some (String string)
+  | Some _, Some _ -> None
+  | None, None -> Some Stdin
+
+let eval_expr source_file source_arg =
+  match osource source_file source_arg with
+  | None -> `Error (true, "Please provide exactly one expression to evaluate")
+  | Some source -> (
+      match parse_and_eval source with
+      | Ok value ->
+          let document = PrettyPrinter.Doc.of_val value in
+          PPrint.ToChannel.pretty 1.0 80 stdout document;
+          Out_channel.newline stdout;
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg) )
+
+(* end copy-paste from ../bin/mtt.ml *)
+
+(* let eval_web term =
+  eval_expr None term *)
+
+
 open Js_of_ocaml
-module Html = Dom_html 
+module Html = Dom_html
 
 (* create editor *)
 let editor_create _ =
@@ -11,7 +56,7 @@ let editor_create _ =
       \"autoScrollEditorIntoView\" : true,
       \"showPrintMargin\"          : false
     }"
-    in
+  in
   let _ = Js.Unsafe.meth_call editor "setOptions" [| Js.Unsafe.inject editor_options |] in
   let _ = Js.Unsafe.meth_call editor "setTheme" [| Js.Unsafe.inject @@ Js.string "ace/theme/twilight" |] in
   let _ = Js.Unsafe.meth_call (editor##.session) "setMode" [| Js.Unsafe.inject @@ Js.string "ace/mode/mtt" |] in
