@@ -65,8 +65,9 @@ let output_to_terminal terminal msg =
 
 (* action when `eval` button pressed *)
 let eval_onclick editor terminal _ =
-  let content = editor##getValue in
-  let ik = eval_web content in
+  let content = Js.to_string editor##getValue in
+  let ik = eval_web (String content) in
+  (* let ik = Js.string @@ eval_web (String content) in *)
   output_to_terminal terminal ik
 
 (* action when `infer` button pressed *)
