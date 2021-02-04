@@ -8,13 +8,15 @@ let format_located_error Location.{ data = error; loc } =
   match error with
   | `TypeMismatchError msg -> Location.pp ~msg loc
   | `EvaluationError msg -> Location.pp ~msg loc
-  | `EnvUnboundVariableError (_, msg) -> Location.pp ~msg loc
+  | `EnvUnboundRegularVarError (_, msg) -> Location.pp ~msg loc
+  | `EnvUnboundModalVarError (_, msg) -> Location.pp ~msg loc
   | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pp ~msg loc
 
 let format_error error =
   match error with
   | `EvaluationError msg -> msg
-  | `EnvUnboundVariableError (_, msg) -> msg
+  | `EnvUnboundRegularVarError (_, msg) -> msg
+  | `EnvUnboundModalVarError (_, msg) -> msg
   | `TypeMismatchError msg -> msg
 
 (* Parsing with error handling utilities *)
