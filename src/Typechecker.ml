@@ -12,6 +12,9 @@ type error = [
 
 type 'e lerror = ([> error ] as 'e) Location.located
 
+let check_equal ty1 ty2 msg =
+  Result.ok_if_true ([%equal: Type.t] ty1 ty2) ~error:(`TypeMismatchError msg)
+
 let with_error_location loc r =
   Result.map_error r ~f:(fun e -> Location.locate ~loc:loc e)
 
@@ -19,10 +22,8 @@ let fail_in loc err = Result.fail @@ Location.locate ~loc:loc @@ err
 
 let rec check_open delta gamma Location.{ data = expr; loc } typ =
   match expr with
-  | Unit ->
-      Result.ok_if_true
-        ([%equal: Type.t] typ Type.Unit)
-        ~error:(Location.locate ~loc:loc @@ `TypeMismatchError "Expected unit type")
+  | Unit -> with_error_location loc
+      @@ check_equal typ Type.Unit "Expected unit type"
   | Pair { e1; e2 } -> (
       match typ with
       | Type.Prod { ty1; ty2 } ->
@@ -35,43 +36,32 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       let%bind ty = infer_open delta gamma e in
       match ty with
       | Type.Prod { ty1; ty2 = _ } ->
-          Result.ok_if_true
-            ([%equal: Type.t] typ ty1)
-            ~error:(Location.locate ~loc:loc
-                    @@ `TypeMismatchError "fst error: inferred type is different from the input one")
+          with_error_location loc
+          @@ check_equal typ ty1 "fst error: inferred type is different from the input one"
       | _ -> fail_in loc
           @@ `TypeMismatchError "fst is applied to a non-product type")
   | Snd { e } -> (
       let%bind ty = infer_open delta gamma e in
       match ty with
       | Type.Prod { ty1 = _; ty2 } ->
-          Result.ok_if_true
-            ([%equal: Type.t] typ ty2)
-            ~error:(Location.locate ~loc:loc
-                    @@ `TypeMismatchError "snd error: inferred type is different from the input one")
+          with_error_location loc
+          @@ check_equal typ ty2  "snd error: inferred type is different from the input one"
       | _ -> fail_in loc
           @@ `TypeMismatchError "snd is applied to a non-product type")
   | VarR { idr } ->
       let%bind ty = with_error_location loc @@ Env.R.lookup gamma idr in
-      Result.ok_if_true
-        ([%equal: Type.t] typ ty)
-        ~error:(Location.locate ~loc:loc
-                @@ `TypeMismatchError "Unexpected regular variable type")
+      with_error_location loc
+      @@ check_equal typ ty "Unexpected regular variable type"
   | VarM { idm } ->
       let%bind ty = with_error_location loc @@ Env.M.lookup delta idm in
-      Result.ok_if_true
-        ([%equal: Type.t] typ ty)
-        ~error:(Location.locate ~loc:loc
-                @@ `TypeMismatchError "Unexpected modal variable type")
+      with_error_location loc 
+      @@ check_equal typ ty "Unexpected modal variable type"
   | Fun { idr; ty_id; body } -> (
       match typ with
       | Type.Arr { dom; cod } ->
-          if [%equal: Type.t] dom ty_id then
-            check_open delta (Env.R.extend gamma idr dom) body cod
-          else
-            fail_in loc
-            @@ `TypeMismatchError "Domain of arrow type is not the same as type of function \
-                               parameter"
+          let%bind () = with_error_location loc @@ check_equal dom ty_id
+              "Domain of arrow type is not the same as type of function parameter" in
+          check_open delta (Env.R.extend gamma idr dom) body cod
       | _ -> fail_in loc
           @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
@@ -79,10 +69,8 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       match ty with
       | Type.Arr { dom; cod } ->
           let%bind () = check_open delta gamma arge dom in
-          Result.ok_if_true
-            ([%equal: Type.t] typ cod)
-            ~error:(Location.locate ~loc:loc
-                    @@ `TypeMismatchError "Unexpected function codomain")
+          with_error_location loc
+          @@ check_equal typ cod "Unexpected function codomain"
       | _ -> fail_in loc
           @@ `TypeMismatchError "Inferred type is not an arrow type")
   | Box { e } -> (
