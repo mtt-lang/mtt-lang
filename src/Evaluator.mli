@@ -1,10 +1,7 @@
 open Base
 open Ast
 
-type error = [
-  | `EvaluationError of string
-  | Env.error
-]
+type error = [ `EvaluationError of string | Env.error ]
 (** Type of errors *)
 
 val free_vars_m : Expr.t -> (Id.M.t, Id.M.comparator_witness) Set.t
