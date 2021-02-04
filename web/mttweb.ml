@@ -1,5 +1,5 @@
 (* start copy-paste from ../bin/mtt.ml *)
-open Base (* caml_failwith(\n[ ]+)?\("Base(.*)"\) *)
+open Base
 
 open Mtt
 open ParserInterface
