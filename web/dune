@@ -10,7 +10,9 @@
  (targets mttweb.js)
  (action
   (run
-   %{bin:js_of_ocaml} ;--disable genprim
+   %{bin:js_of_ocaml} 
+   +base/runtime.js
+   --disable genprim
    --source-map
    %{dep:mttweb.bc}
    -o
