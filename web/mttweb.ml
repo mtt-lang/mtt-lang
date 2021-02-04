@@ -1,9 +1,8 @@
 (* start copy-paste from ../bin/mtt.ml *)
 open Mtt
+(* caml_failwith(\n[ ]+)?\("Base(.*)"\) *)
 open Base
-(* open Result.Let_syntax *)
 open ParserInterface
-open Stdio
 
 let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
  fun ast_kind source ->
@@ -18,33 +17,16 @@ let parse_and_eval source =
   |> Result.map_error ~f:(fun eval_err ->
           [%string "Evaluation error: $eval_err"])
 
-let osource source_file source_arg =
-  match (source_file, source_arg) with
-  | Some filename, None -> Some (File filename)
-  | None, Some string -> Some (String string)
-  | Some _, Some _ -> None
-  | None, None -> Some Stdin
-
-let eval_expr source_file source_arg =
-  match osource source_file source_arg with
-  | None -> `Error (true, "Please provide exactly one expression to evaluate")
-  | Some source -> (
-      match parse_and_eval source with
-      | Ok value ->
-          let document = PrettyPrinter.Doc.of_val value in
-          PPrint.ToChannel.pretty 1.0 80 stdout document;
-          Out_channel.newline stdout;
-          `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
-
 (* end copy-paste from ../bin/mtt.ml *)
-
-(* let eval_web term =
-  eval_expr None term *)
 
 
 open Js_of_ocaml
 module Html = Dom_html
+
+let eval_web term =
+  match parse_and_eval term with
+  | Ok res  -> PrettyPrinter.Doc.of_val res
+  | Error _ -> assert false
 
 (* create editor *)
 let editor_create _ =
@@ -84,7 +66,8 @@ let output_to_terminal terminal msg =
 (* action when `eval` button pressed *)
 let eval_onclick editor terminal _ =
   let content = editor##getValue in
-  output_to_terminal terminal content
+  let ik = eval_web content in
+  output_to_terminal terminal ik
 
 (* action when `infer` button pressed *)
 let infer_onclick editor terminal _ =
