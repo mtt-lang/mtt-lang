@@ -9,15 +9,8 @@
 (rule
  (targets mttweb.js)
  (action
-  (run
-   %{bin:js_of_ocaml} 
-   +base/runtime.js
-   --disable genprim
-   --source-map
-   %{dep:mttweb.bc}
-   -o
-   %{targets}
-   --pretty)))
+  (run %{bin:js_of_ocaml} +base/runtime.js --disable genprim --source-map
+    %{dep:mttweb.bc} -o %{targets} --pretty)))
 
 (alias
  (name default)

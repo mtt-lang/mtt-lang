@@ -1,6 +1,5 @@
 (* start copy-paste from ../bin/mtt.ml *)
 open Base
-
 open Mtt
 open ParserInterface
 open Result.Let_syntax
@@ -50,92 +49,65 @@ open Js_of_ocaml
 module Html = Dom_html
 
 (* create editor *)
-let editor_create _ =
-  let editor =
-    Js.Unsafe.new_obj
-      (Js.Unsafe.variable "ace.edit")
-      [| Js.Unsafe.inject (Js.string "editor") |]
-  in
+let create_editor div =
+  let editor = Ace.create_editor div in
+  Ace.set_theme editor "ace/theme/twilight";
+  Ace.set_mode editor "ace/mode/mtt";
   let editor_options =
-    Json.unsafe_input
-    @@ Js.string
-         "{\n\
-         \      \"fontSize\"                 : \"20px\",\n\
-         \      \"selectionStyle\"           : \"text\",\n\
-         \      \"autoScrollEditorIntoView\" : true,\n\
-         \      \"showPrintMargin\"          : false\n\
-         \    }"
+    "{\n\
+    \      \"fontSize\"                 : \"20px\",\n\
+    \      \"selectionStyle\"           : \"text\",\n\
+    \      \"autoScrollEditorIntoView\" : true,\n\
+    \      \"showPrintMargin\"          : false\n\
+    \    }"
   in
-  let _ =
-    Js.Unsafe.meth_call editor "setOptions"
-      [| Js.Unsafe.inject editor_options |]
-  in
-  let _ =
-    Js.Unsafe.meth_call editor "setTheme"
-      [| Js.Unsafe.inject @@ Js.string "ace/theme/twilight" |]
-  in
-  let _ =
-    Js.Unsafe.meth_call editor##.session "setMode"
-      [| Js.Unsafe.inject @@ Js.string "ace/mode/mtt" |]
-  in
+  Ace.set_options editor editor_options;
   editor
 
 (* create terminal  *)
-let terminal_create _ =
-  let terminal =
-    Js.Unsafe.new_obj
-      (Js.Unsafe.variable "ace.edit")
-      [| Js.Unsafe.inject (Js.string "terminal") |]
-  in
+let create_terminal div =
+  let terminal = Ace.create_editor div in
+  Ace.set_theme terminal "ace/theme/twilight";
   let terminal_options =
-    Json.unsafe_input
-    @@ Js.string
-         "{\n\
-         \      \"fontSize\" : \"14px\",\n\
-         \      \"copyWithEmptySelection\" : true,\n\
-         \      \"readOnly\" : true\n\
-         \    }"
+    "{\n\
+    \      \"fontSize\" : \"14px\",\n\
+    \      \"copyWithEmptySelection\" : true,\n\
+    \      \"readOnly\" : true\n\
+    \    }"
   in
-  let _ =
-    Js.Unsafe.meth_call terminal "setOptions"
-      [| Js.Unsafe.inject terminal_options |]
-  in
-  let _ =
-    Js.Unsafe.meth_call terminal "setTheme"
-      [| Js.Unsafe.inject @@ Js.string "ace/theme/twilight" |]
-  in
+  Ace.set_options terminal terminal_options;
   terminal
 
 (* print result to terminal *)
 let output_to_terminal terminal msg =
-  terminal##setValue msg;
-  terminal##clearSelection
+  Ace.set_value terminal msg;
+  Ace.clear_selection terminal
 
 (* action when `eval` button pressed *)
 let eval_onclick editor terminal _ =
-  let content = Js.to_string editor##getValue in
-  let result = Js.string @@ eval_web (String content) in
+  let content = Ace.get_value editor in
+  let result = eval_web (String content) in
   output_to_terminal terminal result
 
 (* action when `infer` button pressed *)
 let infer_onclick editor terminal _ =
-  let content = Js.to_string editor##getValue in
-  let result = Js.string @@ infer_web (String content) in
+  let content = Ace.get_value editor in
+  let result = infer_web (String content) in
   output_to_terminal terminal result
 
-(* action when `typecheck` button pressed *)
-let clear_onclick editor _ = editor##setValue (Js.string "")
+(* action when `clear` button pressed *)
+let clear_onclick editor _ = Ace.set_value editor ""
 
 (* language description and examples *)
 let create_east_content _ =
-  let content = Dom_html.getElementById "content" in
+  let content = Html.getElementById "content" in
   let document = Html.window##.document in
   Dom.appendChild content
     (document##createTextNode (Js.string "MTT description"))
 
 let start _ =
-  let editor = editor_create () in
-  let terminal = terminal_create () in
+  let editor = create_editor "editor" in
+  let terminal = create_terminal "terminal" in
   Js.Unsafe.global##.jsEval := Js.wrap_callback (eval_onclick editor terminal);
   Js.Unsafe.global##.jsInfer := Js.wrap_callback (infer_onclick editor terminal);
   Js.Unsafe.global##.jsClear := Js.wrap_callback (clear_onclick editor);
