@@ -12,6 +12,10 @@
   (run %{bin:js_of_ocaml} +base/runtime.js --disable genprim --source-map
     %{dep:mttweb.bc} -o %{targets} --pretty)))
 
-(alias
- (name default)
- (deps mttweb.js index.html))
+; (executable
+;  (name mttweb)
+;  (modes js)
+;  (js_of_ocaml (flags +base/runtime.js --disable genprim --source-map))
+;  (libraries js_of_ocaml-lwt base mtt pprint)
+;  (preprocess
+;   (pps ppx_let js_of_ocaml-ppx ppx_sexp_conv ppx_string_interpolation)))
