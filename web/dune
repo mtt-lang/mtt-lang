@@ -1,22 +1,8 @@
-; (executable
-;  (name mttweb)
-;  (libraries js_of_ocaml-lwt base mtt pprint)
-;  (flags :standard -safe-string)
-;  (modes byte)
-;  (preprocess
-;   (pps ppx_let js_of_ocaml-ppx ppx_sexp_conv ppx_string_interpolation)))
-
-; (rule
-;  (targets mttweb.js)
-;  (action
-;   (run %{bin:js_of_ocaml} +base/runtime.js --disable genprim --source-map
-;     %{dep:mttweb.bc} -o %{targets} --pretty)))
-
 (executable
  (name mttweb)
  (modes js)
  (js_of_ocaml
   (flags +base/runtime.js --disable genprim --source-map))
- (libraries js_of_ocaml-lwt base mtt pprint)
+ (libraries js_of_ocaml-lwt base mtt pprint js_of_ocaml-tyxml)
  (preprocess
   (pps ppx_let js_of_ocaml-ppx ppx_sexp_conv ppx_string_interpolation)))

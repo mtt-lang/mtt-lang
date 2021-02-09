@@ -111,6 +111,34 @@ let infer_onclick editor terminal _ =
 (* action when `clear` button pressed *)
 let clear_onclick editor _ = Ace.set_value editor ""
 
+(* wrapper for `loadfile` from script.js *)
+let loadfile (editor : Ace.editor) (filename : filename) : unit =
+  Js.Unsafe.fun_call
+    (Js.Unsafe.js_expr "loadfile")
+    [| Js.Unsafe.inject editor; Js.Unsafe.inject @@ Js.string filename |]
+
+let load_files (editor : Ace.editor) (l : filename list) : unit =
+  let open Js_of_ocaml_tyxml.Tyxml_js in
+  let elem s =
+    Html.(
+      li
+        [
+          a
+            ~a:
+              [
+                a_class [ "file" ];
+                a_href ("#" ^ s);
+                a_title s;
+                a_onclick (fun _ ->
+                    loadfile editor s;
+                    false);
+              ]
+            [ txt s ];
+        ])
+  in
+  let l = Html.ul (List.map l ~f:elem) in
+  Register.id ~keep:true "examples" [ l ]
+
 (* language description and examples *)
 let create_east_content _ =
   let content = Html.getElementById "content" in
@@ -124,6 +152,19 @@ let start _ =
   Js.Unsafe.global##.jsEval := Js.wrap_callback (eval_onclick editor terminal);
   Js.Unsafe.global##.jsInfer := Js.wrap_callback (infer_onclick editor terminal);
   Js.Unsafe.global##.jsClear := Js.wrap_callback (clear_onclick editor);
+  let files =
+    [
+      "apply.mtt";
+      "boxed-id.mtt";
+      "boxed-product-curried.mtt";
+      "boxed-product1.mtt";
+      "boxed-product2.mtt";
+      "eval-apply.mtt";
+      "eval.mtt";
+      "quote.mtt";
+    ]
+  in
+  load_files editor files;
   create_east_content ();
   Js._false
 
