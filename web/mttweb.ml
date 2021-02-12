@@ -143,14 +143,15 @@ let load_files (editor : Ace.editor) (l : filename list) : unit =
 let create_east_content _ =
   let content = Html.getElementById "content" in
   let document = Html.window##.document in
-  let description = Js.string
-    "Welcome to the online demo of the Mtt language, a functional langauge based on a modal type theory.
-     Beware, this is a prototype: UI in general are research-quality.
-     You can find a list of examples below.
-    "
+  let description =
+    Js.string
+      "Welcome to the online demo of the Mtt language, a functional langauge \
+       based on a modal type theory.\n\
+      \     Beware, this is a prototype: UI in general are research-quality.\n\
+      \     You can find a list of examples below.\n\
+      \    "
   in
-  Dom.appendChild content
-    (document##createTextNode description)
+  Dom.appendChild content (document##createTextNode description)
 
 let start _ =
   let editor = create_editor "editor" in
