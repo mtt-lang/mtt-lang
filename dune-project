@@ -24,6 +24,7 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   js_of_ocaml
   js_of_ocaml-compiler
   js_of_ocaml-lwt
+  js_of_ocaml-tyxml
   js_of_ocaml-ppx
   menhir
   (ocaml (>= 4.07.0))
