@@ -2,7 +2,7 @@ open Base
 open Result.Let_syntax
 open Ast
 
-type error = string
+type error = [ `EvaluationError of string | Env.error ]
 
 let rec free_vars_m Location.{ data = term; _ } =
   let open Expr in
@@ -85,12 +85,12 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       let%bind pv = eval_open gamma e in
       match pv with
       | Val.Pair { v1; v2 = _ } -> return v1
-      | _ -> Result.fail "fst is stuck" )
+      | _ -> Result.fail @@ `EvaluationError "fst is stuck" )
   | Snd { e } -> (
       let%bind pv = eval_open gamma e in
       match pv with
       | Val.Pair { v1 = _; v2 } -> return v2
-      | _ -> Result.fail "snd is stuck" )
+      | _ -> Result.fail @@ `EvaluationError "snd is stuck" )
   | Nat { n } -> return @@ Val.Nat { n }
   | BinOp { op; e1; e2 } -> (
       let%bind lhs = eval_open gamma e1 in
@@ -102,10 +102,12 @@ let rec eval_open gamma Location.{ data = expr; _ } =
           | Sub -> return @@ Val.Nat { n = Nat.sub n1 n2 }
           | Mul -> return @@ Val.Nat { n = Nat.mul n1 n2 }
           | Div -> return @@ Val.Nat { n = Nat.div n1 n2 } )
-      | _, _ -> Result.fail "Only numbers can be multiplied" )
+      | _, _ -> Result.fail @@ `EvaluationError "Only numbers can be multiplied" )
   | VarR { idr } -> Env.R.lookup gamma idr
   | VarM _ ->
-      Result.fail "Modal variable access is not possible in a well-typed term"
+      Result.fail
+      @@ `EvaluationError
+           "Modal variable access is not possible in a well-typed term"
   | Fun { idr; ty_id = _; body } ->
       return @@ Val.Clos { idr; body; env = gamma }
   | App { fe; arge } -> (
@@ -114,7 +116,9 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       match fv with
       | Val.Clos { idr; body; env } ->
           eval_open (Env.R.extend env idr argv) body
-      | _ -> Result.fail "Trying to apply an argument to a non-function" )
+      | _ ->
+          Result.fail
+          @@ `EvaluationError "Trying to apply an argument to a non-function" )
   | Box { e } -> return @@ Val.Box { e }
   | Let { idr; bound; body } ->
       let%bind bound_v = eval_open gamma bound in
@@ -123,6 +127,8 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       let%bind boxed_v = eval_open gamma boxed in
       match boxed_v with
       | Val.Box { e } -> eval_open gamma (subst_m e idm body)
-      | _ -> Result.fail "Trying to unbox a non-box expression" )
+      | _ ->
+          Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
+      )
 
 let eval expr = eval_open Env.R.emp expr

@@ -8,6 +8,8 @@ module type ID = sig
 
   val to_string : t -> string
 
+  val context_kind : string
+
   include Comparable.S with type t := t
 end
 
@@ -19,6 +21,8 @@ module R : ID = struct
     let mk = Fn.id
 
     let to_string = Fn.id
+
+    let context_kind = "regular"
   end
 
   include T
@@ -33,6 +37,8 @@ module M : ID = struct
     let mk = Fn.id
 
     let to_string = Fn.id
+
+    let context_kind = "modal"
   end
 
   include T
