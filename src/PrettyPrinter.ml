@@ -118,10 +118,8 @@ module Doc : DOC = struct
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
       | Match { matched; bound; alt_empty; alt_cons } ->
           (parens_if (p > 1))
-            ( match_kwd
-            ^^^ walk 1 matched
-            ^^^ with_kwd ^/^ bar ^^^ nil_kwd ^^^ darrow ^^^ walk 2 alt_empty
-            ^/^ bar ^^^ succ_kwd
+            ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ nil_kwd
+            ^^^ darrow ^^^ walk 2 alt_empty ^/^ bar ^^^ succ_kwd
             ^^^ !^(Id.R.to_string bound)
             ^^^ darrow ^^^ walk 2 alt_cons ^^^ end_kwd )
     in
