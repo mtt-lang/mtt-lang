@@ -39,7 +39,7 @@
 %token LET
 %token LETBOX
 %token IN
-%token MATCH WITH ALTERNATIVE END
+%token MATCH WITH PIPE END
 
 %left PLUS MINUS
 %right ARROW   (* Type arrows associate to the right *)
@@ -129,7 +129,7 @@ expr:
     { Location.locate_start_end (Letbox {idm = Id.M.mk idm; boxed; body}) $symbolstartpos $endpos }
 
     (* match expr with ... end *)
-  | MATCH; matched = expr; WITH; ALTERNATIVE; NIL; DARROW; zbranch = expr; ALTERNATIVE; SUCC; pred = IDR; DARROW; sbranch = expr; END
+  | MATCH; matched = expr; WITH; PIPE; NIL; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
     { Location.locate_start_end (Match {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
 
   | e = parceled_expr

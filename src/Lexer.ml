@@ -53,7 +53,7 @@ let token buf =
   | '+' -> PLUS
   | '-' -> MINUS
   | '/' -> SLASH
-  | '|' -> ALTERNATIVE
+  | '|' -> PIPE
   | "fst" | 0x03C0, 0x2081 (* π₁ *) -> FST
   | "snd" | 0x03C0, 0x2082 (* π₂ *) -> SND
   | "in" -> IN
