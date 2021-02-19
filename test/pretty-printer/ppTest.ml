@@ -65,7 +65,7 @@ let arbitrary_ast =
       | Expr.Snd { e } -> shrink_unary Expr.snd e
       | Expr.Pair { e1; e2 } -> shrink_binary Expr.pair e1 e2
       | Expr.Nat _ -> empty
-      | Expr.BinOp _ -> empty
+      | Expr.BinOp { op; e1; e2 } -> shrink_binary (Expr.binop op) e1 e2 
       | Expr.Fun { idr; ty_id; body } -> shrink_unary (Expr.func idr ty_id) body
       | Expr.App { fe; arge } -> shrink_binary Expr.app fe arge
       | Expr.Box { e } -> shrink_unary Expr.box e
@@ -73,7 +73,8 @@ let arbitrary_ast =
           shrink_binary (Expr.letc idr) bound body
       | Expr.Letbox { idm; boxed; body } ->
           shrink_binary (Expr.letbox idm) boxed body
-      | Expr.Match _ -> empty
+      | Expr.Match { matched; zbranch; pred; sbranch } -> 
+          shrink_unary (Expr.match_with matched zbranch pred) sbranch 
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
 
