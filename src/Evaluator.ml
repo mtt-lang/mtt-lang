@@ -22,6 +22,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
+  | Match _ -> Set.empty (module Id.M)
 
 let refresh_m idm fvs =
   let rec loop (idm : Id.M.t) =
@@ -73,6 +74,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   boxed = subst_m term identm boxed;
                   body = subst_m term identm body;
                 } )
+  | Match _ -> Location.locate body
 
 let rec eval_open gamma Location.{ data = expr; _ } =
   let open Expr in
@@ -102,7 +104,9 @@ let rec eval_open gamma Location.{ data = expr; _ } =
           | Sub -> return @@ Val.Nat { n = Nat.sub n1 n2 }
           | Mul -> return @@ Val.Nat { n = Nat.mul n1 n2 }
           | Div -> return @@ Val.Nat { n = Nat.div n1 n2 } )
-      | _, _ -> Result.fail @@ `EvaluationError "Only numbers can be multiplied" )
+      | _, _ ->
+          Result.fail
+          @@ `EvaluationError "Only numbers can be used in arithmetics" )
   | VarR { idr } -> Env.R.lookup gamma idr
   | VarM _ ->
       Result.fail
@@ -130,5 +134,15 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
+  | Match { name; bound; alt_empty; alt_cons } -> (
+      let%bind v = Env.R.lookup gamma name in
+      match v with
+      | Nat { n } ->
+          let predn = Val.Nat { n = Nat.pred n } in
+          if Nat.equal n Nat.zero then eval_open gamma alt_empty
+          else eval_open (Env.R.extend gamma bound predn) alt_cons
+      | _ ->
+          Result.fail
+          @@ `EvaluationError "Pattern matching is supported for Nat now" )
 
 let eval expr = eval_open Env.R.emp expr

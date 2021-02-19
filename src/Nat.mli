@@ -2,6 +2,10 @@ open Base
 
 type t
 
+val zero : t
+
+val one : t
+
 val of_string : string -> t
 
 val to_string : t -> string
@@ -19,3 +23,5 @@ val sub : t -> t -> t
 val mul : t -> t -> t
 
 val div : t -> t -> t
+
+val pred : t -> t

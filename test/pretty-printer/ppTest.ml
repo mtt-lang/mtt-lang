@@ -75,6 +75,7 @@ let arbitrary_ast =
           shrink_binary (Expr.letc idr) bound body
       | Expr.Letbox { idm; boxed; body } ->
           shrink_binary (Expr.letbox idm) boxed body
+      | Expr.Match _ -> empty
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
 

@@ -18,19 +18,13 @@ module Doc : DOC = struct
 
   let cross = !^"×"
 
-  let plus = !^"+"
-
-  let minus = !^"-"
-
-  let star = !^"*"
-
-  let slash = !^"/"
-
   let unit_type = !^"()"
 
   let unit_term = !^"()"
 
   let arrow = !^"→"
+
+  let darrow = !^"=>"
 
   let box_type = !^"□"
 
@@ -50,6 +44,16 @@ module Doc : DOC = struct
   let letbox_kwd = !^"letbox"
 
   let in_kwd = !^"in"
+
+  let match_kwd = !^"match"
+
+  let with_kwd = !^"with"
+
+  let end_kwd = !^"end"
+
+  let nil_kwd = !^"nil" (* A temporary token for pattern matching on Nat *)
+
+  let succ_kwd = !^"succ" (* A temporary token for pattern matching on Nat *)
 
   let parens_if b = if b then parens else fun x -> x
 
@@ -112,6 +116,14 @@ module Doc : DOC = struct
                ( letbox_kwd
                ^^^ !^(Id.M.to_string idm)
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
+      | Match { name; bound; alt_empty; alt_cons } ->
+          (parens_if (p > 1))
+            ( match_kwd
+            ^^^ !^(Id.R.to_string name)
+            ^^^ with_kwd ^/^ bar ^^^ nil_kwd ^^^ darrow ^^^ walk 2 alt_empty
+            ^/^ bar ^^^ succ_kwd
+            ^^^ !^(Id.R.to_string bound)
+            ^^^ darrow ^^^ walk 2 alt_cons ^^^ end_kwd )
     in
     walk 0 expr
 

@@ -2,6 +2,10 @@ open Base
 
 type t = Z.t
 
+let zero = Z.zero
+
+let one = Z.one
+
 let equal = Z.equal
 
 let of_string = Z.of_string
@@ -19,3 +23,5 @@ let sub = Z.sub
 let mul = Z.mul
 
 let div = Z.div
+
+let pred n = if equal n zero then zero else sub n one

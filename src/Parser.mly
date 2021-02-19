@@ -9,6 +9,7 @@
 %token <Nat.t> UINTZ
 
 (* Arithmetic *)
+%token NIL SUCC (* for pattern-matching *)
 %token PLUS
 %token MINUS
 (* multiplication is `CROSS` token *)
@@ -21,6 +22,7 @@
 (* Type-level syntax *)
 %token CROSS (** Could be term-level *)
 %token TBOX
+%token TNAT
 %token COLON
 %token ARROW
 
@@ -37,6 +39,7 @@
 %token LET
 %token LETBOX
 %token IN
+%token MATCH WITH ALTERNATIVE END
 
 %left PLUS MINUS
 %right ARROW   (* Type arrows associate to the right *)
@@ -58,6 +61,10 @@ typ:
     (* Unit type *)
   | UNIT
     { Type.Unit }
+
+    (* Type of Nat (UIntZ now) *)
+  | TNAT
+    { Type.Nat }
 
     (* Uninterpreted base types *)
   | idt = IDT
@@ -120,6 +127,10 @@ expr:
     (* letbox idm = expr in expr *)
   | LETBOX; idm = IDM; EQ; boxed = expr; IN; body = expr
     { Location.locate_start_end (Letbox {idm = Id.M.mk idm; boxed; body}) $symbolstartpos $endpos }
+
+    (* match expr with ... end *)
+  | MATCH; name = IDR; WITH; ALTERNATIVE; NIL; DARROW; alt_empty = expr; ALTERNATIVE; SUCC; bound = IDR; DARROW; alt_cons = expr; END
+    { Location.locate_start_end (Match {name = Id.R.mk name; bound = Id.R.mk bound; alt_empty; alt_cons}) $symbolstartpos $endpos }
 
   | e = parceled_expr
     { e }
