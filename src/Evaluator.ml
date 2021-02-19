@@ -22,7 +22,9 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
-  | Match _ -> Set.empty (module Id.M)
+  | Match { matched; zbranch; pred = _; sbranch } ->
+      Set.union (free_vars_m matched)
+      @@ Set.union (free_vars_m zbranch) (free_vars_m sbranch)
 
 let refresh_m idm fvs =
   let rec loop (idm : Id.M.t) =
@@ -74,7 +76,12 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   boxed = subst_m term identm boxed;
                   body = subst_m term identm body;
                 } )
-  | Match _ -> Location.locate body
+  | Match { matched; zbranch; pred; sbranch } ->
+      match_with
+        (subst_m term identm matched)
+        (subst_m term identm zbranch)
+        pred
+        (subst_m term identm sbranch)
 
 let rec eval_open gamma Location.{ data = expr; _ } =
   let open Expr in
