@@ -163,6 +163,23 @@ test for Nat
   > EOF
   <100, 101>
 
+  $ mtt eval <<EOF
+  > let f = fun x: A. 10 in
+  > match f () with
+  > | nil => 1
+  > | succ m => 2
+  > end
+  > EOF
+  2
+
+  $ mtt eval <<EOF
+  > match (1 - 1) with
+  > | nil => 1
+  > | succ m => 2
+  > end
+  > EOF
+  1
+
 Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.

@@ -123,3 +123,12 @@ Evaluator for Nat
   > in f 0
   > EOF
   Nat×Nat
+
+  $ mtt infer <<EOF
+  > let f = fun x:(). 10 in
+  > match f () with
+  > | nil => 1
+  > | succ m => 2
+  > end
+  > EOF
+  Nat
