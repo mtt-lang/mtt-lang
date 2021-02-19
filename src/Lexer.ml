@@ -42,7 +42,7 @@ let token buf =
   | "=>" | 0x21D2 | '.' -> DARROW
   | "=" -> EQ
   | "()" -> UNIT
-  | "Nat" -> TNAT
+  | "Nat" | 0x2115 -> TNAT
   | '(' -> LPAREN
   | ')' -> RPAREN
   | '<' -> LANGLE

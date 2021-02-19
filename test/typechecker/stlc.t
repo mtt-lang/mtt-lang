@@ -112,7 +112,7 @@ Evaluator for Nat
   >   end
   > in predpred 4
   > EOF
-  Nat
+  ℕ
 
   $ mtt infer <<EOF
   > let f = fun n: Nat.
@@ -122,7 +122,7 @@ Evaluator for Nat
   >   end
   > in f 0
   > EOF
-  Nat×Nat
+  ℕ×ℕ
 
   $ mtt infer <<EOF
   > let f = fun x:(). 10 in
@@ -131,4 +131,4 @@ Evaluator for Nat
   > | succ m => 2
   > end
   > EOF
-  Nat
+  ℕ

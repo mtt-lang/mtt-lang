@@ -28,7 +28,7 @@ module Doc : DOC = struct
 
   let box_type = !^"□"
 
-  let nat_type = !^"Nat"
+  let nat_type = !^"ℕ"
 
   (* keywords *)
   let fst_kwd = !^"π₁"
