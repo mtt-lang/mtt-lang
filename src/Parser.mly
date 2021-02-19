@@ -129,8 +129,8 @@ expr:
     { Location.locate_start_end (Letbox {idm = Id.M.mk idm; boxed; body}) $symbolstartpos $endpos }
 
     (* match expr with ... end *)
-  | MATCH; name = IDR; WITH; ALTERNATIVE; NIL; DARROW; alt_empty = expr; ALTERNATIVE; SUCC; bound = IDR; DARROW; alt_cons = expr; END
-    { Location.locate_start_end (Match {name = Id.R.mk name; bound = Id.R.mk bound; alt_empty; alt_cons}) $symbolstartpos $endpos }
+  | MATCH; matched = expr; WITH; ALTERNATIVE; NIL; DARROW; alt_empty = expr; ALTERNATIVE; SUCC; bound = IDR; DARROW; alt_cons = expr; END
+    { Location.locate_start_end (Match {matched; bound = Id.R.mk bound; alt_empty; alt_cons}) $symbolstartpos $endpos }
 
   | e = parceled_expr
     { e }

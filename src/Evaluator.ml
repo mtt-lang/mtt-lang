@@ -134,8 +134,8 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
-  | Match { name; bound; alt_empty; alt_cons } -> (
-      let%bind v = Env.R.lookup gamma name in
+  | Match { matched; bound; alt_empty; alt_cons } -> (
+      let%bind v = eval_open gamma matched in
       match v with
       | Nat { n } ->
           let predn = Val.Nat { n = Nat.pred n } in

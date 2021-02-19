@@ -42,7 +42,7 @@ module Expr = struct
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
-    | Match of { name : Id.R.t; bound : Id.R.t; alt_empty : t; alt_cons : t }
+    | Match of { matched : t; bound : Id.R.t; alt_empty : t; alt_cons : t }
         (** FOR NAT ONLY
           [match name with 
               | nil => ...
