@@ -1,6 +1,7 @@
 open Base
+open Mtt
 open Mtt.Ast
-open Mtt.PrettyPrinter
+module MttPP = Mtt.PrettyPrinter
 
 (* QCheck generator for the arbitrary (and most likely invalid) expressions *)
 let generator =
@@ -10,17 +11,14 @@ let generator =
            let lowercase_id =
              string_size ~gen:(char_range 'a' 'z') (return 1)
            in
-           let regular_id id = Mtt.Id.R.mk id in
-           let modal_id id = Mtt.Id.M.mk (id ^ "'") in
+           let regular_id id = Id.R.mk id in
+           let modal_id id = Id.M.mk (id ^ "'") in
            match size with
            | 0 ->
                oneof
                  [
                    return Expr.unit;
-                   (* won't work until expressions with free variables can be pretty-printed *)
-                   (* map
-                      (fun s -> Expr.VarR (Mtt.Id.R.mk s))
-                      (string_size ~gen:(char_range 'a' 'z') (return 1)); *)
+                   map (fun idr -> Expr.var_r (regular_id idr)) lowercase_id;
                    map (fun idm -> Expr.var_m (modal_id idm)) lowercase_id;
                  ]
            | size ->
@@ -65,9 +63,9 @@ let arbitrary_ast =
       | Expr.Unit | Expr.VarR _ | Expr.VarM _ -> empty
       | Expr.Fst { e } -> shrink_unary Expr.fst e
       | Expr.Snd { e } -> shrink_unary Expr.snd e
-      | Expr.Nat _ -> empty
-      | Expr.BinOp { op = _; e1 = _; e2 = _ } -> empty
       | Expr.Pair { e1; e2 } -> shrink_binary Expr.pair e1 e2
+      | Expr.Nat _ -> empty
+      | Expr.BinOp _ -> empty
       | Expr.Fun { idr; ty_id; body } -> shrink_unary (Expr.func idr ty_id) body
       | Expr.App { fe; arge } -> shrink_binary Expr.app fe arge
       | Expr.Box { e } -> shrink_unary Expr.box e
@@ -85,7 +83,7 @@ let test =
   QCheck.Test.make ~name:"Expression pretty printer preserving syntax"
     ~count:1000 ~long_factor:10 arbitrary_ast (fun ast ->
       let _ =
-        try (PPrint.ToBuffer.pretty 1.0 80 buffer) (Doc.of_expr ast)
+        try (PPrint.ToBuffer.pretty 1.0 80 buffer) (MttPP.Doc.of_expr ast)
         with _ -> ()
       in
       let ast_string = Stdlib.Buffer.contents buffer in
