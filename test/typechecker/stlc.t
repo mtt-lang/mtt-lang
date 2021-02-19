@@ -103,3 +103,23 @@ tests for location
        file name :  Not a file, lines :  3 - 3, column :  42 - 43
   [1]
 
+Evaluator for Nat
+  $ mtt infer <<EOF
+  > let predpred = fun n: Nat.
+  >   match n with
+  >   | nil => 0
+  >   | succ m => m - 1
+  >   end
+  > in predpred 4
+  > EOF
+  Nat
+
+  $ mtt infer <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | nil => <0, 0>
+  >   | succ m => <m, n>
+  >   end
+  > in f 0
+  > EOF
+  Nat×Nat
