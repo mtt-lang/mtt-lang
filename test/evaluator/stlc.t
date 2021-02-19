@@ -94,7 +94,7 @@ test for Nat
   $ mtt eval <<EOF
   > let pred = fun n: Nat. 
   >   match n with
-  >   | nil => 0
+  >   | zero => 0
   >   | succ m => m
   >   end
   > in pred 0
@@ -104,7 +104,7 @@ test for Nat
   $ mtt eval <<EOF
   > let pred = fun n: Nat. 
   >   match n with
-  >   | nil => 0
+  >   | zero => 0
   >   | succ m => m
   >   end
   > in pred 1
@@ -114,7 +114,7 @@ test for Nat
   $ mtt eval <<EOF
   > let pred = fun n: Nat. 
   >   match n with
-  >   | nil => 0
+  >   | zero => 0
   >   | succ m => n - 1
   >   end
   > in pred 43
@@ -124,7 +124,7 @@ test for Nat
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => 1
+  >   | zero => 1
   >   | succ m => m + n
   >   end
   > in f 42
@@ -134,7 +134,7 @@ test for Nat
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => <0, 0>
+  >   | zero => <0, 0>
   >   | succ m => <m, n>
   >   end
   > in f 0
@@ -144,7 +144,7 @@ test for Nat
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => <0, 0>
+  >   | zero => <0, 0>
   >   | succ m => <m, n>
   >   end
   > in f 42
@@ -156,7 +156,7 @@ test for Nat
   > let next = fun n: Nat. n + 1 in
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => ((mkpair 0) (next 1))
+  >   | zero => ((mkpair 0) (next 1))
   >   | succ m => ((mkpair n) (next n))
   >   end
   > in f 100
@@ -166,7 +166,7 @@ test for Nat
   $ mtt eval <<EOF
   > let f = fun x: A. 10 in
   > match f () with
-  > | nil => 1
+  > | zero => 1
   > | succ m => 2
   > end
   > EOF
@@ -174,7 +174,7 @@ test for Nat
 
   $ mtt eval <<EOF
   > match (1 - 1) with
-  > | nil => 1
+  > | zero => 1
   > | succ m => 2
   > end
   > EOF
@@ -184,7 +184,7 @@ Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => <0, 0>
+  >   | zero => <0, 0>
   >   | succ m => ()
   >   end
   > in f 0
@@ -194,7 +194,7 @@ Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => <0, 0>
+  >   | zero => <0, 0>
   >   | succ m => ()
   >   end
   > in f 42

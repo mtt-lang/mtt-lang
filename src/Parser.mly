@@ -9,7 +9,7 @@
 %token <Nat.t> UINTZ
 
 (* Arithmetic *)
-%token NIL SUCC (* for pattern-matching *)
+%token ZERO SUCC (* for pattern-matching *)
 %token PLUS
 %token MINUS
 (* multiplication is `CROSS` token *)
@@ -129,7 +129,7 @@ expr:
     { Location.locate_start_end (Letbox {idm = Id.M.mk idm; boxed; body}) $symbolstartpos $endpos }
 
     (* match expr with ... end *)
-  | MATCH; matched = expr; WITH; PIPE; NIL; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
+  | MATCH; matched = expr; WITH; PIPE; ZERO; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
     { Location.locate_start_end (Match {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
 
   | e = parceled_expr

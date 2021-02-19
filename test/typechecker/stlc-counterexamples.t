@@ -19,7 +19,7 @@ Pattern matching for Nat
   $ mtt infer <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => <0, 0>
+  >   | zero => <0, 0>
   >   | succ m => ()
   >   end
   > in f 0
@@ -31,7 +31,7 @@ Pattern matching for Nat
   $ mtt infer <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | nil => <0, 0>
+  >   | zero => <0, 0>
   >   | succ m => ()
   >   end
   > in f 42
