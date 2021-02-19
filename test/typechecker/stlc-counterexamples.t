@@ -24,7 +24,7 @@ Pattern matching for Nat
   >   end
   > in f 0
   > EOF
-  mtt: Type inference error: All ways of pattern matching should have a same type
+  mtt: Type inference error: All branches of pattern matching must have the same type
        file name :  Not a file, lines :  2 - 5, column :  2 - 5
   [1]
 
@@ -36,6 +36,6 @@ Pattern matching for Nat
   >   end
   > in f 42
   > EOF
-  mtt: Type inference error: All ways of pattern matching should have a same type
+  mtt: Type inference error: All branches of pattern matching must have the same type
        file name :  Not a file, lines :  2 - 5, column :  2 - 5
   [1]
