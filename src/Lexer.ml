@@ -64,7 +64,7 @@ let token buf =
   | "match" -> MATCH
   | "with" -> WITH
   | "end" -> END
-  | "zero" -> ZERO 
+  | "zero" -> ZERO
   | "succ" -> SUCC
   | unsigned_integer -> UINTZ (Nat.of_string (Utf8.lexeme buf))
   | regular_ident -> IDR (Utf8.lexeme buf)
