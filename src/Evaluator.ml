@@ -134,13 +134,13 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
-  | Match { matched; bound; alt_empty; alt_cons } -> (
+  | Match { matched; zbranch; pred; sbranch } -> (
       let%bind v = eval_open gamma matched in
       match v with
       | Nat { n } ->
           let predn = Val.Nat { n = Nat.pred n } in
-          if Nat.equal n Nat.zero then eval_open gamma alt_empty
-          else eval_open (Env.R.extend gamma bound predn) alt_cons
+          if Nat.equal n Nat.zero then eval_open gamma zbranch
+          else eval_open (Env.R.extend gamma pred predn) sbranch
       | _ ->
           Result.fail
           @@ `EvaluationError "Pattern matching is supported for Nat now" )
