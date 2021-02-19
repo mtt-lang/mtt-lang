@@ -173,7 +173,7 @@ test for Nat
   2
 
   $ mtt eval <<EOF
-  > match (1 - 1) with
+  > match 1 - 1 with
   > | zero => 1
   > | succ m => 2
   > end
