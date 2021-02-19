@@ -71,9 +71,9 @@
 ## STLC terms
 
 ### Binary function application must be parenthesized
-  $ mtt parse -e "f x y"
-  mtt: Parse error: Binary application must be parenthesized like so: (f x) y
-  [1]
+$ mtt parse -e "f x y"
+mtt: Parse error: Binary application must be parenthesized like so: (f x) y
+[1]
 
 ### Parens instead of angle brackets for pairs
   $ mtt parse -e "fun x : A. (x, x)"
@@ -89,9 +89,9 @@
   [1]
 
 ### box needs to be applied to an expression
-  $ mtt parse -e "box 42"
-  mtt: Parse error: Boxed expression is expected
-  [1]
+$ mtt parse -e "box 42"
+mtt: Parse error: Boxed expression is expected
+[1]
 
 ### letbox is one single keyword, not two
   $ mtt parse -e "let box x' = box () in x'"
@@ -125,14 +125,14 @@
   mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
   [1]
 
-  $ mtt parse -e "let x = () x"
-  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
-  [1]
+$ mtt parse -e "let x = () x"
+mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+[1]
 
-  $ mtt parse -e "let x = () y = x"
-  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
-  [1]
+$ mtt parse -e "let x = () y = x"
+mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+[1]
 
-  $ mtt parse -e "let x = (fun z: A. z) y = () in x y"
-  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
-  [1]
+$ mtt parse -e "let x = (fun z: A. z) y = () in x y"
+mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+[1]
