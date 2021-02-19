@@ -124,7 +124,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
                "All ways of pattern matching should have a same type"
       | _ ->
           fail_in loc
-          @@ `TypeMismatchError "Pattern matching is supported for Nat now" )
+          @@ `TypeMismatchError "Pattern matching is only supported for Nat now" )
 
 and infer_open delta gamma Location.{ data = expr; loc } =
   match expr with
@@ -210,7 +210,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
           return ty_empty
       | _ ->
           fail_in loc
-          @@ `TypeMismatchError "Pattern matching is supported for Nat now" )
+          @@ `TypeMismatchError "Pattern matching is only supported for Nat now" )
 
 let check expr typ = check_open Env.M.emp Env.R.emp expr typ
 
