@@ -77,7 +77,8 @@ module Expr = struct
 
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 
-  let match_with matched zbranch pred sbranch = Location.locate @@ Match { matched; zbranch; pred; sbranch }
+  let match_with matched zbranch pred sbranch =
+    Location.locate @@ Match { matched; zbranch; pred; sbranch }
 end
 
 (** Values *)
