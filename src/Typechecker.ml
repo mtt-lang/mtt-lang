@@ -77,6 +77,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
                     parameter"
                  loc
       | _ -> Result.fail @@ Location.pp ~msg:"Arror type expected" loc )
+  | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
   | App (fe, arge) -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
@@ -140,6 +141,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Fun (idl, dom, body) ->
       let%map cod = infer_open delta (Env.extend_r gamma idl dom) body in
       Type.Arr (dom, cod)
+  | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
   | App (fe, arge) -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with

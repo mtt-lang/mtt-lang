@@ -15,6 +15,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | VarL _i -> Set.empty (module Id.M)
   | VarG i -> Set.singleton (module Id.M) i
   | Fun (_i, _t_of_id, body) -> free_vars_m body
+  | Fix (_i, _t_of_id, _f_i, body) -> free_vars_m body
   | App (fe, arge) -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box e -> free_vars_m e
   | Let (_i, bound_e, body) ->
@@ -46,6 +47,8 @@ let rec subst_m term idg Location.{ data = body; _ } =
   | VarG i -> if [%equal: Id.M.t] idg i then term else Location.locate body
   | Fun (idl, t_of_id, body) ->
       Location.locate (Fun (idl, t_of_id, subst_m term idg body))
+  | Fix (idl, t_of_id, f_idl, body) ->
+      Location.locate (Fix ((idl, t_of_id, f_idl, subst_m term idg body)))
   | App (fe, arge) ->
       Location.locate (App (subst_m term idg fe, subst_m term idg arge))
   | Box e -> Location.locate (Box (subst_m term idg e))
@@ -103,12 +106,16 @@ let rec eval_open gamma Location.{ data = expr; _ } =
   | VarG _idg ->
       Result.fail "Modal variable access is not possible in a well-typed term"
   | Fun (idl, _t_of_id, body) -> return @@ Val.Clos (idl, body, gamma)
+  | Fix (idl, _t_of_id, f_idl, body) -> return @@ Val.ReClos (idl, f_idl, body, gamma)
   | App (fe, arge) -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
       match fv with
       | Val.Clos (idl, body, c_gamma) ->
           eval_open (Env.extend_r c_gamma idl argv) body
+      | Val.ReClos (idl, f_idl, body, c_gamma) ->
+          let fix_gamma = (Env.extend_r c_gamma idl fv) in
+          eval_open (Env.extend_r fix_gamma f_idl argv) body
       | _ -> Result.fail "Trying to apply an argument to a non-function" )
   | Box e -> return @@ Val.Box e
   | Let (idr, bound_e, body) ->

@@ -35,6 +35,8 @@ module Expr = struct
         these are syntactically distinct from the regular (ordinary) variables *)
     | Fun of Id.R.t * Type.t * t
         (** anonymous functions: [fun (x : T) => expr] *)
+    | Fix of Id.R.t * Type.t * Id.R.t * t 
+        (** Fix combinator: fix f x = f (fix x) f *)
     | App of t * t  (** function application: [f x] *)
     | Box of t  (** term-level box: [box expr1] *)
     | Let of Id.R.t * t * t  (** [let u = expr1 in expr2] *)
@@ -56,6 +58,8 @@ module Expr = struct
 
   let func idl t_of_id body = Location.locate @@ Fun (idl, t_of_id, body)
 
+  let fix idl_fun t_of_id idl_body body = Location.locate @@ Fix (idl_fun, t_of_id, idl_body, body)
+
   let app fe arge = Location.locate @@ App (fe, arge)
 
   let box e = Location.locate @@ Box e
@@ -72,6 +76,7 @@ module Val = struct
     | IntZ of Nat.t
     | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
     | Clos of Id.R.t * Expr.t * t Env.r  (** Deeply embedded closures *)
+    | ReClos of Id.R.t * Id.R.t * Expr.t * t Env.r  (** Recursion closures *)
     | Box of Expr.t
         (** [box] literal, basically it's an unevaluated expression *)
   [@@deriving sexp]

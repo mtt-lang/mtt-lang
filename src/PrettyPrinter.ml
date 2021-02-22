@@ -45,6 +45,8 @@ module Doc : DOC = struct
 
   let fun_kwd = !^"λ"
 
+  let fix_kwd = !^"fix"
+
   let let_kwd = !^"let"
 
   let letbox_kwd = !^"letbox"
@@ -105,6 +107,13 @@ module Doc : DOC = struct
             ^^ !^(Id.R.to_string idl)
             ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
             ^^ walk (Set.add bvs idl) 1 body )
+      | Fix (idl, t_of_id, _, body) ->
+          (parens_if (p > 1))
+            ( fix_kwd
+            ^^ !^(Id.R.to_string idl)
+            ^^^ colon ^^^ of_type t_of_id ^^ dot ^^ space
+            ^^ space ^^ !^(Id.R.to_string idl) ^^ space
+            ^^ walk (Set.add bvs idl) 1 body )
       | App (fe, arge) ->
           group ((parens_if (p >= 2)) (walk bvs 2 fe ^/^ walk bvs 2 arge))
       | Box e -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk bvs 2 e))
@@ -141,5 +150,8 @@ module Doc : DOC = struct
            the corresponding literals from the closures' regular environment *)
         let bound_vars = Set.singleton (module Id.R) idl in
         of_expr_with_free_vars_r bound_vars lenv body
+    | Val.ReClos (idl, _, _, _) ->
+        fix_kwd
+        ^^ !^(Id.R.to_string idl)
     | Val.Box e -> box_kwd ^^^ of_expr e
 end
