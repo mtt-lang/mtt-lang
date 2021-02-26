@@ -49,7 +49,8 @@ let generator =
                      (map modal_id lowercase_id)
                      (self (size / 2))
                      (self (size / 2));
-                   map3 Expr.match_with (self (-1))
+                   map3 Expr.match_with
+                     (self (size / 2))
                      (self (size / 2))
                      (map regular_id lowercase_id)
                    <*> self (size / 2);
