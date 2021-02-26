@@ -18,7 +18,7 @@ let sexp_of_t z = Sexp.Atom (Z.to_string z)
 
 let add = Z.add
 
-let sub = Z.sub
+let sub n m = if Z.geq m n then zero else Z.sub n m
 
 let mul = Z.mul
 

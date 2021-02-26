@@ -180,6 +180,12 @@ test for Nat
   > EOF
   1
 
+  $ mtt eval <<EOF
+  > let n = 1 - 2 in
+  > n
+  > EOF
+  0
+
 Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.
