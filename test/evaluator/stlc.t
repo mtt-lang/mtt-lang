@@ -186,6 +186,52 @@ test for Nat
   > EOF
   0
 
+Priority tests
+
+  $ mtt eval <<EOF
+  > 2 + (2 * 2)
+  > EOF
+  6
+
+  $ mtt eval <<EOF
+  > 2 + 2 * 2
+  > EOF
+  6
+
+  $ mtt eval <<EOF
+  > 2 * 2 + 2
+  > EOF
+  6
+
+  $ mtt eval <<EOF
+  > (2 + 2) * 2
+  > EOF
+  8
+
+  $ mtt eval <<EOF
+  > 2 * (2 + 2)
+  > EOF
+  8
+
+  $ mtt eval <<EOF
+  > let p = <42, 43> in
+  > 1 + fst p
+  > EOF
+  43
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. n + 1 in
+  > 42 - f 1
+  > EOF
+  40
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. n + 1 in
+  > let g = fun n: Nat. n + 2 in
+  > 42 + f (g 2) * 2
+  > EOF
+  52
+
 Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.
