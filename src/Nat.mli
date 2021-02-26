@@ -1,20 +1,12 @@
 open Base
 
-type t
+type t [@@deriving equal, sexp]
+
+include Stringable.S with type t := t
 
 val zero : t
 
 val one : t
-
-val of_string : string -> t
-
-val to_string : t -> string
-
-val equal : t -> t -> bool
-
-val t_of_sexp : Sexp.t -> t
-
-val sexp_of_t : t -> Sexp.t
 
 val of_int : int -> t
 
