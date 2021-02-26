@@ -110,7 +110,10 @@ let rec eval_open gamma Location.{ data = expr; _ } =
           | Add -> return @@ Val.Nat { n = Nat.add n1 n2 }
           | Sub -> return @@ Val.Nat { n = Nat.sub n1 n2 }
           | Mul -> return @@ Val.Nat { n = Nat.mul n1 n2 }
-          | Div -> return @@ Val.Nat { n = Nat.div n1 n2 } )
+          | Div ->
+              if Nat.equal n2 Nat.zero then
+                Result.fail @@ `EvaluationError "Division by zero"
+              else return @@ Val.Nat { n = Nat.div n1 n2 } )
       | _, _ ->
           Result.fail
           @@ `EvaluationError "Only numbers can be used in arithmetics" )
