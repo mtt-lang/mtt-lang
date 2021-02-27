@@ -1,7 +1,7 @@
 open Base
 open Ast
 
-type error = string
+type error = [ `EvaluationError of string | Env.error ]
 (** Type of errors *)
 
 val free_vars_m : Expr.t -> (Id.M.t, Id.M.comparator_witness) Set.t
@@ -14,11 +14,11 @@ val refresh_m :
     Returns [None] if no refreshment is needed and [Some new_name] otherwise *)
 
 val subst_m : Expr.t -> Id.M.t -> Expr.t -> Expr.t
-(** Capture-avoiding modal substitution: "[term/idg]body",
-    i.e. substitute [term] for free variable [idg] in [body] *)
+(** Capture-avoiding modal substitution: "[term/idm]body",
+    i.e. substitute [term] for free variable [idm] in [body] *)
 
-val eval_open : Val.t Env.r -> Expr.t -> (Val.t, error) Result.t
+val eval_open : Val.t Env.R.t -> Expr.t -> (Val.t, [> error ]) Result.t
 (** Evaluate a possibly open term in a regular context *)
 
-val eval : Expr.t -> (Val.t, error) Result.t
+val eval : Expr.t -> (Val.t, [> error ]) Result.t
 (** Evaluate a closed term *)

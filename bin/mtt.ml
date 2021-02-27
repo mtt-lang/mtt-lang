@@ -4,6 +4,19 @@ open Result.Let_syntax
 open Mtt
 open ParserInterface
 
+let format_located_error Location.{ data = error; loc } =
+  match error with
+  | `TypeMismatchError msg -> Location.pp ~msg loc
+  | `EvaluationError msg -> Location.pp ~msg loc
+  | `EnvUnboundVariableError (_, msg) -> Location.pp ~msg loc
+  | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pp ~msg loc
+
+let format_error error =
+  match error with
+  | `EvaluationError msg -> msg
+  | `EnvUnboundVariableError (_, msg) -> msg
+  | `TypeMismatchError msg -> msg
+
 (* Parsing with error handling utilities *)
 let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
  fun ast_kind source ->
@@ -16,15 +29,15 @@ let parse_and_typecheck source typ_str =
   let%bind ast = parse_from_e Term source in
   let%bind typ = parse_from_e Type (String typ_str) in
   Typechecker.check ast typ
-  |> Result.map_error ~f:(fun eval_err ->
-         [%string "Typechecking error: $eval_err"])
+  |> Result.map_error ~f:(fun infer_err ->
+         [%string "Typechecking error: $(format_located_error infer_err)"])
 
 (* Parsing and type inference with error handling utilities *)
 let parse_and_typeinfer source =
   let%bind ast = parse_from_e Term source in
   Typechecker.infer ast
-  |> Result.map_error ~f:(fun eval_err ->
-         [%string "Type inference error: $eval_err"])
+  |> Result.map_error ~f:(fun infer_err ->
+         [%string "Type inference error: $(format_located_error infer_err)"])
 
 (* Parsing and evaluation with error handling utilities *)
 let parse_and_eval source =
@@ -32,7 +45,7 @@ let parse_and_eval source =
   let%bind ast = parse_from_e Term source in
   Evaluator.eval ast
   |> Result.map_error ~f:(fun eval_err ->
-         [%string "Evaluation error: $eval_err"])
+         [%string "Evaluation error: $(format_error eval_err)"])
 
 let osource source_file source_arg =
   match (source_file, source_arg) with
@@ -83,8 +96,8 @@ let eval_expr source_file source_arg =
   | None -> `Error (true, "Please provide exactly one expression to evaluate")
   | Some source -> (
       match parse_and_eval source with
-      | Ok literal ->
-          let document = PrettyPrinter.Doc.of_lit literal in
+      | Ok value ->
+          let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()

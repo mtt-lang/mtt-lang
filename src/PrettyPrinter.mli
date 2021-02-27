@@ -8,8 +8,8 @@ module type DOC = sig
   val of_expr : Expr.t -> PPrint.document
   (** Pretty-print expressions *)
 
-  val of_lit : Val.t -> PPrint.document
-  (** Pretty-print literals (performs substitutions of literals for closures) *)
+  val of_val : Val.t -> PPrint.document
+  (** Pretty-print values (performs substitutions of values for closures) *)
 end
 
 module Doc : DOC

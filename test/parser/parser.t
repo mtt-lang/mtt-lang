@@ -4,5 +4,11 @@ Parse both ASCII and Unicode keywords for projections
   (π₂(π₂x))>
 
 Pretty-printing for term-level box value
-  $ mtt eval -e "box ()"
+  $ mtt parse -e "box ()"
   box ()
+
+Parsing and pretty-printing of open terms
+  $ mtt parse -e "x"
+  x
+  $ mtt parse -e "(f x) y"
+  (f x) y

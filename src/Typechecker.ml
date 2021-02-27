@@ -3,166 +3,219 @@ open Result.Let_syntax
 open Ast
 open Ast.Expr
 
-type error = string
+type error =
+  [ `TypeMismatchError of string
+  | `UnboundRegularVarInsideBoxError of Location.t * string
+  | Env.error ]
+
+type 'e lerror = ([> error ] as 'e) Location.located
+
+let check_equal ty1 ty2 msg =
+  Result.ok_if_true ([%equal: Type.t] ty1 ty2) ~error:(`TypeMismatchError msg)
+
+let with_error_location loc r =
+  Result.map_error r ~f:(fun e -> Location.locate ~loc e)
+
+let fail_in loc err = Result.fail @@ Location.locate ~loc @@ err
 
 let rec check_open delta gamma Location.{ data = expr; loc } typ =
   match expr with
   | Unit ->
-      Result.ok_if_true
-        ([%equal: Type.t] typ Type.Unit)
-        ~error:(Location.pp ~msg:"Expected unit type" loc)
-  | Pair (e1, e2) -> (
+      with_error_location loc @@ check_equal typ Type.Unit "Expected unit type"
+  | Pair { e1; e2 } -> (
       match typ with
-      | Type.Prod (ty1, ty2) ->
+      | Type.Prod { ty1; ty2 } ->
           let%map () = check_open delta gamma e1 ty1
           and () = check_open delta gamma e2 ty2 in
           ()
-      | _ -> Result.fail @@ Location.pp ~msg:"Expected product type" loc )
-  | Fst pe -> (
-      let%bind ty = infer_open delta gamma pe in
+      | _ -> fail_in loc @@ `TypeMismatchError "Expected product type" )
+  | Fst { e } -> (
+      let%bind ty = infer_open delta gamma e in
       match ty with
-      | Type.Prod (ty1, _ty2) ->
-          Result.ok_if_true
-            ([%equal: Type.t] typ ty1)
-            ~error:
-              (Location.pp
-                 ~msg:"fst error: inferred type is different from the input one"
-                 loc)
+      | Type.Prod { ty1; ty2 = _ } ->
+          with_error_location loc
+          @@ check_equal typ ty1
+               "fst error: inferred type is different from the input one"
       | _ ->
-          Result.fail
-          @@ Location.pp ~msg:"fst is applied to a non-product type" loc )
-  | Snd pe -> (
-      let%bind ty = infer_open delta gamma pe in
+          fail_in loc
+          @@ `TypeMismatchError "fst is applied to a non-product type" )
+  | Snd { e } -> (
+      let%bind ty = infer_open delta gamma e in
       match ty with
-      | Type.Prod (_ty1, ty2) ->
-          Result.ok_if_true
-            ([%equal: Type.t] typ ty2)
-            ~error:
-              (Location.pp
-                 ~msg:"snd error: inferred type is different from the input one"
-                 loc)
+      | Type.Prod { ty1 = _; ty2 } ->
+          with_error_location loc
+          @@ check_equal typ ty2
+               "snd error: inferred type is different from the input one"
       | _ ->
-          Result.fail
-          @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | IntZ _i ->
-      Result.ok_if_true
-        ([%equal: Type.t] typ Type.Nat)
-        ~error:(Location.pp ~msg:"expected nat type" loc)
-  | BinOp (_op, e1, e2) ->
+          fail_in loc
+          @@ `TypeMismatchError "snd is applied to a non-product type" )
+  | Nat _ ->
+      with_error_location loc @@ check_equal typ Type.Nat "Expected nat type"
+  | BinOp { op = _; e1; e2 } ->
       let%bind ty1 = infer_open delta gamma e1 in
       let%bind ty2 = infer_open delta gamma e2 in
-      Result.ok_if_true
-        ([%equal: Type.t] ty1 Type.Nat && [%equal: Type.t] ty2 Type.Nat)
-        ~error:(Location.pp ~msg:"binary operator's operands must be a numbers" loc)
-  | VarL idl ->
-      let%bind ty = Env.lookup_r gamma idl in
-      Result.ok_if_true
-        ([%equal: Type.t] typ ty)
-        ~error:(Location.pp ~msg:"Unexpected regular variable type" loc)
-  | VarG idg ->
-      let%bind ty = Env.lookup_m delta idg in
-      Result.ok_if_true
-        ([%equal: Type.t] typ ty)
-        ~error:(Location.pp ~msg:"Unexpected modal variable type" loc)
-  | Fun (idl, t_of_id, body) -> (
+      let%bind () =
+        with_error_location loc @@ check_equal ty1 Type.Nat "Expected nat type"
+      in
+      with_error_location loc @@ check_equal ty2 Type.Nat "Expected nat type"
+  | VarR { idr } ->
+      let%bind ty = with_error_location loc @@ Env.R.lookup gamma idr in
+      with_error_location loc
+      @@ check_equal typ ty "Unexpected regular variable type"
+  | VarM { idm } ->
+      let%bind ty = with_error_location loc @@ Env.M.lookup delta idm in
+      with_error_location loc
+      @@ check_equal typ ty "Unexpected modal variable type"
+  | Fun { idr; ty_id; body } -> (
       match typ with
-      | Type.Arr (dom, cod) ->
-          if [%equal: Type.t] dom t_of_id then
-            check_open delta (Env.extend_r gamma idl dom) body cod
-          else
-            Result.fail
-            @@ Location.pp
-                 ~msg:
-                   "Domain of arrow type is not the same as type of function \
-                    parameter"
-                 loc
-      | _ -> Result.fail @@ Location.pp ~msg:"Arror type expected" loc )
+      | Type.Arr { dom; cod } ->
+          let%bind () =
+            with_error_location loc
+            @@ check_equal dom ty_id
+                 "Domain of arrow type is not the same as type of function \
+                  parameter"
+          in
+          check_open delta (Env.R.extend gamma idr dom) body cod
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected" )
   | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
-  | App (fe, arge) -> (
+  | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
-      | Type.Arr (dom, cod) ->
+      | Type.Arr { dom; cod } ->
           let%bind () = check_open delta gamma arge dom in
-          Result.ok_if_true
-            ([%equal: Type.t] typ cod)
-            ~error:(Location.pp ~msg:"Unexpected function codomain" loc)
+          with_error_location loc
+          @@ check_equal typ cod "Unexpected function codomain"
       | _ ->
-          Result.fail
-          @@ Location.pp ~msg:"Inferred type is not an arrow type" loc )
-  | Box e -> (
+          fail_in loc @@ `TypeMismatchError "Inferred type is not an arrow type"
+      )
+  | Box { e } -> (
       match typ with
-      | Type.Box t -> check_open delta Env.emp_r e t
-      | _ -> Result.fail @@ Location.pp ~msg:"Error: unboxed type" loc )
-  | Let (idr, bound_e, body) ->
-      let%bind ty = infer_open delta gamma bound_e in
-      check_open delta (Env.extend_r gamma idr ty) body typ
-  | Letbox (idg, boxed_e, body) -> (
-      let%bind ty = infer_open delta gamma boxed_e in
+      | Type.Box { ty } -> (
+          match check_open delta Env.R.emp e ty with
+          | Error
+              { data = `EnvUnboundVariableError (var_name, _); loc = var_loc }
+            ->
+              fail_in loc
+              @@ `UnboundRegularVarInsideBoxError
+                   ( var_loc,
+                     [%string
+                       "regular variable $(var_name) (bound at \
+                        $(Location.pp_column_range var_loc)) cannot accessed \
+                        from boxed expression"] )
+          | x -> x )
+      | _ -> fail_in loc @@ `TypeMismatchError "Error: unboxed type" )
+  | Let { idr; bound; body } ->
+      let%bind ty = infer_open delta gamma bound in
+      check_open delta (Env.R.extend gamma idr ty) body typ
+  | Letbox { idm; boxed; body } -> (
+      let%bind ty = infer_open delta gamma boxed in
       match ty with
-      | Type.Box t -> check_open (Env.extend_m delta idg t) gamma body typ
-      | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" loc )
+      | Type.Box { ty } -> check_open (Env.M.extend delta idm ty) gamma body typ
+      | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box" )
+  | Match { matched; zbranch; pred; sbranch } -> (
+      let%bind ty = infer_open delta gamma matched in
+      match ty with
+      | Type.Nat ->
+          let%bind ty_empty = infer_open delta gamma zbranch in
+          let%bind ty_cons =
+            infer_open delta (Env.R.extend gamma pred Type.Nat) sbranch
+          in
+          with_error_location loc
+          @@ check_equal ty_empty ty_cons
+               "All branches of pattern matching must have the same type"
+      | _ ->
+          fail_in loc
+          @@ `TypeMismatchError "Pattern matching is only supported for Nat now"
+      )
 
 and infer_open delta gamma Location.{ data = expr; loc } =
   match expr with
   | Unit -> return Type.Unit
-  | Pair (e1, e2) ->
+  | Pair { e1; e2 } ->
       let%map ty1 = infer_open delta gamma e1
       and ty2 = infer_open delta gamma e2 in
-      Type.Prod (ty1, ty2)
-  | Fst pe -> (
-      let%bind ty = infer_open delta gamma pe in
+      Type.Prod { ty1; ty2 }
+  | Fst { e } -> (
+      let%bind ty = infer_open delta gamma e in
       match ty with
-      | Type.Prod (ty1, _ty2) -> return ty1
+      | Type.Prod { ty1; ty2 = _ } -> return ty1
       | _ ->
-          Result.fail
-          @@ Location.pp ~msg:"fst is applied to a non-product type" loc )
-  | Snd pe -> (
-      let%bind ty = infer_open delta gamma pe in
+          fail_in loc
+          @@ `TypeMismatchError "fst is applied to a non-product type" )
+  | Snd { e } -> (
+      let%bind ty = infer_open delta gamma e in
       match ty with
-      | Type.Prod (_ty1, ty2) -> return ty2
+      | Type.Prod { ty1 = _; ty2 } -> return ty2
       | _ ->
-          Result.fail
-          @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | IntZ _i -> return Type.Nat
-  | BinOp (_op, e1, e2) -> (
+          fail_in loc
+          @@ `TypeMismatchError "snd is applied to a non-product type" )
+  | Nat _ -> return Type.Nat
+  | BinOp { op = _; e1; e2 } -> (
       let%bind ty1 = infer_open delta gamma e1 in
       let%bind ty2 = infer_open delta gamma e2 in
       match (ty1, ty2) with
       | Type.Nat, Type.Nat -> return Type.Nat
-      | _, _ -> Result.fail @@ Location.pp ~msg: "binary operator's operands must be a numbers" loc )
-  | VarL idl -> (
-      match Env.lookup_r gamma idl with
-      | Ok res -> return res
-      | Error msg -> Result.fail @@ Location.pp ~msg loc )
-  | VarG idg -> (
-      match Env.lookup_m delta idg with
-      | Ok res -> return res
-      | Error msg -> Result.fail @@ Location.pp ~msg loc )
-  | Fun (idl, dom, body) ->
-      let%map cod = infer_open delta (Env.extend_r gamma idl dom) body in
-      Type.Arr (dom, cod)
+      | _, _ ->
+          fail_in loc
+          @@ `TypeMismatchError
+               "arithmetic opration is applied to a non-number type" )
+  | VarR { idr } -> with_error_location loc @@ Env.R.lookup gamma idr
+  | VarM { idm } -> with_error_location loc @@ Env.M.lookup delta idm
+  | Fun { idr; ty_id; body } ->
+      let%map ty_body = infer_open delta (Env.R.extend gamma idr ty_id) body in
+      Type.Arr { dom = ty_id; cod = ty_body }
   | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
-  | App (fe, arge) -> (
+  | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
-      | Type.Arr (dom, cod) ->
+      | Type.Arr { dom; cod } ->
           let%bind () = check_open delta gamma arge dom in
           return cod
       | _ ->
-          Result.fail
-          @@ Location.pp ~msg:"Inferred type is not an arrow type" loc )
-  | Box e ->
-      let%map ty = infer_open delta Env.emp_r e in
-      Type.Box ty
-  | Let (idr, bound_e, body) ->
-      let%bind ty = infer_open delta gamma bound_e in
-      infer_open delta (Env.extend_r gamma idr ty) body
-  | Letbox (idg, boxed_e, body) -> (
-      let%bind ty = infer_open delta gamma boxed_e in
+          fail_in loc @@ `TypeMismatchError "Inferred type is not an arrow type"
+      )
+  | Box { e } ->
+      let%map ty =
+        match infer_open delta Env.R.emp e with
+        | Error { data = `EnvUnboundVariableError (var_name, _); loc = var_loc }
+          ->
+            fail_in loc
+            @@ `UnboundRegularVarInsideBoxError
+                 ( var_loc,
+                   [%string
+                     "regular variable $(var_name) (bound at \
+                      $(Location.pp_column_range var_loc)) cannot accessed \
+                      from boxed expression"] )
+        | x -> x
+      in
+      Type.Box { ty }
+  | Let { idr; bound; body } ->
+      let%bind ty = infer_open delta gamma bound in
+      infer_open delta (Env.R.extend gamma idr ty) body
+  | Letbox { idm; boxed; body } -> (
+      let%bind tyb = infer_open delta gamma boxed in
+      match tyb with
+      | Type.Box { ty } -> infer_open (Env.M.extend delta idm ty) gamma body
+      | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box" )
+  | Match { matched; zbranch; pred; sbranch } -> (
+      let%bind ty = infer_open delta gamma matched in
+      let%bind ty_empty = infer_open delta gamma zbranch in
+      let%bind ty_cons =
+        infer_open delta (Env.R.extend gamma pred Type.Nat) sbranch
+      in
       match ty with
-      | Type.Box t -> infer_open (Env.extend_m delta idg t) gamma body
-      | _ -> Result.fail @@ Location.pp ~msg:"Inferred type is not a box" loc )
+      | Type.Nat ->
+          let%bind () =
+            with_error_location loc
+            @@ check_equal ty_empty ty_cons
+                 "All branches of pattern matching must have the same type"
+          in
+          return ty_empty
+      | _ ->
+          fail_in loc
+          @@ `TypeMismatchError "Pattern matching is only supported for Nat now"
+      )
 
-let check expr typ = check_open Env.emp_m Env.emp_r expr typ
+let check expr typ = check_open Env.M.emp Env.R.emp expr typ
 
-let infer expr = infer_open Env.emp_m Env.emp_r expr
+let infer expr = infer_open Env.M.emp Env.R.emp expr

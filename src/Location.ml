@@ -20,9 +20,9 @@ let mk s_pos e_pos =
     {
       filename = s_pos.pos_fname;
       start_line = s_pos.pos_lnum;
-      start_column = s_pos.pos_cnum;
+      start_column = s_pos.pos_cnum - s_pos.pos_bol;
       end_line = e_pos.pos_lnum;
-      end_column = e_pos.pos_cnum;
+      end_column = e_pos.pos_cnum - e_pos.pos_bol;
     }
 
 let locate_start_end data s_pos e_pos =
@@ -30,6 +30,15 @@ let locate_start_end data s_pos e_pos =
   { data; loc }
 
 let locate ?(loc = NoSource) data = { data; loc }
+
+let empty pos = match pos with NoSource -> true | Source _ -> false
+
+let pp_column_range pos =
+  match pos with
+  | Source pos ->
+      [%string
+        "$(Int.to_string pos.start_column):$(Int.to_string  pos.end_column)"]
+  | NoSource -> ""
 
 let show_pos pos' =
   match pos' with

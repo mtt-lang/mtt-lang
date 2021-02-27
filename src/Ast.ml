@@ -7,11 +7,11 @@ module Type = struct
   type t =
     | Unit  (** Unit type *)
     | Nat  (** Type for numbers *)
-    | Base of idT
+    | Base of { idt : idT }
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
-    | Prod of t * t  (** Type of pairs *)
-    | Arr of t * t  (** Type of functions *)
-    | Box of t  (** Type-level box *)
+    | Prod of { ty1 : t; ty2 : t }  (** Type of pairs *)
+    | Arr of { dom : t; cod : t }  (** Type of functions *)
+    | Box of { ty : t }  (** Type-level box *)
   [@@deriving equal, sexp]
 end
 
@@ -24,60 +24,77 @@ module Expr = struct
 
   and t' =
     | Unit  (** [unit] *)
-    | Pair of t * t  (** pairs [(expr1, expr2)] *)
-    | Fst of t  (** first projection of a pair *)
-    | Snd of t  (** second projection of a pair *)
-    | IntZ of Nat.t  (** numbers *)
-    | BinOp of binop * t * t  (** binary arithmetic operations *)
-    | VarL of Id.R.t  (** variables of the regular context *)
-    | VarG of Id.M.t
+    | Pair of { e1 : t; e2 : t }  (** pairs [(expr1, expr2)] *)
+    | Fst of { e : t }  (** first projection of a pair *)
+    | Snd of { e : t }  (** second projection of a pair *)
+    | Nat of { n : Nat.t }  (** numbers *)
+    | BinOp of { op : binop; e1 : t; e2 : t }
+        (** binary arithmetic operations *)
+    | VarR of { idr : Id.R.t }  (** variables of the regular context *)
+    | VarM of { idm : Id.M.t }
         (** variables of the modal context (or "valid variables"),
         these are syntactically distinct from the regular (ordinary) variables *)
-    | Fun of Id.R.t * Type.t * t
+    | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
-    | Fix of Id.R.t * Type.t * Id.R.t * t 
-        (** Fix combinator: fix f x = f (fix x) f *)
-    | App of t * t  (** function application: [f x] *)
-    | Box of t  (** term-level box: [box expr1] *)
-    | Let of Id.R.t * t * t  (** [let u = expr1 in expr2] *)
-    | Letbox of Id.M.t * t * t  (** [letbox u = expr1 in expr2] *)
+    | Fix of { selft : Id.R.t; ty_id : Type.t; idr : Id.R.t; body : t } (** Fix combinator: fix f x = f (fix x) f *)
+    | App of { fe : t; arge : t }  (** function application: [f x] *)
+    | Box of { e : t }  (** term-level box: [box expr1] *)
+    | Let of { idr : Id.R.t; bound : t; body : t }
+        (** [let u = expr1 in expr2] *)
+    | Letbox of { idm : Id.M.t; boxed : t; body : t }
+        (** [letbox u = expr1 in expr2] *)
+    | Match of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
+        (** FOR NAT ONLY
+          [match matched with 
+              | zero => <zbranch>
+              | succ pred => <sbranch>
+            end] *)
   [@@deriving equal, sexp]
 
   (* Wrappers for constructors *)
   let unit = Location.locate Unit
 
-  let pair e1 e2 = Location.locate @@ Pair (e1, e2)
+  let nat n = Location.locate @@ Nat { n }
 
-  let fst pe = Location.locate @@ Fst pe
+  let pair e1 e2 = Location.locate @@ Pair { e1; e2 }
 
-  let snd pe = Location.locate @@ Snd pe
+  let fst e = Location.locate @@ Fst { e }
 
-  let varl idl = Location.locate @@ VarL idl
+  let snd e = Location.locate @@ Snd { e }
 
-  let varg idg = Location.locate @@ VarG idg
+  let binop op e1 e2 = Location.locate @@ BinOp { op; e1; e2 }
 
-  let func idl t_of_id body = Location.locate @@ Fun (idl, t_of_id, body)
+  let var_r idr = Location.locate @@ VarR { idr }
 
-  let fix idl_fun t_of_id idl_body body = Location.locate @@ Fix (idl_fun, t_of_id, idl_body, body)
+  let fix idl_fun t_of_id idl_body body = Location.locate @@ Fix {idl_fun; t_of_id; idl_body; body}
 
-  let app fe arge = Location.locate @@ App (fe, arge)
+  let var_m idm = Location.locate @@ VarM { idm }
 
-  let box e = Location.locate @@ Box e
+  let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
 
-  let letc idl bound_e body = Location.locate @@ Let (idl, bound_e, body)
+  let app fe arge = Location.locate @@ App { fe; arge }
 
-  let letbox idg boxed_e body = Location.locate @@ Letbox (idg, boxed_e, body)
+  let box e = Location.locate @@ Box { e }
+
+  let letc idr bound body = Location.locate @@ Let { idr; bound; body }
+
+  let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
+
+  let match_with matched zbranch pred sbranch =
+    Location.locate @@ Match { matched; zbranch; pred; sbranch }
 end
 
 (** Values *)
 module Val = struct
   type t =
-    | Unit  (** [unit] literal *)
-    | IntZ of Nat.t
-    | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
-    | Clos of Id.R.t * Expr.t * t Env.r  (** Deeply embedded closures *)
-    | ReClos of Id.R.t * Id.R.t * Expr.t * t Env.r  (** Recursion closures *)
-    | Box of Expr.t
-        (** [box] literal, basically it's an unevaluated expression *)
+    | Unit  (** [unit] value *)
+    | Nat of { n : Nat.t }  (** nat *)
+    | Pair of { v1 : t; v2 : t }
+        (** [(lit1, lit2)] -- a pair of values is a value *)
+    | Clos of { idr : Id.R.t; body : Expr.t; env : t Env.R.t }
+        (** Deeply embedded closures *)
+    | ReClos of { self : Id.R.t; idr : Id.R.t; body : Expr.t; env : t Env.R.t }  (** Recursion closures *)
+    | Box of { e : Expr.t }
+        (** [box] value, basically it's an unevaluated expression *)
   [@@deriving sexp]
 end
