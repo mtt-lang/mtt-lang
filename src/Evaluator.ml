@@ -15,7 +15,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | VarR _ -> Set.empty (module Id.M)
   | VarM { idm } -> Set.singleton (module Id.M) idm
   | Fun { idr = _; ty_id = _; body } -> free_vars_m body
-  | Fix { self = _, ty_id = _, idr = _ , body} -> free_vars_m body
+  | Fix { self = _; ty_id = _; idr = _ ; body} -> free_vars_m body
   | App { fe; arge } -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box { e } -> free_vars_m e
   | Let { idr = _; bound; body } ->
@@ -49,8 +49,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | VarM { idm } ->
       if [%equal: Id.M.t] identm idm then term else Location.locate body
   | Fun { idr; ty_id; body } -> func idr ty_id (subst_m term identm body)
-  | Fix { self; ty_id; idr; body} ->
-      Location.locate (Fix ((self, ty_id, idr, subst_m term idg body)))
+  | Fix { self; ty_id; idr; body} -> fix self ty_id idr (subst_m term identm body)
   | App { fe; arge } -> app (subst_m term identm fe) (subst_m term identm arge)
   | Box { e } -> box (subst_m term identm e)
   | Let { idr; bound; body } ->
@@ -127,15 +126,17 @@ let rec eval_open gamma Location.{ data = expr; _ } =
            "Modal variable access is not possible in a well-typed term"
   | Fun { idr; ty_id = _; body } ->
       return @@ Val.Clos { idr; body; env = gamma }
+  | Fix {self; ty_id = _; idr; body} -> 
+      return @@ Val.ReClos {self; idr; body; env = gamma}
   | App { fe; arge } -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
       match fv with
       | Val.Clos { idr; body; env } ->
           eval_open (Env.R.extend env idr argv) body
-      | Val.ReClos {self; idr; body; c_gamma} ->
-          let fix_gamma = (Env.extend_r c_gamma self fv) in
-          eval_open (Env.extend_r fix_gamma idr argv) body
+      | Val.ReClos {self; idr; body; env} ->
+          let fix_gamma = (Env.R.extend env self fv) in
+          eval_open (Env.R.extend fix_gamma idr argv) body
       | _ ->
           Result.fail
           @@ `EvaluationError "Trying to apply an argument to a non-function" )

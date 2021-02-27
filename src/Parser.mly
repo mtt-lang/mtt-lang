@@ -120,8 +120,11 @@ expr:
   | FUN; LPAREN; idr = IDR; COLON; ty_id = typ; RPAREN; DARROW; body = expr
     { Location.locate_start_end (Fun {idr = Id.R.mk idr; ty_id; body}) $symbolstartpos $endpos }
 
-  | FIX; idr = IDR; COLON; t = typ; DARROW; f = IDR; DARROW; e = expr
-    { Location.locate_start_end (Fix (Id.R.mk idr, t, Id.R.mk f, e)) $symbolstartpos $endpos }
+  | FIX; self = IDR; COLON; ty_id = typ; DARROW; idr = IDR; DARROW; body = expr
+    { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; body}) $symbolstartpos $endpos }
+  
+  | FIX; LPAREN; self = IDR; COLON; ty_id = typ; DARROW; idr = IDR; DARROW; body = expr; RPAREN;
+    { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; body}) $symbolstartpos $endpos }
     
     (* let idr = expr in expr *)
   | LET; idr = IDR; EQ; bound = expr; IN; body = expr

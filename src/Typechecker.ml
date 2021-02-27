@@ -77,7 +77,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           in
           check_open delta (Env.R.extend gamma idr dom) body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected" )
-  | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
+  | Fix _ -> fail_in loc @@ `TypeMismatchError "Fix hasn't been implemented yet"
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
@@ -164,7 +164,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Fun { idr; ty_id; body } ->
       let%map ty_body = infer_open delta (Env.R.extend gamma idr ty_id) body in
       Type.Arr { dom = ty_id; cod = ty_body }
-  | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
+  | Fix _ -> fail_in loc @@ `TypeMismatchError "Fix hasn't been implemented yet"
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
