@@ -121,9 +121,9 @@ module Doc : DOC = struct
       | Match { matched; zbranch; pred; sbranch } ->
           (parens_if (p > 1))
             ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
-            ^^^ darrow ^^^ walk 2 zbranch ^/^ bar ^^^ succ_kwd
+            ^^^ darrow ^^^ nest 10 (walk 2 zbranch) ^/^ bar ^^^ succ_kwd
             ^^^ !^(Id.R.to_string pred)
-            ^^^ darrow ^^^ walk 2 sbranch ^^^ end_kwd )
+            ^^^ darrow ^^^ nest 10 (walk 2 sbranch) ^/^ nest 8 end_kwd )
     in
     walk 0 expr
 
