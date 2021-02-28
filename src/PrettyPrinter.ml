@@ -103,13 +103,14 @@ module Doc : DOC = struct
             ( fun_kwd
             ^^ !^(Id.R.to_string idr)
             ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body )
-      | Fix {self; ty_id; idr; body} ->
-            (parens_if (p > 1))
-              ( fix_kwd
-              ^^ !^(Id.R.to_string self)
-              ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space
-              ^^ space ^^ !^(Id.R.to_string idr) ^^ space
-              ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body )
+      | Fix { self; ty_id; idr; body } ->
+          (parens_if (p > 1))
+            ( fix_kwd
+            ^^ !^(Id.R.to_string self)
+            ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ space
+            ^^ !^(Id.R.to_string idr)
+            ^^ space ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body
+            )
       | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
       | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
@@ -148,12 +149,11 @@ module Doc : DOC = struct
         ^^^ (* when print out closures, substitute the free vars in its body with
                the corresponding values from the closures' regular environment *)
         of_expr_with_free_vars env body
-    | Val.ReClos {self; idr; body; env} ->
-        fix_kwd
+    | Val.ReClos { self; idr; body; env } ->
+        fix_kwd ^^ space
         ^^ !^(Id.R.to_string self)
-        ^^ dot 
-        ^^ !^(Id.R.to_string idr)
-        ^^^ 
-        of_expr_with_free_vars env body
+        ^^^ dot
+        ^^^ !^(Id.R.to_string idr)
+        ^^^ of_expr_with_free_vars env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
 end
