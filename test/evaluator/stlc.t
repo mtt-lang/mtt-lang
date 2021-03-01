@@ -232,6 +232,18 @@ Priority tests
   > EOF
   52
 
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. 2 * n in
+  > f 22 - 2
+  > EOF
+  42
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. 2 * n in
+  > f 22 - f 2
+  > EOF
+  40
+
 Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.

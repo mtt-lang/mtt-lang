@@ -41,6 +41,8 @@ jobs:
 
       - run: opam pin add mtt.dev . --no-action
 
+      - run: opam depext mtt --yes --with-doc --with-test
+
       - run: opam install . --deps-only --with-doc --with-test
 
       - name: 'Lint source files'

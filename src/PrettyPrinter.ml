@@ -53,7 +53,7 @@ module Doc : DOC = struct
 
   let end_kwd = !^"end"
 
-  let nil_kwd = !^"nil" (* A temporary token for pattern matching on Nat *)
+  let zero_kwd = !^"zero" (* A temporary token for pattern matching on Nat *)
 
   let succ_kwd = !^"succ" (* A temporary token for pattern matching on Nat *)
 
@@ -92,7 +92,9 @@ module Doc : DOC = struct
             | Mul -> star
             | Div -> slash
           in
-          (parens_if (p > 1)) (group (walk 2 e1) ^^^ symb_op ^^^ walk 1 e2)
+          group
+            ((parens_if (p > 1))
+               (parens (walk 1 e1) ^^^ symb_op ^^^ parens (walk 1 e2)))
       | VarR { idr } -> (
           match Env.R.lookup renv idr with
           | Ok v -> parens (of_val v)
@@ -128,10 +130,14 @@ module Doc : DOC = struct
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
       | Match { matched; zbranch; pred; sbranch } ->
           (parens_if (p > 1))
-            ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ nil_kwd
-            ^^^ darrow ^^^ walk 2 zbranch ^/^ bar ^^^ succ_kwd
+            ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
+            ^^^ darrow
+            ^^^ nest 10 (walk 1 zbranch)
+            ^/^ bar ^^^ succ_kwd
             ^^^ !^(Id.R.to_string pred)
-            ^^^ darrow ^^^ walk 2 sbranch ^^^ end_kwd )
+            ^^^ darrow
+            ^^^ nest 10 (walk 1 sbranch)
+            ^/^ nest 8 end_kwd )
     in
     walk 0 expr
 
