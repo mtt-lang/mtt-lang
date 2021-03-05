@@ -658,7 +658,7 @@ expr_eof: MATCH UNIT WITH PIPE WITH
 ## MATCH expr WITH PIPE
 ##
 
-There is an extra WITH token at the end of the expression
+Incorrect match-expression  
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR DARROW UNIT WITH
 ##

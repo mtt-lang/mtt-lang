@@ -176,12 +176,14 @@ mtt: Parse error: Boxed expression is expected
   mtt: Parse error: END token wasn't found in the end of the match-expression
   [1]
 
-$ mtt parse <<EOF
-> match x with
-> | succ n => ()
-> | zero => ()
-> end
-> EOF
+  $ mtt parse <<EOF
+  > match x with
+  > | succ n => ()
+  > | zero => ()
+  > end
+  > EOF
+  mtt: Parse error: Incorrect match-expression
+  [1]
 
   $ mtt parse -e "() + zero"
   mtt: Parse error: ZERO token can be used in match-expression only
