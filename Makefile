@@ -31,19 +31,8 @@ update-messages:
 		   src/Parser.mly  >src/NewParserErrors.messages
 	mv src/NewParserErrors.messages src/ParserErrors.messages
 
-# Сhecking that src/ParserErrors.messages is up to date
-check-messages:
-	menhir --list-errors src/Parser.mly >src/NewParserErrors.messages
-	menhir --merge-errors src/ParserErrors.messages \
-		   --merge-errors src/NewParserErrors.messages \
-		   src/Parser.mly  >src/NewParserErrors.messages
-	diff -q src/ParserErrors.messages src/NewParserErrors.messages || \
-		(echo "Please, update ParserErrors.messages using 'make update-messages'"; \
-		 rm src/NewParserErrors.messages; exit 1)
-	rm src/NewParserErrors.messages
-
 # CI: lint OCaml and dune source files, all the opam files in the project root
-lint: check-messages
+lint:
 	dune build @fmt
 	opam lint .
 
