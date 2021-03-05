@@ -823,7 +823,7 @@ expr_eof: UNIT IDM ZERO
 ## app
 ##
 
-ZERO token can be used in match-expression only
+Missing or unexpected lexeme in parenthesized expression
 
 expr_eof: UNIT MINUS MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
 ##
