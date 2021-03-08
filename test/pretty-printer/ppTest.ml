@@ -120,7 +120,7 @@ let test_minimum_parentheses =
       String.drop_suffix (String.drop_prefix str (l + 1)) (length - r)
     in
     let suffix = String.suffix str (length - r - 1) in
-    String.concat [ prefix; " "; middle; " "; suffix ]
+    String.concat ~sep:" " [ prefix; middle; suffix ]
   in
   let any_redundant str pairs =
     let ast =
