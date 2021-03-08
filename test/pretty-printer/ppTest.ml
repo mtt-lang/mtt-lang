@@ -122,7 +122,7 @@ let test_minimum_parentheses =
     let suffix = String.suffix str (length - r - 1) in
     String.concat ~sep:" " [ prefix; middle; suffix ]
   in
-  let any_redundant str pairs =
+  let any_redundant str =
     let ast =
       match Mtt.ParserInterface.parse_from_string Term str with
       | Ok ast -> ast
@@ -141,7 +141,7 @@ let test_minimum_parentheses =
       | [] -> None
       | (l, r) :: tl -> if redundant (l, r) then Some (l, r) else f tl
     in
-    f pairs
+    f (parens_pairs str)
   in
   QCheck.Test.make ~name:"Expression pretty printer uses minimum parentheses"
     ~count:1000 ~long_factor:10 arbitrary_ast (fun ast ->
@@ -151,7 +151,7 @@ let test_minimum_parentheses =
       in
       let ast_string = Stdlib.Buffer.contents buffer in
       let _ = Stdlib.Buffer.clear buffer in
-      let pair = any_redundant ast_string (parens_pairs ast_string) in
+      let pair = any_redundant ast_string in
       match pair with
       | Some (l, r) ->
           QCheck.Test.fail_reportf
