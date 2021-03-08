@@ -130,8 +130,8 @@ let test_minimum_parentheses =
           QCheck.Test.fail_reportf "Parse error: %s\nParser input: %s" err_msg
             str
     in
-    let redundant (l, r) =
-      let str' = remove_parens str (l, r) in
+    let redundant pair =
+      let str' = remove_parens str pair in
       match Mtt.ParserInterface.parse_from_string Term str' with
       | Ok ast' -> Expr.equal ast ast'
       | Error _ -> false
@@ -139,7 +139,7 @@ let test_minimum_parentheses =
     let rec f pairs =
       match pairs with
       | [] -> None
-      | (l, r) :: tl -> if redundant (l, r) then Some (l, r) else f tl
+      | pair :: tl -> if redundant pair then Some pair else f tl
     in
     f (parens_pairs str)
   in
@@ -153,11 +153,11 @@ let test_minimum_parentheses =
       let _ = Stdlib.Buffer.clear buffer in
       let pair = any_redundant ast_string in
       match pair with
-      | Some (l, r) ->
+      | Some p ->
           QCheck.Test.fail_reportf
             "Original expression:\n  %s\nSimplified expression:\n  %s"
             ast_string
-            (remove_parens ast_string (l, r))
+            (remove_parens ast_string p)
       | None -> true)
 
 let _ =
