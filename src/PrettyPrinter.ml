@@ -64,8 +64,8 @@ module Doc : DOC = struct
       match e with
       | Unit -> unit_term
       | Pair { e1; e2 } -> angles (walk 1 e1 ^^ comma ^/^ walk 1 e2)
-      | Fst { e } -> group (parens (fst_kwd ^^ walk 2 e))
-      | Snd { e } -> group (parens (snd_kwd ^^ walk 2 e))
+      | Fst { e } -> group (parens_if (p > 1) (fst_kwd ^^ walk 2 e))
+      | Snd { e } -> group (parens_if (p > 1) (snd_kwd ^^ walk 2 e))
       | VarR { idr } -> (
           match Env.R.lookup renv idr with
           | Ok v -> parens (of_val v)
@@ -84,13 +84,13 @@ module Doc : DOC = struct
             (group
                ( let_kwd
                ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body ))
+               ^^^ equals ^^^ walk 1 bound ^^^ in_kwd ^/^ walk 1 body ))
       | Letbox { idm; boxed; body } ->
           (parens_if (p > 1))
             (group
                ( letbox_kwd
                ^^^ !^(Id.M.to_string idm)
-               ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
+               ^^^ equals ^^^ walk 1 boxed ^^^ in_kwd ^/^ walk 1 body ))
     in
     walk 0 expr
 
