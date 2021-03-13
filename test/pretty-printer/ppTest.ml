@@ -144,7 +144,7 @@ let test_minimum_parentheses =
     f (parens_pairs str)
   in
   QCheck.Test.make ~name:"Expression pretty printer uses minimum parentheses"
-    ~count:1000 ~long_factor:10 arbitrary_ast (fun ast ->
+    ~count:20 ~long_factor:10 arbitrary_ast (fun ast ->
       let _ =
         try (PPrint.ToBuffer.pretty 1.0 80 buffer) (MttPP.Doc.of_expr ast)
         with _ -> ()
