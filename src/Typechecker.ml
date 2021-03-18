@@ -52,12 +52,9 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
   | Nat _ ->
       with_error_location loc @@ check_equal typ Type.Nat "Expected nat type"
   | BinOp { op = _; e1; e2 } ->
-      let%bind ty1 = infer_open delta gamma e1 in
-      let%bind ty2 = infer_open delta gamma e2 in
-      let%bind () =
-        with_error_location loc @@ check_equal ty1 Type.Nat "Expected nat type"
-      in
-      with_error_location loc @@ check_equal ty2 Type.Nat "Expected nat type"
+      let%map () = check_open delta gamma e1 Type.Nat
+      and () = check_open delta gamma e2 Type.Nat in
+      ()
   | VarR { idr } ->
       let%bind ty = with_error_location loc @@ Env.R.lookup gamma idr in
       with_error_location loc
