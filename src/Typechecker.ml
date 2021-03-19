@@ -136,9 +136,9 @@ and infer_open delta gamma Location.{ data = expr; loc } =
           @@ `TypeMismatchError "snd is applied to a non-product type" )
   | Nat _ -> return Type.Nat
   | BinOp { op = _; e1; e2 } ->
-      let%bind _ty1 = check_open delta gamma e1 Type.Nat in
-      let%bind _ty2 = check_open delta gamma e2 Type.Nat in
-      return Type.Nat
+      let%map () = check_open delta gamma e1 Type.Nat
+      and () = check_open delta gamma e2 Type.Nat in
+      Type.Nat
   | VarR { idr } -> with_error_location loc @@ Env.R.lookup gamma idr
   | VarM { idm } -> with_error_location loc @@ Env.M.lookup delta idm
   | Fun { idr; ty_id; body } ->
@@ -178,16 +178,16 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box" )
   | Match { matched; zbranch; pred; sbranch } ->
       let%bind _ = check_open delta gamma matched Type.Nat in
-      let%bind ty_empty = infer_open delta gamma zbranch in
-      let%bind ty_cons =
+      let%bind ty_zero = infer_open delta gamma zbranch in
+      let%bind ty_succ =
         infer_open delta (Env.R.extend gamma pred Type.Nat) sbranch
       in
       let%bind () =
         with_error_location loc
-        @@ check_equal ty_empty ty_cons
+        @@ check_equal ty_zero ty_succ
              "All branches of pattern matching must have the same type"
       in
-      return ty_empty
+      return ty_zero
 
 let check expr typ = check_open Env.M.emp Env.R.emp expr typ
 
