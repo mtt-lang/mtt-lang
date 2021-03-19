@@ -10,6 +10,8 @@ type error =
 
 type 'e lerror = ([> error ] as 'e) Location.located
 
+let type_to_string ty = Sexp.to_string @@ Type.sexp_of_t ty
+
 let check_equal ty1 ty2 msg =
   Result.ok_if_true ([%equal: Type.t] ty1 ty2) ~error:(`TypeMismatchError msg)
 
@@ -21,14 +23,21 @@ let fail_in loc err = Result.fail @@ Location.locate ~loc @@ err
 let rec check_open delta gamma Location.{ data = expr; loc } typ =
   match expr with
   | Unit ->
-      with_error_location loc @@ check_equal typ Type.Unit "Expected unit type"
+      let exp_ty = type_to_string typ in
+      with_error_location loc
+      @@ check_equal typ Type.Unit
+           [%string "Expected $exp_ty, but found Unit type"]
   | Pair { e1; e2 } -> (
       match typ with
       | Type.Prod { ty1; ty2 } ->
           let%map () = check_open delta gamma e1 ty1
           and () = check_open delta gamma e2 ty2 in
           ()
-      | _ -> fail_in loc @@ `TypeMismatchError "Expected product type" )
+      | _ ->
+          let exp_ty = type_to_string typ in
+          fail_in loc
+          @@ `TypeMismatchError
+               [%string "Expected $exp_ty, but found product type"] )
   | Fst { e } -> (
       let%bind ty = infer_open delta gamma e in
       match ty with
@@ -50,7 +59,10 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           fail_in loc
           @@ `TypeMismatchError "snd is applied to a non-product type" )
   | Nat _ ->
-      with_error_location loc @@ check_equal typ Type.Nat "Expected nat type"
+      let exp_ty = type_to_string typ in
+      with_error_location loc
+      @@ check_equal typ Type.Nat
+           [%string "Expected $exp_ty, but found Nat type"]
   | BinOp { op = _; e1; e2 } ->
       let%map () = check_open delta gamma e1 Type.Nat
       and () = check_open delta gamma e2 Type.Nat in
