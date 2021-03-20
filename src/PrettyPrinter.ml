@@ -129,15 +129,20 @@ module Doc : DOC = struct
                ^^^ !^(Id.M.to_string idm)
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
       | Match { matched; zbranch; pred; sbranch } ->
+          let indentz = String.length (String.concat [ "| zero "; "=> " ]) in
+          let indents =
+            String.length
+              (String.concat [ "| succ "; Id.R.to_string pred; " => " ])
+          in
           (parens_if (p > 1))
             ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
             ^^^ darrow
-            ^^^ nest 10 (walk 1 zbranch)
+            ^^^ nest indentz (walk 1 zbranch)
             ^/^ bar ^^^ succ_kwd
             ^^^ !^(Id.R.to_string pred)
             ^^^ darrow
-            ^^^ nest 10 (walk 1 sbranch)
-            ^/^ nest 8 end_kwd )
+            ^^^ nest indents (walk 1 sbranch)
+            ^/^ end_kwd )
     in
     walk 0 expr
 
