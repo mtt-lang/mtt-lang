@@ -74,7 +74,7 @@ let arbitrary_ast =
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
 
-let test =
+let test_preserving_syntax =
   let buffer_size = 1024 in
   let buffer = Stdlib.Buffer.create buffer_size in
   QCheck.Test.make ~name:"Expression pretty printer preserving syntax"
@@ -95,4 +95,71 @@ let test =
       Expr.equal ast parsed_ast
       || QCheck.Test.fail_reportf "Parser input: %s" ast_string)
 
-let _ = QCheck_runner.run_tests_main [ test ]
+let test_minimum_parentheses =
+  let buffer_size = 1024 in
+  let buffer = Stdlib.Buffer.create buffer_size in
+  let parens_pairs str =
+    let _, pairs =
+      let f index (stack, pairs) char =
+        match char with
+        | '(' -> (index :: stack, pairs)
+        | ')' -> (
+            match stack with
+            | [] -> ([], []) (* unbalanced *)
+            | i :: tl -> (tl, (i, index) :: pairs) )
+        | _ -> (stack, pairs)
+      in
+      String.foldi str ~init:([], []) ~f
+    in
+    pairs
+  in
+  let remove_parens str (l, r) =
+    let length = String.length str in
+    let prefix = String.prefix str l in
+    let middle =
+      String.drop_suffix (String.drop_prefix str (l + 1)) (length - r)
+    in
+    let suffix = String.suffix str (length - r - 1) in
+    String.concat ~sep:" " [ prefix; middle; suffix ]
+  in
+  let any_redundant str =
+    let ast =
+      match Mtt.ParserInterface.parse_from_string Term str with
+      | Ok ast -> ast
+      | Error err_msg ->
+          QCheck.Test.fail_reportf "Parse error: %s\nParser input: %s" err_msg
+            str
+    in
+    let redundant pair =
+      let str' = remove_parens str pair in
+      match Mtt.ParserInterface.parse_from_string Term str' with
+      | Ok ast' -> Expr.equal ast ast'
+      | Error _ -> false
+    in
+    let rec f pairs =
+      match pairs with
+      | [] -> None
+      | pair :: tl -> if redundant pair then Some pair else f tl
+    in
+    f (parens_pairs str)
+  in
+  QCheck.Test.make ~name:"Expression pretty printer uses minimum parentheses"
+    ~count:20 ~long_factor:10 arbitrary_ast (fun ast ->
+      let _ =
+        try (PPrint.ToBuffer.pretty 1.0 80 buffer) (MttPP.Doc.of_expr ast)
+        with _ -> ()
+      in
+      let ast_string = Stdlib.Buffer.contents buffer in
+      let _ = Stdlib.Buffer.clear buffer in
+      let pair = any_redundant ast_string in
+      match pair with
+      | Some p ->
+          QCheck.Test.fail_reportf
+            "Original expression:\n  %s\nSimplified expression:\n  %s"
+            ast_string
+            (remove_parens ast_string p)
+      | None -> true)
+
+let _ =
+  QCheck_runner.run_tests_main
+    [ test_preserving_syntax; test_minimum_parentheses ]
