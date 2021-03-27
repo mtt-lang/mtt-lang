@@ -1,0 +1,4 @@
+fun p:[]A * []B.
+  letbox x' = fst p in
+  letbox y' = snd p in
+  box <x', y'>
