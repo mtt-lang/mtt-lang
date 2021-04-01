@@ -10,8 +10,6 @@ type error =
 
 type 'e lerror = ([> error ] as 'e) Location.located
 
-let type_to_string ty = Sexp.to_string @@ Type.sexp_of_t ty
-
 let check_equal ty1 ty2 msg =
   Result.ok_if_true ([%equal: Type.t] ty1 ty2) ~error:(`TypeMismatchError msg)
 
@@ -23,7 +21,7 @@ let fail_in loc err = Result.fail @@ Location.locate ~loc @@ err
 let rec check_open delta gamma Location.{ data = expr; loc } typ =
   match expr with
   | Unit ->
-      let exp_ty = type_to_string typ in
+      let exp_ty = PrettyPrinter.Str.of_type typ in
       with_error_location loc
       @@ check_equal typ Type.Unit
            [%string "Expected $exp_ty, but found Unit type"]
@@ -34,7 +32,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           and () = check_open delta gamma e2 ty2 in
           ()
       | _ ->
-          let exp_ty = type_to_string typ in
+          let exp_ty = PrettyPrinter.Str.of_type typ in
           fail_in loc
           @@ `TypeMismatchError
                [%string "Expected $exp_ty, but found product type"] )
@@ -59,7 +57,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           fail_in loc
           @@ `TypeMismatchError "snd is applied to a non-product type" )
   | Nat _ ->
-      let exp_ty = type_to_string typ in
+      let exp_ty = PrettyPrinter.Str.of_type typ in
       with_error_location loc
       @@ check_equal typ Type.Nat
            [%string "Expected $exp_ty, but found Nat type"]
