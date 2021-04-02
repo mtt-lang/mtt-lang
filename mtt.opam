@@ -13,6 +13,11 @@ depends: [
   "base" {>= "v0.12.2" & < "v0.15.0"}
   "cmdliner"
   "dune" {>= "2.7" & >= "2.0"}
+  "js_of_ocaml"
+  "js_of_ocaml-compiler"
+  "js_of_ocaml-lwt"
+  "js_of_ocaml-tyxml"
+  "js_of_ocaml-ppx"
   "menhir" {>= "20201201"}
   "ocaml" {>= "4.07.0"}
   "ocamlformat" {with-test & = "0.15.0"}

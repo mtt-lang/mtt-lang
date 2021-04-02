@@ -1,0 +1,58 @@
+body {
+    margin: 0px;
+    display: block;
+    overflow: auto;
+    height: 100%;
+}
+
+html {
+    /* padding: 0px; */
+    /* margin: 0px; */
+    height: 100%;
+}
+
+.west {
+    width: 60%;
+    height: 100%;
+    float: left;
+    overflow: auto;
+}
+
+.editor {
+    width: 100%;
+    height: 70%;
+}
+
+.panel {
+    height: 5%;
+    background-color: #242629;
+}
+
+.operation > a {
+    margin-left: 100px;
+    color: #93a1a1;
+}
+
+.terminal {
+    width : 100%;
+    height: 25%;
+}
+
+.east {
+    overflow: auto;
+    height: 100%;
+    background-color: #dee8b0;
+    border-left: 4px solid #536115;
+}
+
+#text > h1 {
+    text-align: center;
+}
+
+#text > div {
+    margin-left: 50px;
+}
+
+.ace_hidden-cursors {
+    opacity: 0;
+}
