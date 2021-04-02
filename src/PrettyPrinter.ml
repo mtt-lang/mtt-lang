@@ -71,6 +71,10 @@ module Doc : DOC = struct
     in
     walk 0
 
+  let of_binop op =
+    let open Expr in
+    match op with Add -> plus | Sub -> minus | Mul -> star | Div -> slash
+
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
   let rec of_expr_with_free_vars renv expr =
@@ -83,16 +87,9 @@ module Doc : DOC = struct
       | Snd { e } -> group (parens (snd_kwd ^^ walk 2 e))
       | Nat { n } -> !^(Nat.to_string n)
       | BinOp { op; e1; e2 } ->
-          let symb_op =
-            match op with
-            | Add -> plus
-            | Sub -> minus
-            | Mul -> star
-            | Div -> slash
-          in
           group
             ((parens_if (p > 1))
-               (parens (walk 1 e1) ^^^ symb_op ^^^ parens (walk 1 e2)))
+               (parens (walk 1 e1) ^^^ of_binop op ^^^ parens (walk 1 e2)))
       | VarR { idr } -> (
           match Env.R.lookup renv idr with
           | Ok v -> parens (of_val v)
@@ -151,4 +148,27 @@ module Doc : DOC = struct
                the corresponding values from the closures' regular environment *)
         of_expr_with_free_vars env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
+end
+
+module type STR = sig
+  val of_type : Type.t -> string
+
+  val of_expr : Expr.t -> string
+
+  val of_val : Val.t -> string
+end
+
+(** Convert ASTs into string *)
+module Str : STR = struct
+  let doc2str : PPrint.document -> string =
+   fun doc ->
+    let buffer = Buffer.create 100 in
+    PPrint.ToBuffer.pretty 1.0 80 buffer doc;
+    Buffer.contents buffer
+
+  let of_type t = doc2str @@ Doc.of_type t
+
+  let of_expr e = doc2str @@ Doc.of_expr e
+
+  let of_val v = doc2str @@ Doc.of_val v
 end

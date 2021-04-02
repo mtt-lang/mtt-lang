@@ -16,9 +16,9 @@ let t_of_sexp se = Z.of_string (Sexp.to_string se)
 
 let sexp_of_t z = Sexp.Atom (Z.to_string z)
 
-let of_int = Z.of_int
-
 let to_int = Z.to_int
+
+let of_int = Z.of_int
 
 let add = Z.add
 

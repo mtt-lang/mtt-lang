@@ -17,6 +17,7 @@ let rec compile_open (gamma : var Env.R.t) Location.{ data = expr; _ } =
       let rhs = compile_open gamma e2 in
       match op with
       | Add -> IntArith.( + ) lhs rhs
+      (* TODO: truncate subtraction *)
       | Sub -> IntArith.( - ) lhs rhs
       | Mul -> IntArith.( * ) lhs rhs
       | Div -> IntArith.( / ) lhs rhs )

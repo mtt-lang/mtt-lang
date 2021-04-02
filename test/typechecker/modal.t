@@ -88,3 +88,9 @@ Exercises from 15-816 Modal Logic, Andre Platzer
   > <box (fst p'), box (snd p')>
   > EOF
   □(A×B) → □A×□B
+
+Initial term for testing error reports about an unknown regular variable in boxed expression.
+(see ./modal-counterexamples.t)
+
+  $ mtt infer -e "λx:A. box (λy:B. box (λz:[]A. z))"
+  A → □(B → □(□A → □A))

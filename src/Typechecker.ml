@@ -10,8 +10,6 @@ type error =
 
 type 'e lerror = ([> error ] as 'e) Location.located
 
-let type_to_string ty = Sexp.to_string @@ Type.sexp_of_t ty
-
 let check_equal ty1 ty2 msg =
   Result.ok_if_true ([%equal: Type.t] ty1 ty2) ~error:(`TypeMismatchError msg)
 
@@ -20,10 +18,23 @@ let with_error_location loc r =
 
 let fail_in loc err = Result.fail @@ Location.locate ~loc @@ err
 
+(** [mk_unbound_regular_var_inside_box_error loc var_name] create
+    [`UnboundRegularVarInsideBoxError] with human readable message.
+ *)
+let mk_unbound_regular_var_inside_box_error box_expr_loc var_loc var =
+  let var_name = Id.R.to_string var in
+  let msg =
+    [%string
+      "regular variable \"$(var_name)\" is accessed in box expression \
+       ($(Location.pp_column_range box_expr_loc)) at \
+       $(Location.pp_column_range var_loc)"]
+  in
+  fail_in var_loc @@ `UnboundRegularVarInsideBoxError (var_loc, msg)
+
 let rec check_open delta gamma Location.{ data = expr; loc } typ =
   match expr with
   | Unit ->
-      let exp_ty = type_to_string typ in
+      let exp_ty = PrettyPrinter.Str.of_type typ in
       with_error_location loc
       @@ check_equal typ Type.Unit
            [%string "Expected $exp_ty, but found Unit type"]
@@ -34,7 +45,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           and () = check_open delta gamma e2 ty2 in
           ()
       | _ ->
-          let exp_ty = type_to_string typ in
+          let exp_ty = PrettyPrinter.Str.of_type typ in
           fail_in loc
           @@ `TypeMismatchError
                [%string "Expected $exp_ty, but found product type"] )
@@ -59,7 +70,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           fail_in loc
           @@ `TypeMismatchError "snd is applied to a non-product type" )
   | Nat _ ->
-      let exp_ty = type_to_string typ in
+      let exp_ty = PrettyPrinter.Str.of_type typ in
       with_error_location loc
       @@ check_equal typ Type.Nat
            [%string "Expected $exp_ty, but found Nat type"]
@@ -100,16 +111,9 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       match typ with
       | Type.Box { ty } -> (
           match check_open delta Env.R.emp e ty with
-          | Error
-              { data = `EnvUnboundVariableError (var_name, _); loc = var_loc }
-            ->
-              fail_in loc
-              @@ `UnboundRegularVarInsideBoxError
-                   ( var_loc,
-                     [%string
-                       "regular variable $(var_name) (bound at \
-                        $(Location.pp_column_range var_loc)) cannot accessed \
-                        from boxed expression"] )
+          | Error { data = `EnvUnboundRegularVarError (var, _); loc = var_loc }
+            when Result.is_ok (Env.R.lookup gamma var) ->
+              mk_unbound_regular_var_inside_box_error loc var_loc var
           | x -> x )
       | _ -> fail_in loc @@ `TypeMismatchError "Error: unboxed type" )
   | Let { idr; bound; body } ->
@@ -168,15 +172,9 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Box { e } ->
       let%map ty =
         match infer_open delta Env.R.emp e with
-        | Error { data = `EnvUnboundVariableError (var_name, _); loc = var_loc }
-          ->
-            fail_in loc
-            @@ `UnboundRegularVarInsideBoxError
-                 ( var_loc,
-                   [%string
-                     "regular variable $(var_name) (bound at \
-                      $(Location.pp_column_range var_loc)) cannot accessed \
-                      from boxed expression"] )
+        | Error { data = `EnvUnboundRegularVarError (var, _); loc = var_loc }
+          when Result.is_ok @@ Env.R.lookup gamma var ->
+            mk_unbound_regular_var_inside_box_error loc var_loc var
         | x -> x
       in
       Type.Box { ty }

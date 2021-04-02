@@ -13,3 +13,14 @@ module type DOC = sig
 end
 
 module Doc : DOC
+
+(** Convert ASTs to string  *)
+module type STR = sig
+  val of_type : Type.t -> string
+
+  val of_expr : Expr.t -> string
+
+  val of_val : Val.t -> string
+end
+
+module Str : STR

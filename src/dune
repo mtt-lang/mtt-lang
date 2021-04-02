@@ -8,7 +8,8 @@
 
 (rule
  (targets ParserErrors.ml)
- (deps ParserErrors.messages Parser.mly)
+ (deps ParserErrors.messages UpdParserErrors.messages
+   NewParserErrors.messages Parser.mly)
  (action
   (with-stdout-to
    ParserErrors.ml
@@ -19,7 +20,8 @@
  (modes byte native)
  (public_name mtt)
  (wrapped true)
- (libraries base stdio sexplib sedlex malfunction menhirLib pprint zarith)
+ (libraries base stdio sexplib sedlex malfunction menhirLib pprint zarith
+   zarith_stubs_js)
  (preprocess
   (pps ppx_let ppx_compare ppx_sexp_conv ppx_string_interpolation sedlex.ppx))
  (synopsis "Modal Type Theory Library"))
