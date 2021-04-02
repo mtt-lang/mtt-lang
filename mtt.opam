@@ -31,6 +31,7 @@ depends: [
   "sexplib"
   "stdio"
   "zarith"
+  "zarith_stubs_js"
   "odoc" {with-doc}
 ]
 build: [

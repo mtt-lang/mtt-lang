@@ -1,53 +1,7 @@
 open Base
 open Stdio
-open Result.Let_syntax
 open Mtt
 open ParserInterface
-
-let format_located_error Location.{ data = error; loc } =
-  match error with
-  | `TypeMismatchError msg -> Location.pp ~msg loc
-  | `EvaluationError msg -> Location.pp ~msg loc
-  | `EnvUnboundRegularVarError (_, msg) -> Location.pp ~msg loc
-  | `EnvUnboundModalVarError (_, msg) -> Location.pp ~msg loc
-  | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pp ~msg loc
-
-let format_error error =
-  match error with
-  | `EvaluationError msg -> msg
-  | `EnvUnboundRegularVarError (_, msg) -> msg
-  | `EnvUnboundModalVarError (_, msg) -> msg
-  | `TypeMismatchError msg -> msg
-
-(* Parsing with error handling utilities *)
-let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
- fun ast_kind source ->
-  parse_from ast_kind source
-  |> Result.map_error ~f:(fun parse_error ->
-         [%string "Parse error: $parse_error"])
-
-(* Parsing and typechecking with error handling utilities *)
-let parse_and_typecheck source typ_str =
-  let%bind ast = parse_from_e Term source in
-  let%bind typ = parse_from_e Type (String typ_str) in
-  Typechecker.check ast typ
-  |> Result.map_error ~f:(fun infer_err ->
-         [%string "Typechecking error: $(format_located_error infer_err)"])
-
-(* Parsing and type inference with error handling utilities *)
-let parse_and_typeinfer source =
-  let%bind ast = parse_from_e Term source in
-  Typechecker.infer ast
-  |> Result.map_error ~f:(fun infer_err ->
-         [%string "Type inference error: $(format_located_error infer_err)"])
-
-(* Parsing and evaluation with error handling utilities *)
-let parse_and_eval source =
-  let open Result.Let_syntax in
-  let%bind ast = parse_from_e Term source in
-  Evaluator.eval ast
-  |> Result.map_error ~f:(fun eval_err ->
-         [%string "Evaluation error: $(format_error eval_err)"])
 
 let osource source_file source_arg =
   match (source_file, source_arg) with
@@ -60,7 +14,7 @@ let parse_expr source_file source_arg =
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to parse")
   | Some source -> (
-      match parse_from_e Term source with
+      match Util.parse_from_e Term source with
       | Ok ast ->
           let document = PrettyPrinter.Doc.of_expr ast in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
@@ -72,7 +26,7 @@ let check_expr source_file source_arg typ verbose =
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to typecheck")
   | Some source -> (
-      match parse_and_typecheck source typ with
+      match Util.parse_and_typecheck source typ with
       | Ok () ->
           if verbose then (
             Out_channel.output_string stdout "OK. Expression typechecks.";
@@ -85,7 +39,7 @@ let infer_type source_file source_arg =
   | None ->
       `Error (true, "Please provide exactly one expression to infer its type")
   | Some source -> (
-      match parse_and_typeinfer source with
+      match Util.parse_and_typeinfer source with
       | Ok typ ->
           let document = PrettyPrinter.Doc.of_type typ in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
@@ -97,7 +51,7 @@ let eval_expr source_file source_arg =
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to evaluate")
   | Some source -> (
-      match parse_and_eval source with
+      match Util.parse_and_eval source with
       | Ok value ->
           let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;

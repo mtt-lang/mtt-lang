@@ -4,19 +4,6 @@ open Mtt
 open ParserInterface
 open Result.Let_syntax
 
-let format_located_error Location.{ data = error; loc } =
-  match error with
-  | `TypeMismatchError msg -> Location.pp ~msg loc
-  | `EvaluationError msg -> Location.pp ~msg loc
-  | `EnvUnboundVariableError (_, msg) -> Location.pp ~msg loc
-  | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pp ~msg loc
-
-let format_error error =
-  match error with
-  | `EvaluationError msg -> msg
-  | `EnvUnboundVariableError (_, msg) -> msg
-  | `TypeMismatchError msg -> msg
-
 let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
  fun ast_kind source ->
   parse_from ast_kind source
@@ -27,14 +14,15 @@ let parse_and_typeinfer source =
   let%bind ast = parse_from_e Term source in
   Typechecker.infer ast
   |> Result.map_error ~f:(fun infer_err ->
-         [%string "Type inference error: $(format_located_error infer_err)"])
+         [%string
+           "Type inference error: $(MttError.located_to_string infer_err)"])
 
 let parse_and_eval source =
   let open Result.Let_syntax in
   let%bind ast = parse_from_e Term source in
   Evaluator.eval ast
   |> Result.map_error ~f:(fun eval_err ->
-         [%string "Evaluation error: $(format_error eval_err)"])
+         [%string "Evaluation error: $(MttError.to_string eval_err)"])
 
 (* end copy-paste from ../bin/mtt.ml *)
 
