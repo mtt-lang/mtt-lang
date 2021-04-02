@@ -48,7 +48,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           let exp_ty = PrettyPrinter.Str.of_type typ in
           fail_in loc
           @@ `TypeMismatchError
-               [%string "Expected $exp_ty, but found product type"] )
+               [%string "Expected $exp_ty, but found product type"])
   | Fst { e } -> (
       let%bind ty = infer_open delta gamma e in
       match ty with
@@ -58,7 +58,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
                "fst error: inferred type is different from the input one"
       | _ ->
           fail_in loc
-          @@ `TypeMismatchError "fst is applied to a non-product type" )
+          @@ `TypeMismatchError "fst is applied to a non-product type")
   | Snd { e } -> (
       let%bind ty = infer_open delta gamma e in
       match ty with
@@ -68,7 +68,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
                "snd error: inferred type is different from the input one"
       | _ ->
           fail_in loc
-          @@ `TypeMismatchError "snd is applied to a non-product type" )
+          @@ `TypeMismatchError "snd is applied to a non-product type")
   | Nat _ ->
       let exp_ty = PrettyPrinter.Str.of_type typ in
       with_error_location loc
@@ -96,7 +96,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
                   parameter"
           in
           check_open delta (Env.R.extend gamma idr dom) body cod
-      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected" )
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
@@ -114,8 +114,8 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           | Error { data = `EnvUnboundRegularVarError (var, _); loc = var_loc }
             when Result.is_ok (Env.R.lookup gamma var) ->
               mk_unbound_regular_var_inside_box_error loc var_loc var
-          | x -> x )
-      | _ -> fail_in loc @@ `TypeMismatchError "Error: unboxed type" )
+          | x -> x)
+      | _ -> fail_in loc @@ `TypeMismatchError "Error: unboxed type")
   | Let { idr; bound; body } ->
       let%bind ty = infer_open delta gamma bound in
       check_open delta (Env.R.extend gamma idr ty) body typ
@@ -123,7 +123,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       let%bind ty = infer_open delta gamma boxed in
       match ty with
       | Type.Box { ty } -> check_open (Env.M.extend delta idm ty) gamma body typ
-      | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box" )
+      | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
   | Match { matched; zbranch; pred; sbranch } ->
       let%bind _ = check_open delta gamma matched Type.Nat in
       let%bind ty_empty = infer_open delta gamma zbranch in
@@ -142,14 +142,14 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | Type.Prod { ty1; ty2 = _ } -> return ty1
       | _ ->
           fail_in loc
-          @@ `TypeMismatchError "fst is applied to a non-product type" )
+          @@ `TypeMismatchError "fst is applied to a non-product type")
   | Snd { e } -> (
       let%bind ty = infer_open delta gamma e in
       match ty with
       | Type.Prod { ty1 = _; ty2 } -> return ty2
       | _ ->
           fail_in loc
-          @@ `TypeMismatchError "snd is applied to a non-product type" )
+          @@ `TypeMismatchError "snd is applied to a non-product type")
   | Nat _ -> return Type.Nat
   | BinOp { op = _; e1; e2 } ->
       let%map () = check_open delta gamma e1 Type.Nat
@@ -185,7 +185,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       let%bind tyb = infer_open delta gamma boxed in
       match tyb with
       | Type.Box { ty } -> infer_open (Env.M.extend delta idm ty) gamma body
-      | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box" )
+      | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
   | Match { matched; zbranch; pred; sbranch } ->
       let%bind _ = check_open delta gamma matched Type.Nat in
       let%bind ty_zero = infer_open delta gamma zbranch in
