@@ -10,6 +10,8 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Unit -> Set.empty (module Id.M)
   | Pair { e1; e2 } -> Set.union (free_vars_m e1) (free_vars_m e2)
   | Fst { e } | Snd { e } -> free_vars_m e
+  | Nat _ -> Set.empty (module Id.M)
+  | BinOp { op = _; e1; e2 } -> Set.union (free_vars_m e1) (free_vars_m e2)
   | VarR _ -> Set.empty (module Id.M)
   | VarM { idm } -> Set.singleton (module Id.M) idm
   | Fun { idr = _; ty_id = _; body } -> free_vars_m body
@@ -20,6 +22,9 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
+  | Match { matched; zbranch; pred = _; sbranch } ->
+      Set.union (free_vars_m matched)
+      @@ Set.union (free_vars_m zbranch) (free_vars_m sbranch)
 
 let refresh_m idm fvs =
   let rec loop (idm : Id.M.t) =
@@ -36,6 +41,9 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | Pair { e1; e2 } -> pair (subst_m term identm e1) (subst_m term identm e2)
   | Fst { e } -> fst (subst_m term identm e)
   | Snd { e } -> snd (subst_m term identm e)
+  | Nat _n -> Location.locate body
+  | BinOp { op; e1; e2 } ->
+      binop op (subst_m term identm e1) (subst_m term identm e2)
   | VarR _i -> Location.locate body
   | VarM { idm } ->
       if [%equal: Id.M.t] identm idm then term else Location.locate body
@@ -68,6 +76,12 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   boxed = subst_m term identm boxed;
                   body = subst_m term identm body;
                 } )
+  | Match { matched; zbranch; pred; sbranch } ->
+      match_with
+        (subst_m term identm matched)
+        (subst_m term identm zbranch)
+        pred
+        (subst_m term identm sbranch)
 
 let rec eval_open gamma Location.{ data = expr; _ } =
   let open Expr in
@@ -86,6 +100,23 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       match pv with
       | Val.Pair { v1 = _; v2 } -> return v2
       | _ -> Result.fail @@ `EvaluationError "snd is stuck" )
+  | Nat { n } -> return @@ Val.Nat { n }
+  | BinOp { op; e1; e2 } -> (
+      let%bind lhs = eval_open gamma e1 in
+      let%bind rhs = eval_open gamma e2 in
+      match (lhs, rhs) with
+      | Val.Nat { n = n1 }, Val.Nat { n = n2 } -> (
+          match op with
+          | Add -> return @@ Val.Nat { n = Nat.add n1 n2 }
+          | Sub -> return @@ Val.Nat { n = Nat.sub n1 n2 }
+          | Mul -> return @@ Val.Nat { n = Nat.mul n1 n2 }
+          | Div ->
+              if Nat.equal n2 Nat.zero then
+                Result.fail @@ `EvaluationError "Division by zero"
+              else return @@ Val.Nat { n = Nat.div n1 n2 } )
+      | _, _ ->
+          Result.fail
+          @@ `EvaluationError "Only numbers can be used in arithmetics" )
   | VarR { idr } -> Env.R.lookup gamma idr
   | VarM _ ->
       Result.fail
@@ -113,5 +144,15 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
+  | Match { matched; zbranch; pred; sbranch } -> (
+      let%bind v = eval_open gamma matched in
+      match v with
+      | Nat { n } ->
+          let predn = Val.Nat { n = Nat.pred n } in
+          if Nat.equal n Nat.zero then eval_open gamma zbranch
+          else eval_open (Env.R.extend gamma pred predn) sbranch
+      | _ ->
+          Result.fail
+          @@ `EvaluationError "Pattern matching is supported for Nat now" )
 
 let eval expr = eval_open Env.R.emp expr

@@ -54,7 +54,7 @@ Church numerals
   > let fstt = λp:A -> B -> C. p (λx:A. λy:B . x) in
   > let sndd = λp:A -> B -> C. p (λx:A . λy:B . y) in
   > 
-  > let succ = λn:N. λf:F. λx:X. f ((n f) x) in
+  > let succc = λn:N. λf:F. λx:X. f ((n f) x) in
   > let pred = λn:N. λf:F. λx:X. sndd ( ( n (λp:P . ( pair (f (fstt p)) ) (fstt p) ) ) ( (pair x) x ) ) in
   > let minus = λn:N. λm:N. (m pred) n in 
   > 
@@ -84,3 +84,183 @@ Church numerals
   > let runtest = (and ((and ((and eqtests) plustest)) multest)) factest in runtest
   > EOF
   λx. λy : B. x
+
+test for Nat
+  $ mtt eval <<EOF
+  > let n = 41 * 42 in n
+  > EOF
+  1722
+
+  $ mtt eval <<EOF
+  > let pred = fun n: Nat. 
+  >   match n with
+  >   | zero => 0
+  >   | succ m => m
+  >   end
+  > in pred 0
+  > EOF
+  0
+
+  $ mtt eval <<EOF
+  > let pred = fun n: Nat. 
+  >   match n with
+  >   | zero => 0
+  >   | succ m => m
+  >   end
+  > in pred 1
+  > EOF
+  0
+
+  $ mtt eval <<EOF
+  > let pred = fun n: Nat. 
+  >   match n with
+  >   | zero => 0
+  >   | succ m => n - 1
+  >   end
+  > in pred 43
+  > EOF
+  42
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => 1
+  >   | succ m => m + n
+  >   end
+  > in f 42
+  > EOF
+  83
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => <0, 0>
+  >   | succ m => <m, n>
+  >   end
+  > in f 0
+  > EOF
+  <0, 0>
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => <0, 0>
+  >   | succ m => <m, n>
+  >   end
+  > in f 42
+  > EOF
+  <41, 42>
+
+  $ mtt eval <<EOF
+  > let mkpair = fun a: A. fun b: B. <a, b> in
+  > let next = fun n: Nat. n + 1 in
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => ((mkpair 0) (next 1))
+  >   | succ m => ((mkpair n) (next n))
+  >   end
+  > in f 100
+  > EOF
+  <100, 101>
+
+  $ mtt eval <<EOF
+  > let f = fun x: A. 10 in
+  > match f () with
+  > | zero => 1
+  > | succ m => 2
+  > end
+  > EOF
+  2
+
+  $ mtt eval <<EOF
+  > match 1 - 1 with
+  > | zero => 1
+  > | succ m => 2
+  > end
+  > EOF
+  1
+
+  $ mtt eval <<EOF
+  > let n = 1 - 2 in
+  > n
+  > EOF
+  0
+
+Priority tests
+
+  $ mtt eval <<EOF
+  > 2 + (2 * 2)
+  > EOF
+  6
+
+  $ mtt eval <<EOF
+  > 2 + 2 * 2
+  > EOF
+  6
+
+  $ mtt eval <<EOF
+  > 2 * 2 + 2
+  > EOF
+  6
+
+  $ mtt eval <<EOF
+  > (2 + 2) * 2
+  > EOF
+  8
+
+  $ mtt eval <<EOF
+  > 2 * (2 + 2)
+  > EOF
+  8
+
+  $ mtt eval <<EOF
+  > let p = <42, 43> in
+  > 1 + fst p
+  > EOF
+  43
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. n + 1 in
+  > 42 - f 1
+  > EOF
+  40
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. n + 1 in
+  > let g = fun n: Nat. n + 2 in
+  > 42 + f (g 2) * 2
+  > EOF
+  52
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. 2 * n in
+  > f 22 - 2
+  > EOF
+  42
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat. 2 * n in
+  > f 22 - f 2
+  > EOF
+  40
+
+Bad examples
+  $ mtt eval <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => <0, 0>
+  >   | succ m => ()
+  >   end
+  > in f 0
+  > EOF
+  <0, 0>
+
+  $ mtt eval <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => <0, 0>
+  >   | succ m => ()
+  >   end
+  > in f 42
+  > EOF
+  ()
