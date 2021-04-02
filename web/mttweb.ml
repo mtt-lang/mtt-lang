@@ -1,33 +1,9 @@
-(* start copy-paste from ../bin/mtt.ml *)
 open Base
 open Mtt
 open ParserInterface
-open Result.Let_syntax
-
-let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
- fun ast_kind source ->
-  parse_from ast_kind source
-  |> Result.map_error ~f:(fun parse_error ->
-         [%string "Parse error: $parse_error"])
-
-let parse_and_typeinfer source =
-  let%bind ast = parse_from_e Term source in
-  Typechecker.infer ast
-  |> Result.map_error ~f:(fun infer_err ->
-         [%string
-           "Type inference error: $(MttError.located_to_string infer_err)"])
-
-let parse_and_eval source =
-  let open Result.Let_syntax in
-  let%bind ast = parse_from_e Term source in
-  Evaluator.eval ast
-  |> Result.map_error ~f:(fun eval_err ->
-         [%string "Evaluation error: $(MttError.to_string eval_err)"])
-
-(* end copy-paste from ../bin/mtt.ml *)
 
 let eval_web term =
-  match parse_and_eval term with
+  match Util.parse_and_eval term with
   | Ok res ->
       let document = PrettyPrinter.Doc.of_val res in
       (* Check buffer size *)
@@ -37,7 +13,7 @@ let eval_web term =
   | Error err_msg -> err_msg
 
 let infer_web term =
-  match parse_and_typeinfer term with
+  match Util.parse_and_typeinfer term with
   | Ok res ->
       let document = PrettyPrinter.Doc.of_type res in
       (* Check buffer size *)
