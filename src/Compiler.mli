@@ -1,5 +1,7 @@
-val compile : Ast.Expr.t -> Malfunction.t
+open Ast
 
-val mval2val : Malfunction_interpreter.value -> Ast.Val.t
+val compile : Expr.t -> Malfunction.t
+
+val mval2val : Malfunction_interpreter.value -> Val.t
 (** this is temporary function for working 
 with malfunction interpreter *)
