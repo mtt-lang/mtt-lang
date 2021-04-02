@@ -20,7 +20,7 @@ let parse_expr source_file source_arg =
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
 
 let check_expr source_file source_arg typ verbose =
   match osource source_file source_arg with
@@ -30,9 +30,9 @@ let check_expr source_file source_arg typ verbose =
       | Ok () ->
           if verbose then (
             Out_channel.output_string stdout "OK. Expression typechecks.";
-            Out_channel.newline stdout );
+            Out_channel.newline stdout);
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
 
 let infer_type source_file source_arg =
   match osource source_file source_arg with
@@ -45,7 +45,7 @@ let infer_type source_file source_arg =
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
 
 let eval_expr source_file source_arg =
   match osource source_file source_arg with
@@ -57,7 +57,7 @@ let eval_expr source_file source_arg =
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
 
 (* Command line interface *)
 

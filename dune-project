@@ -28,7 +28,7 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   js_of_ocaml-ppx
   (menhir (>= 20201201))
   (ocaml (>= 4.07.0))
-  (ocamlformat (and :with-test (= 0.15.0)))
+  (ocamlformat (= 0.16.0))
   pprint
   ppx_compare
   ppx_let
