@@ -39,4 +39,5 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   sexplib
   stdio
   zarith
+  zarith_stubs_js
   ))
