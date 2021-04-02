@@ -10,33 +10,38 @@ Computation(2001)][DP2001] paper. For a, perhaps, gentler introduction, see
 Pfenning's lecture notes accompanying his and Platzer's [course on modal
 logic][course].
 
-**Disclaimer 1**: this implementation has not been extensively tested yet, so it
-might contain critical bugs.
+You might want to check out the [project's wiki][wiki] for a selection of
+related papers and projects.
 
-**Disclaimer 2**: error reporting mechanism does not report locations yet. This
-is easy to add for the parsing phase but requires more work to do e.g. during
-typechecking as I don't keep location information yet. Among other glaring
-omissions is the lack of support for source code comments, regular
-`let`-expressions and type ascriptions for terms.
+**Disclaimer**: this implementation has not been extensively tested yet, so it
+might contain critical bugs.
 
 [DP2001]: https://www.cs.cmu.edu/~fp/papers/jacm00.pdf
 [course]: https://www.cs.cmu.edu/~fp/courses/15816-s10
+[wiki]: https://github.com/mtt-lang/modal-type-theory/wiki
 
 
 ## Contributing
 
-Your contribution is very welcome. Please check the details in [CONTRIBUTING.md](./CONTRIBUTING.md).
+Your contribution is very welcome. Please check the details in
+[CONTRIBUTING.md](./CONTRIBUTING.md). The [HACKING.md](./HACKING.md) file
+explains how to build and test the project, format its code and things like
+that.
 
 ## How to use
 
-Use `mtt --help` to list all the subcommands `mtt` supports. Each of those
-subcommands also supports `--help` flag. Here are some usage examples:
+You can try out the typechecker and evaluator online: https://mtt-lang.github.io/mtt-web or
+install `mtt` locally using the [build instructions](./HACKING.md).
+
+Here is how you can use a local `mtt` setup. Use `mtt --help` to list all
+the subcommands `mtt` supports. Each of those subcommands also supports `--help`
+flag. Here are some examples:
 
 - Typechecking a term:
 
   ```
   $ mtt check "[]A -> A" -e "λx : []A. letbox u' = x in u'" --verbose
-  OK. Expression typechecks!
+  OK. Expression typechecks.
   ```
 
 - Inferring the type of a term:
@@ -45,7 +50,7 @@ subcommands also supports `--help` flag. Here are some usage examples:
   $ mtt infer -e "λx : []A. letbox u' = x in u'"
   (□A → A)
   ```
-  Yes, Unicode is allowed.
+  Yes, Unicode is allowed (The `□` symbol is the *box* type constructor).
 
   Here is an example which must not typecheck because a box tries to capture a
   regular variable:
@@ -78,72 +83,18 @@ subcommands also supports `--help` flag. Here are some usage examples:
 
   ```
   $ mtt parse examples/eval-apply.mtt
-  ((λx:□(). (letbox u' = x in u'))
-  (((λx:□(() → ()). (λy:□(). (letbox u' = x in
-  (letbox w' = y in (box (u' w'))))))
-  (box (λx:(). x)))
-  (box ((λx:(). x) ()))))
+  (λx : □(). letbox u' = x in u')
+  (((λx : □(() → ()). λy : □(). letbox u' = x in
+  letbox w' = y in box (u' w'))
+  (box (λx : (). x)))
+  (box ((λx : (). x) ())))
   ```
-
-## How to build
-
-An easy way to build the project is using the [opam](https://opam.ocaml.org)
-package manager for OCaml.
-
-### Installing dependencies into local opam switch
-
-I'll show how to install the project dependencies. By the way, the dependencies
-are recorded in the generated [mtt.opam](./mtt.opam) file).
-
-Once you have opam installed, go to the project root directory and execute the
-following command which will create a *local* switch with the specified version
-of OCaml compiler, then opam will download, compile and install the
-dependencies. By default, local switch will be available *only* inside this
-project.
-
-```shell
-opam switch create ./ --deps-only --with-test ocaml-base-compiler.4.07.1
-```
-
-Note that this will create `_opam` directory at the project root with all the
-compiled libraries and tools used in this project, so be careful with commands
-like `git clean` which may remove `_opam` (e.g. use something like this `git
-clean -dfX --exclude=\!_opam/**`).
-
-### Installing dependencies into existing opam switch
-
-If you have an existing opam switch you'd like to reuse, simply run the
-following command
-
-```shell
-opam install ./mtt.opam --with-test --deps-only
-```
-
-
-## How to run `mtt` command
-
-- My workflow is as follows: I modify the source code and play with the
-  evaluator or typechecker using [dune](https://dune.build) build system to
-  compile and run the modified CLI-driver `mtt`:
-
-  ``` shell
-  $ dune exec -- mtt infer examples/apply.mtt
-  ```
-
-- Another option is to install `mtt` into your switch `opam install ./mtt.opam`
-  and use it as shown at the beginning of this README file:
-
-  ``` shell
-  $ mtt eval examples/eval-apply.mtt
-  ```
-
-## Running/promoting tests
-
-- To run tests execute `make test` or `dune runtest`.
-- To accept changes to the existing tests, e.g. due to a new format of output or
-  new CLI exit codes, run `dune promote` or `make gold`.
 
 ## Language Syntax
+
+### Numerals
+
+Unsigned decimal numerals are supported.
 
 ### Identifiers
 
@@ -157,68 +108,79 @@ opam install ./mtt.opam --with-test --deps-only
 
 ### Keywords
 
-Here are the keywords `fun`, `in`, `box`, `letbox`, `fst`, `snd`. The keywords
-*cannot* be used as identifiers.
+Here are the keywords `fun`, `in`, `let`, `box`, `letbox`, `fst`, `snd`,
+`match`, `with`, `end`, `zero`, `succ`. The keywords *cannot* be used as
+identifiers.
 
 ### Other lexemes
 
-Pairs are denoted with angle brackets `<`, `>` separated with a comma (`,`).
+Pairs are denoted with angle brackets `>`, `<` separated with a comma (`,`).
 Parentheses (`)` and `(`) are used as usual for syntactical disambiguation both
-at the type and term levels and to optionally parenthesize bound regular variables
-and their type annotations. The unit type and its only value are both denoted
-with `()`. The dot (`.`) or the double arrow (`=>`) is used to separate bound
-variables from abstractions' bodies. The equals sign (`=`) is used as a
-separator in `letbox`- expressions.
+at the type and term levels and to optionally parenthesize bound regular
+variables and their type annotations. The unit type and its only value are both
+denoted with `()`. The dot (`.`) or the double arrow (`=>`) is used to separate
+bound variables from abstractions' bodies. The equals sign (`=`) is used as a
+separator in `letbox`- expressions. The pipe symbol (`|`) is used to separate
+the branches of the pattern-matching expression.
 
 ### Unicode 
 
 The following table specifies the correspondence between the ASCII lexemes and
 the Unicode ones.
 
-| ASCII     | Unicode | Meaning            |
-|:---------:|:-------:|:------------------:|
-| `[]`      | `□`     | Box modality       |
-| `*`       | `×`     | Product type       |
-| `->`      | `→`     | Arrow type         |
-| `fun`     | `λ`     | Lambda abstraction |
-| `fst`     | `π₁`    | First projection   |
-| `snd`     | `π₂`    | Second projection  |
-| `.`/ `=>` | `⇒`     | Separator          |
+| ASCII       | Unicode   | Meaning                        |
+| :---------: | :-------: | :----------------------------: |
+| `[]`        | `□`       | Box modality                   |
+| `*`         | `×`       | Product type or multiplication |
+| `->`        | `→`       | Arrow type                     |
+| `fun`       | `λ`       | Lambda abstraction             |
+| `fst`       | `π₁`      | First projection               |
+| `snd`       | `π₂`      | Second projection              |
+| `.`/ `=>`   | `⇒`       | Separator                      |
+| `Nat`       | `ℕ`       | Natural numbers type           |
 
 ### Abstract syntax
 
 #### Types
 
-| *T* ::= |             | Meaning                    |
-|:-------:|:-----------:|:--------------------------:|
-|         | `()`        | Unit type                  |
-|         | *Tid*       | Uninterpreted types        |
-|         | `□` *T*     | Type of staged expressions |
-|         | *T* `×` *T* | Type of pairs              |
-|         | *T* `→` *T* | Type of functions          |
-
+| *T* ::=   |               | Meaning                      |
+| :-------: | :-----------: | :--------------------------: |
+|           | `()`          | Unit type                    |
+|           | `ℕ`           | Natural numbers type         |
+|           | *Tid*         | Uninterpreted types          |
+|           | `□` *T*       | Type of staged expressions   |
+|           | *T* `×` *T*   | Type of pairs                |
+|           | *T* `→` *T*   | Type of functions            |
 
 #### Terms (expressions)
 
-| *t* ::= |                                   | Meaning                                                 |
-|:-------:|:---------------------------------:|:-------------------------------------------------------:|
-|         | `()`                              | the only inhabitant of the unit type                    |
-|         | *Lid*                             | Regular variable                                        |
-|         | *Gid*                             | Modal (valid) variable                                  |
-|         | `<` *t* `,` *t* `>`               | Pair expression                                         |
-|         | `π₁` *t*                          | First projection from a pair                            |
-|         | `π₂` *t*                          | Second projection from a pair                           |
-|         | `λ` *Lid* `:` *T* `.` *t*         | Lambda abstraction with explicitly typed variable       |
-|         | `λ` `(` *Lid* `:` *T* `)` `.` *t* | Lambda abstraction with explicitly typed modal variable |
-|         | *t* *t*                           | Function application                                    |
-|         | `box` *t*                         | Staged computations                                     |
-|         | `letbox` *Gid* `=` *t* `in` *t*   | Running staged computations                             |
+| *t* ::=   |                                                                  | Meaning                                                   |
+| :-------: | :--------------------------------------------------------------: | :-------------------------------------------------------: |
+|           | `()`                                                             | the only inhabitant of the unit type                      |
+|           | *numerals*                                                       | Natural numbers                                           |
+|           | *Lid*                                                            | Regular variable                                          |
+|           | *Gid*                                                            | Modal (valid) variable                                    |
+|           | `<` *t* `,` *t* `>`                                              | Pair expression                                           |
+|           | `π₁` *t*                                                         | First projection from a pair                              |
+|           | `π₂` *t*                                                         | Second projection from a pair                             |
+|           | `λ` *Lid* `:` *T* `.` *t*                                        | Lambda abstraction with explicitly typed variable         |
+|           | `λ` `(` *Lid* `:` *T* `)` `.` *t*                                | Lambda abstraction with explicitly typed modal variable   |
+|           | *t* *t*                                                          | Function application                                      |
+|           | `box` *t*                                                        | Staged computations                                       |
+|           | `let` *Lid* `=` *t* `in` *t*                                     | Let-expression                                            |
+|           | `letbox` *Gid* `=` *t* `in` *t*                                  | Running staged computations                               |
+|           | *t* `+` *t*                                                      | Addition                                                  |
+|           | *t* `-` *t*                                                      | Truncation substraction (`0 - n` evaluates to `0`)        |
+|           | *t* `*` *t*                                                      | Multiplication                                            |
+|           | *t* `/` *t*                                                      | Division (`n / 0` throws run-time error)                  |
+|           | `match` *t* `with \| zero =>` *t* `\| succ` *Lid* `=>` *t* `end` | Pattern-matching on natural numbers                       |
 
 #### Values
 
-| *v* ::= |                                 | Meaning                              |
-|:-------:|:-------------------------------:|:------------------------------------:|
-|         | `()`                            | the only inhabitant of the unit type |
-|         | `<` *v* `,` *v* `>`             | Pair value                           |
-|         | `λ` *Lid* `.` *t*               | Lambda abstraction value             |
-|         | `box` *t*                       | Staged computation                   |
+| *v* ::=   |                                   | Meaning                                |
+| :-------: | :-------------------------------: | :------------------------------------: |
+|           | `()`                              | the only inhabitant of the unit type   |
+|           | *numerals*                        | Natural numbers                        |
+|           | `<` *v* `,` *v* `>`               | Pair value                             |
+|           | `λ` *Lid* `.` *t*                 | Lambda abstraction value               |
+|           | `box` *t*                         | Staged computation                     |
