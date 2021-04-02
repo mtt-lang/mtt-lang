@@ -47,6 +47,13 @@ let parse_and_eval source =
   |> Result.map_error ~f:(fun eval_err ->
          [%string "Evaluation error: $(format_error eval_err)"])
 
+let parse_and_evalc source =
+  let%bind ast = parse_from_e Term source in
+  let mast = Compiler.compile ast in
+  (* let c = IntArith.of_int 1 in *)
+  let mval = Malfunction_interpreter.eval mast in
+  return mval
+
 let osource source_file source_arg =
   match (source_file, source_arg) with
   | Some filename, None -> Some (File filename)
@@ -97,6 +104,19 @@ let eval_expr source_file source_arg =
   | Some source -> (
       match parse_and_eval source with
       | Ok value ->
+          let document = PrettyPrinter.Doc.of_val value in
+          PPrint.ToChannel.pretty 1.0 80 stdout document;
+          Out_channel.newline stdout;
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg) )
+
+let compile_expr source_file source_arg =
+  match osource source_file source_arg with
+  | None -> `Error (true, "...")
+  | Some source -> (
+      match parse_and_evalc source with
+      | Ok mval ->
+          let value = Compiler.mval2val mval in
           let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
@@ -273,6 +293,32 @@ let eval_cmd =
   ( Term.(ret (const eval_expr $ source_file $ source_arg)),
     Term.info "eval" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
+let compile_cmd =
+  let source_file =
+    let doc = "The file with expression to evaluate." in
+    Arg.(value & pos 0 (some non_dir_file) None & info [] ~docv:"FILE" ~doc)
+  in
+  let source_arg =
+    let doc = "The expression to evaluate given as a CLI argument." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
+  in
+  let doc = "evaluate an expression" in
+  let exits = Term.default_exits in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "Evaluates an expression either from stdin, a file, or given as a \
+         command-line parameter";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(ret (const compile_expr $ source_file $ source_arg)),
+    Term.info "compile" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+
 let default_cmd =
   let doc = "a modal type theory implementation" in
   let sdocs = Manpage.s_common_options in
@@ -281,6 +327,6 @@ let default_cmd =
   ( Term.(ret (const (`Help (`Pager, None)))),
     Term.info "mtt" ~version:"v0.0.0" ~doc ~sdocs ~exits ~man )
 
-let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
+let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; compile_cmd; help_cmd ]
 
 let () = Term.(exit @@ eval_choice default_cmd cmds)

@@ -1,4 +1,5 @@
 open Malfunction
+open Malfunction_interpreter
 open Ast
 
 let rec compile Location.{ data = expr; _ } =
@@ -26,4 +27,16 @@ let rec compile Location.{ data = expr; _ } =
   | Box { e = _ } -> failwith "error box"
   | Let { idr = _; bound = _; body = _ } -> failwith "error let"
   | Letbox { idm = _; boxed = _; body = _ } -> failwith "error letbox"
-  | Match { matched = _; zbranch = _; pred = _; sbranch = _ } -> failwith "error match"
+  | Match { matched = _; zbranch = _; pred = _; sbranch = _ } ->
+      failwith "error match"
+
+let mval2val mval =
+  match mval with
+  | Block _ -> failwith "Block isn't implemented yet"
+  | Vec _ -> failwith "Vec isn't implemented yet"
+  | Func _ -> failwith "Func isn't implemented yet"
+  | Int (_, z) ->
+      let n = Nat.of_int @@ Z.to_int z in
+      Ast.Val.Nat { n }
+  | Float _ -> failwith "not-support"
+  | Thunk _ -> failwith "not-support"
