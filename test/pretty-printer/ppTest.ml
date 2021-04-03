@@ -116,9 +116,7 @@ let test_minimum_parentheses =
   let remove_parens str (l, r) =
     let length = String.length str in
     let prefix = String.prefix str l in
-    let middle =
-      String.drop_suffix (String.drop_prefix str (l + 1)) (length - r)
-    in
+    let middle = String.sub str ~pos:(l + 1) ~len:(r - l - 1) in
     let suffix = String.suffix str (length - r - 1) in
     String.concat ~sep:" " [ prefix; middle; suffix ]
   in
@@ -136,12 +134,7 @@ let test_minimum_parentheses =
       | Ok ast' -> Expr.equal ast ast'
       | Error _ -> false
     in
-    let rec f pairs =
-      match pairs with
-      | [] -> None
-      | pair :: tl -> if redundant pair then Some pair else f tl
-    in
-    f (parens_pairs str)
+    List.find (parens_pairs str) ~f:(fun p -> redundant p)
   in
   QCheck.Test.make ~name:"Expression pretty printer uses minimum parentheses"
     ~count:20 ~long_factor:10 arbitrary_ast (fun ast ->
