@@ -12,3 +12,13 @@ Parsing and pretty-printing of open terms
   x
   $ mtt parse -e "(f x) y"
   (f x) y
+
+Parse (un-)parenthesized bound expression in the let(box) clause
+  $ mtt parse -e "let x = () in x"
+  let x = () in x
+  $ mtt parse -e "let x = (()) in x"
+  let x = () in x
+  $ mtt parse -e "letbox x' = () in x'"
+  letbox x' = () in x'
+  $ mtt parse -e "letbox x' = (()) in x'"
+  letbox x' = () in x'
