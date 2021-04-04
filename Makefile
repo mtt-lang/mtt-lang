@@ -25,11 +25,12 @@ fmt:
 
 # Update src/ParserErrors.messages
 update-messages:
-	menhir --list-errors src/Parser.mly >src/NewParserErrors.messages
+	menhir --list-errors src/Parser.mly >src/NewParserErrorsStubs.messages
 	menhir --merge-errors src/ParserErrors.messages \
-		   --merge-errors src/NewParserErrors.messages \
-		   src/Parser.mly  >src/NewParserErrors.messages
+			--merge-errors src/NewParserErrorsStubs.messages \
+			src/Parser.mly  >src/NewParserErrors.messages
 	mv src/NewParserErrors.messages src/ParserErrors.messages
+	rm src/NewParserErrorsStubs.messages
 
 # CI: lint OCaml and dune source files, all the opam files in the project root
 lint:

@@ -53,6 +53,8 @@ Church numerals
   > let pair = λa:A . λb:B . λt:A -> B -> C . (t a) b in
   > let fstt = λp:A -> B -> C. p (λx:A. λy:B . x) in
   > let sndd = λp:A -> B -> C. p (λx:A . λy:B . y) in
+  > 
+  > let succc = λn:N. λf:F. λx:X. f ((n f) x) in
   > let pred = λn:N. λf:F. λx:X. sndd ( ( n (λp:P . ( pair (f (fstt p)) ) (fstt p) ) ) ( (pair x) x ) ) in
   > let minus = λn:N. λm:N. (m pred) n in 
   > 

@@ -892,3 +892,196 @@ expr_eof: UNIT SLASH ZERO
 ##
 
 ZERO token can be used in match-expression only
+
+expr_eof: FIX IDR COLON UNIT IDR DARROW MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 66.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON typ IDR DARROW expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR DARROW expr
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX IDR COLON UNIT IDR DARROW ZERO
+##
+## Ends in an error in state: 65.
+##
+## expr -> FIX IDR COLON typ IDR DARROW . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR DARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX IDR COLON UNIT IDR ZERO
+##
+## Ends in an error in state: 64.
+##
+## expr -> FIX IDR COLON typ IDR . DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX IDR COLON UNIT ZERO
+##
+## Ends in an error in state: 63.
+##
+## expr -> FIX IDR COLON typ . IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ IDR CROSS ARROW ]
+## typ -> typ . ARROW typ [ IDR CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX IDR COLON ZERO
+##
+## Ends in an error in state: 62.
+##
+## expr -> FIX IDR COLON . typ IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX IDR ZERO
+##
+## Ends in an error in state: 61.
+##
+## expr -> FIX IDR . COLON typ IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN IDR COLON UNIT RPAREN IDR DARROW MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 49.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR DARROW expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR DARROW expr
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN IDR COLON UNIT RPAREN IDR DARROW ZERO
+##
+## Ends in an error in state: 44.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR DARROW . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR DARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN IDR COLON UNIT RPAREN IDR ZERO
+##
+## Ends in an error in state: 43.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR . DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN IDR COLON UNIT RPAREN ZERO
+##
+## Ends in an error in state: 42.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN . IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN IDR COLON UNIT ZERO
+##
+## Ends in an error in state: 41.
+##
+## expr -> FIX LPAREN IDR COLON typ . RPAREN IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN IDR COLON ZERO
+##
+## Ends in an error in state: 40.
+##
+## expr -> FIX LPAREN IDR COLON . typ RPAREN IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN IDR ZERO
+##
+## Ends in an error in state: 39.
+##
+## expr -> FIX LPAREN IDR . COLON typ RPAREN IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX LPAREN ZERO
+##
+## Ends in an error in state: 38.
+##
+## expr -> FIX LPAREN . IDR COLON typ RPAREN IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: FIX ZERO
+##
+## Ends in an error in state: 37.
+##
+## expr -> FIX . IDR COLON typ IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX . LPAREN IDR COLON typ RPAREN IDR DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
