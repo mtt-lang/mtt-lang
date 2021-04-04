@@ -57,8 +57,8 @@ let rec subst_m term identm Location.{ data = body; _ } =
       letc idr (subst_m term identm bound) (subst_m term identm body)
   | Letbox { idm; boxed; body } ->
       Location.locate
-        ( if [%equal: Id.M.t] identm idm then
-          Letbox { idm; boxed = subst_m term identm boxed; body }
+        (if [%equal: Id.M.t] identm idm then
+         Letbox { idm; boxed = subst_m term identm boxed; body }
         else
           match refresh_m idm (free_vars_m term) with
           | Some new_i ->
@@ -78,7 +78,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   idm;
                   boxed = subst_m term identm boxed;
                   body = subst_m term identm body;
-                } )
+                })
   | Match { matched; zbranch; pred; sbranch } ->
       match_with
         (subst_m term identm matched)
@@ -97,12 +97,12 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       let%bind pv = eval_open gamma e in
       match pv with
       | Val.Pair { v1; v2 = _ } -> return v1
-      | _ -> Result.fail @@ `EvaluationError "fst is stuck" )
+      | _ -> Result.fail @@ `EvaluationError "fst is stuck")
   | Snd { e } -> (
       let%bind pv = eval_open gamma e in
       match pv with
       | Val.Pair { v1 = _; v2 } -> return v2
-      | _ -> Result.fail @@ `EvaluationError "snd is stuck" )
+      | _ -> Result.fail @@ `EvaluationError "snd is stuck")
   | Nat { n } -> return @@ Val.Nat { n }
   | BinOp { op; e1; e2 } -> (
       let%bind lhs = eval_open gamma e1 in
@@ -116,10 +116,10 @@ let rec eval_open gamma Location.{ data = expr; _ } =
           | Div ->
               if Nat.equal n2 Nat.zero then
                 Result.fail @@ `EvaluationError "Division by zero"
-              else return @@ Val.Nat { n = Nat.div n1 n2 } )
+              else return @@ Val.Nat { n = Nat.div n1 n2 })
       | _, _ ->
           Result.fail
-          @@ `EvaluationError "Only numbers can be used in arithmetics" )
+          @@ `EvaluationError "Only numbers can be used in arithmetics")
   | VarR { idr } -> Env.R.lookup gamma idr
   | VarM _ ->
       Result.fail
@@ -140,7 +140,7 @@ let rec eval_open gamma Location.{ data = expr; _ } =
           eval_open (Env.R.extend fix_gamma idr argv) body
       | _ ->
           Result.fail
-          @@ `EvaluationError "Trying to apply an argument to a non-function" )
+          @@ `EvaluationError "Trying to apply an argument to a non-function")
   | Box { e } -> return @@ Val.Box { e }
   | Let { idr; bound; body } ->
       let%bind bound_v = eval_open gamma bound in
@@ -161,6 +161,6 @@ let rec eval_open gamma Location.{ data = expr; _ } =
           else eval_open (Env.R.extend gamma pred predn) sbranch
       | _ ->
           Result.fail
-          @@ `EvaluationError "Pattern matching is supported for Nat now" )
+          @@ `EvaluationError "Pattern matching is supported for Nat now")
 
 let eval expr = eval_open Env.R.emp expr

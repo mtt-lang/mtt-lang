@@ -1,0 +1,894 @@
+type_eof: LPAREN SND
+##
+## Ends in an error in state: 22.
+##
+## typ -> LPAREN . typ RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+Valid type is expected after opening parenthesis
+
+type_eof: LPAREN UNIT UNIT
+##
+## Ends in an error in state: 24.
+##
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+## typ -> LPAREN typ . RPAREN [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN typ
+##
+
+Missing closing parenthesis at type level. Or unexpected lexeme, like => is used instead of ->. Or you are using (A, B) instead of A * B
+
+type_eof: SND
+##
+## Ends in an error in state: 86.
+##
+## type_eof' -> . type_eof [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+Valid type expected. Make sure uninterpreted type identifiers are capitalized and there are no unbalanced parentheses
+
+type_eof: TBOX SND
+##
+## Ends in an error in state: 21.
+##
+## typ -> TBOX . typ [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## TBOX
+##
+
+Type-level box must be followed by a type
+
+type_eof: UNIT ARROW SND
+##
+## Ends in an error in state: 28.
+##
+## typ -> typ ARROW . typ [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ ARROW
+##
+
+Valid codomain type is expected. Sometimes this happens if -> is used instead of =>
+
+type_eof: UNIT ARROW UNIT UNIT
+##
+## Ends in an error in state: 29.
+##
+## typ -> typ . CROSS typ [ RPAREN EOF DARROW CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN EOF DARROW CROSS ARROW ]
+## typ -> typ ARROW typ . [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ ARROW typ
+##
+
+Please report your example, producing this parsing error
+
+type_eof: UNIT CROSS SND
+##
+## Ends in an error in state: 26.
+##
+## typ -> typ CROSS . typ [ RPAREN EOF DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ CROSS
+##
+
+"snd" is not type expression
+
+type_eof: UNIT UNIT
+##
+## Ends in an error in state: 88.
+##
+## typ -> typ . CROSS typ [ EOF CROSS ARROW ]
+## typ -> typ . ARROW typ [ EOF CROSS ARROW ]
+## type_eof -> typ . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## typ
+##
+
+Please report your example, producing this parsing error
+
+expr_eof: BOX TBOX
+##
+## Ends in an error in state: 37.
+##
+## app -> BOX . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## BOX
+##
+
+Boxed expression is expected
+
+expr_eof: FST TBOX
+##
+## Ends in an error in state: 34.
+##
+## app -> FST . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FST
+##
+
+An expression after fst is expected. This primitive can be only used fully applied.
+
+expr_eof: FUN IDR COLON SND
+##
+## Ends in an error in state: 54.
+##
+## expr -> FUN IDR COLON . typ DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN IDR COLON
+##
+
+Valid type expected. Make sure uninterpreted type identifiers are capitalized and there are no unbalanced parentheses
+
+expr_eof: FUN IDR COLON UNIT DARROW TBOX
+##
+## Ends in an error in state: 56.
+##
+## expr -> FUN IDR COLON typ DARROW . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN IDR COLON typ DARROW
+##
+
+Error when parsing lambda function body: missing body or unexpected lexeme
+
+expr_eof: FUN IDR COLON UNIT UNIT
+##
+## Ends in an error in state: 55.
+##
+## expr -> FUN IDR COLON typ . DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
+## typ -> typ . ARROW typ [ DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN IDR COLON typ
+##
+
+Separator between bound variable and lambda body is missing. Use e.g. => or . Also, make sure parentheses are balanced
+
+expr_eof: FUN IDR UNIT
+##
+## Ends in an error in state: 53.
+##
+## expr -> FUN IDR . COLON typ DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN IDR
+##
+
+Function parameter is missing type annotation
+
+expr_eof: FUN LPAREN IDR COLON SND
+##
+## Ends in an error in state: 18.
+##
+## expr -> FUN LPAREN IDR COLON . typ RPAREN DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON
+##
+
+Unrecognized syntax error. Please report your example
+
+expr_eof: FUN LPAREN IDR COLON UNIT RPAREN DARROW TBOX
+##
+## Ends in an error in state: 33.
+##
+## expr -> FUN LPAREN IDR COLON typ RPAREN DARROW . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON typ RPAREN DARROW
+##
+
+Unrecognized syntax error. Please report your example
+
+expr_eof: FUN LPAREN IDR COLON UNIT RPAREN UNIT
+##
+## Ends in an error in state: 32.
+##
+## expr -> FUN LPAREN IDR COLON typ RPAREN . DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON typ RPAREN
+##
+
+Unrecognized syntax error. Please report your example
+
+expr_eof: FUN LPAREN IDR COLON UNIT UNIT
+##
+## Ends in an error in state: 31.
+##
+## expr -> FUN LPAREN IDR COLON typ . RPAREN DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON typ
+##
+
+Missing closed parenthesis
+
+expr_eof: FUN LPAREN IDR UNIT
+##
+## Ends in an error in state: 17.
+##
+## expr -> FUN LPAREN IDR . COLON typ RPAREN DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR
+##
+
+Missing closed parenthesis
+
+expr_eof: FUN LPAREN UNIT
+##
+## Ends in an error in state: 16.
+##
+## expr -> FUN LPAREN . IDR COLON typ RPAREN DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN
+##
+
+Missing closed parenthesis
+
+expr_eof: FUN UNIT
+##
+## Ends in an error in state: 15.
+##
+## expr -> FUN . IDR COLON typ DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN . LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN
+##
+
+A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
+
+expr_eof: LANGLE TBOX
+##
+## Ends in an error in state: 12.
+##
+## parceled_expr -> LANGLE . expr COMMA expr RANGLE [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE
+##
+
+First component of pair expression is expected
+
+expr_eof: LANGLE UNIT COMMA TBOX
+##
+## Ends in an error in state: 59.
+##
+## parceled_expr -> LANGLE expr COMMA . expr RANGLE [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE expr COMMA
+##
+
+Second component of pair expression is expected
+
+expr_eof: LANGLE UNIT COMMA UNIT RPAREN
+##
+## Ends in an error in state: 60.
+##
+## arith -> expr . PLUS expr [ SLASH RANGLE PLUS MINUS CROSS ]
+## arith -> expr . MINUS expr [ SLASH RANGLE PLUS MINUS CROSS ]
+## arith -> expr . CROSS expr [ SLASH RANGLE PLUS MINUS CROSS ]
+## arith -> expr . SLASH expr [ SLASH RANGLE PLUS MINUS CROSS ]
+## parceled_expr -> LANGLE expr COMMA expr . RANGLE [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE expr COMMA expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Right angle bracket is expected
+
+expr_eof: LANGLE UNIT RPAREN
+##
+## Ends in an error in state: 58.
+##
+## arith -> expr . PLUS expr [ SLASH PLUS MINUS CROSS COMMA ]
+## arith -> expr . MINUS expr [ SLASH PLUS MINUS CROSS COMMA ]
+## arith -> expr . CROSS expr [ SLASH PLUS MINUS CROSS COMMA ]
+## arith -> expr . SLASH expr [ SLASH PLUS MINUS CROSS COMMA ]
+## parceled_expr -> LANGLE expr . COMMA expr RANGLE [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Missing comma which separates components of pair expression
+
+expr_eof: LET IDR EQ TBOX
+##
+## Ends in an error in state: 11.
+##
+## expr -> LET IDR EQ . expr IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR EQ
+##
+
+Variable in "let" expression must be term, not type
+
+expr_eof: LET IDR EQ UNIT IN TBOX
+##
+## Ends in an error in state: 63.
+##
+## expr -> LET IDR EQ expr IN . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR EQ expr IN
+##
+
+Expected term after "in"-keyword, not type
+
+expr_eof: LET IDR EQ UNIT RPAREN
+##
+## Ends in an error in state: 62.
+##
+## arith -> expr . PLUS expr [ SLASH PLUS MINUS IN CROSS ]
+## arith -> expr . MINUS expr [ SLASH PLUS MINUS IN CROSS ]
+## arith -> expr . CROSS expr [ SLASH PLUS MINUS IN CROSS ]
+## arith -> expr . SLASH expr [ SLASH PLUS MINUS IN CROSS ]
+## expr -> LET IDR EQ expr . IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR EQ expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Missing or unexpected lexeme in parenthesized expression
+
+expr_eof: LET IDR UNIT
+##
+## Ends in an error in state: 10.
+##
+## expr -> LET IDR . EQ expr IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR
+##
+
+Missing "in" keyword in "let-in" construction
+
+expr_eof: LET UNIT
+##
+## Ends in an error in state: 9.
+##
+## expr -> LET . IDR EQ expr IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+
+expr_eof: LETBOX IDM EQ TBOX
+##
+## Ends in an error in state: 8.
+##
+## expr -> LETBOX IDM EQ . expr IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LETBOX IDM EQ
+##
+
+Right-hand side of lexbox expression is expected
+
+expr_eof: LETBOX IDM EQ UNIT IN TBOX
+##
+## Ends in an error in state: 66.
+##
+## expr -> LETBOX IDM EQ expr IN . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LETBOX IDM EQ expr IN
+##
+
+Body of letbox expression is expected
+
+expr_eof: LETBOX IDM EQ UNIT RPAREN
+##
+## Ends in an error in state: 65.
+##
+## arith -> expr . PLUS expr [ SLASH PLUS MINUS IN CROSS ]
+## arith -> expr . MINUS expr [ SLASH PLUS MINUS IN CROSS ]
+## arith -> expr . CROSS expr [ SLASH PLUS MINUS IN CROSS ]
+## arith -> expr . SLASH expr [ SLASH PLUS MINUS IN CROSS ]
+## expr -> LETBOX IDM EQ expr . IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LETBOX IDM EQ expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Missing "in" keyword in letbox expression
+
+expr_eof: LETBOX IDM UNIT
+##
+## Ends in an error in state: 7.
+##
+## expr -> LETBOX IDM . EQ expr IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LETBOX IDM
+##
+
+Missing "=" after identifier in letbox expression
+
+expr_eof: LETBOX UNIT
+##
+## Ends in an error in state: 6.
+##
+## expr -> LETBOX . IDM EQ expr IN expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LETBOX
+##
+
+A modal identifier is expected. It should start with a lowercase letter and end with an apostrophe (').
+
+expr_eof: LPAREN TBOX
+##
+## Ends in an error in state: 4.
+##
+## parceled_expr -> LPAREN . expr RPAREN [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+Missing or unexpected lexeme in parenthesized expression
+
+expr_eof: LPAREN UNIT RANGLE
+##
+## Ends in an error in state: 80.
+##
+## arith -> expr . PLUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
+## arith -> expr . MINUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
+## arith -> expr . CROSS expr [ SLASH RPAREN PLUS MINUS CROSS ]
+## arith -> expr . SLASH expr [ SLASH RPAREN PLUS MINUS CROSS ]
+## parceled_expr -> LPAREN expr . RPAREN [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Missing closing parenthesis or missing obligatory parentheses for multi-arg function application: (f x) y or maybe using parentheses instead of angle brackets for pairs
+
+expr_eof: SND TBOX
+##
+## Ends in an error in state: 3.
+##
+## app -> SND . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## SND
+##
+
+An expression after snd is expected. This primitive can be only used fully applied.
+
+expr_eof: TBOX
+##
+## Ends in an error in state: 0.
+##
+## expr_eof' -> . expr_eof [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+An expression is expected. This may result from a missing or unexpected lexeme or an attempt to parse a type-level expression
+
+expr_eof: UNIT RPAREN
+##
+## Ends in an error in state: 84.
+##
+## arith -> expr . PLUS expr [ SLASH PLUS MINUS EOF CROSS ]
+## arith -> expr . MINUS expr [ SLASH PLUS MINUS EOF CROSS ]
+## arith -> expr . CROSS expr [ SLASH PLUS MINUS EOF CROSS ]
+## arith -> expr . SLASH expr [ SLASH PLUS MINUS EOF CROSS ]
+## expr_eof -> expr . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Binary application must be parenthesized like so: (f x) y
+
+expr_eof: UNIT TBOX
+##
+## Ends in an error in state: 39.
+##
+## app -> parceled_expr . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+## expr -> parceled_expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## parceled_expr
+##
+
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+
+expr_eof: FUN IDR COLON UNIT DARROW MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 57.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN IDR COLON typ DARROW expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN IDR COLON typ DARROW expr
+##
+
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+
+expr_eof: FUN LPAREN IDR COLON UNIT RPAREN DARROW MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 41.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN LPAREN IDR COLON typ RPAREN DARROW expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN IDR COLON typ RPAREN DARROW expr
+##
+
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+
+expr_eof: LET IDR EQ UNIT IN MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 64.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> LET IDR EQ expr IN expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET IDR EQ expr IN expr
+##
+
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+
+expr_eof: LETBOX IDM EQ UNIT IN MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 67.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> LETBOX IDM EQ expr IN expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LETBOX IDM EQ expr IN expr
+##
+
+Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+
+expr_eof: MATCH UNIT RPAREN
+##
+## Ends in an error in state: 68.
+##
+## arith -> expr . PLUS expr [ WITH SLASH PLUS MINUS CROSS ]
+## arith -> expr . MINUS expr [ WITH SLASH PLUS MINUS CROSS ]
+## arith -> expr . CROSS expr [ WITH SLASH PLUS MINUS CROSS ]
+## arith -> expr . SLASH expr [ WITH SLASH PLUS MINUS CROSS ]
+## expr -> MATCH expr . WITH PIPE ZERO DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Missing "with" keyword
+
+expr_eof: MATCH UNIT WITH PIPE WITH
+##
+## Ends in an error in state: 70.
+##
+## expr -> MATCH expr WITH PIPE . ZERO DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE
+##
+
+Incorrect match-expression  
+
+expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR DARROW UNIT WITH
+##
+## Ends in an error in state: 78.
+##
+## arith -> expr . PLUS expr [ SLASH PLUS MINUS END CROSS ]
+## arith -> expr . MINUS expr [ SLASH PLUS MINUS END CROSS ]
+## arith -> expr . CROSS expr [ SLASH PLUS MINUS END CROSS ]
+## arith -> expr . SLASH expr [ SLASH PLUS MINUS END CROSS ]
+## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR DARROW expr . END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR DARROW expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+END token wasn't found in the end of the match-expression
+
+expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR DARROW ZERO
+##
+## Ends in an error in state: 77.
+##
+## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR DARROW . expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR DARROW
+##
+
+END token wasn't found in the end of the match-expression
+
+expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR ZERO
+##
+## Ends in an error in state: 76.
+##
+## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR . DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR
+##
+
+Empty branch in match-expression
+
+expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC ZERO
+##
+## Ends in an error in state: 75.
+##
+## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC . IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC
+##
+
+Empty branch in match-expression
+
+expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE ZERO
+##
+## Ends in an error in state: 74.
+##
+## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE . SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO DARROW expr PIPE
+##
+
+Redudant branch in the match-expression
+
+expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT WITH
+##
+## Ends in an error in state: 73.
+##
+## arith -> expr . PLUS expr [ SLASH PLUS PIPE MINUS CROSS ]
+## arith -> expr . MINUS expr [ SLASH PLUS PIPE MINUS CROSS ]
+## arith -> expr . CROSS expr [ SLASH PLUS PIPE MINUS CROSS ]
+## arith -> expr . SLASH expr [ SLASH PLUS PIPE MINUS CROSS ]
+## expr -> MATCH expr WITH PIPE ZERO DARROW expr . PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO DARROW expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production expr -> parceled_expr
+##
+
+Empty branch in match-expression
+
+expr_eof: MATCH UNIT WITH PIPE ZERO DARROW ZERO
+##
+## Ends in an error in state: 72.
+##
+## expr -> MATCH expr WITH PIPE ZERO DARROW . expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO DARROW
+##
+
+Empty branch in match-expression
+
+expr_eof: MATCH UNIT WITH PIPE ZERO ZERO
+##
+## Ends in an error in state: 71.
+##
+## expr -> MATCH expr WITH PIPE ZERO . DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH PIPE ZERO
+##
+
+Empty branch in match-expression
+
+expr_eof: MATCH UNIT WITH ZERO
+##
+## Ends in an error in state: 69.
+##
+## expr -> MATCH expr WITH . PIPE ZERO DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH expr WITH
+##
+
+Empty branch in match-expression
+
+expr_eof: MATCH ZERO
+##
+## Ends in an error in state: 5.
+##
+## expr -> MATCH . expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MATCH
+##
+
+END token wasn't found in the end of the match-expression
+
+expr_eof: UNIT CROSS ZERO
+##
+## Ends in an error in state: 49.
+##
+## arith -> expr CROSS . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## expr CROSS
+##
+
+ZERO token can be used in match-expression only
+
+expr_eof: UNIT IDM ZERO
+##
+## Ends in an error in state: 45.
+##
+## app -> app . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
+## expr -> app . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+Missing or unexpected lexeme in parenthesized expression
+
+expr_eof: UNIT MINUS MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 52.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr MINUS expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## expr MINUS expr
+##
+
+ZERO token can be used in match-expression only
+
+expr_eof: UNIT MINUS ZERO
+##
+## Ends in an error in state: 51.
+##
+## arith -> expr MINUS . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## expr MINUS
+##
+
+ZERO token can be used in match-expression only
+
+expr_eof: UNIT PLUS MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
+##
+## Ends in an error in state: 48.
+##
+## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr PLUS expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## expr PLUS expr
+##
+
+ZERO token can be used in match-expression only
+
+expr_eof: UNIT PLUS ZERO
+##
+## Ends in an error in state: 47.
+##
+## arith -> expr PLUS . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## expr PLUS
+##
+
+ZERO token can be used in match-expression only
+
+expr_eof: UNIT SLASH ZERO
+##
+## Ends in an error in state: 42.
+##
+## arith -> expr SLASH . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## expr SLASH
+##
+
+ZERO token can be used in match-expression only

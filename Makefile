@@ -27,8 +27,8 @@ fmt:
 update-messages:
 	menhir --list-errors src/Parser.mly >src/NewParserErrorsStubs.messages
 	menhir --merge-errors src/ParserErrors.messages \
-			--merge-errors src/NewParserErrorsStubs.messages \
-			src/Parser.mly  >src/NewParserErrors.messages
+		   --merge-errors src/NewParserErrorsStubs.messages \
+		   src/Parser.mly  >src/NewParserErrors.messages
 	mv src/NewParserErrors.messages src/ParserErrors.messages
 	rm src/NewParserErrorsStubs.messages
 

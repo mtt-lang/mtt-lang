@@ -1,0 +1,3 @@
+(λx : □(). letbox u' = x in u')
+  (((λx:□(() → ()). λy:□(). letbox u' = x in letbox w' = y in box (u' w'))
+    (box (λx : (). x))) (box ((λx : (). x) ())))

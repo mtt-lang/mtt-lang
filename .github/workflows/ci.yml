@@ -10,10 +10,12 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - windows-latest
+          # windows has some troubles js_of_ocaml
+          # - windows-latest
           - macos-latest
           - ubuntu-latest
         ocaml-version:
+          - 4.12.0
           - 4.11.1
           - 4.10.1
           - 4.09.1
@@ -41,7 +43,7 @@ jobs:
 
       - run: opam pin add mtt.dev . --no-action
 
-      - run: opam depext mtt --yes --with-doc --with-test
+      - run: opam depext mtt --yes
 
       - run: opam install . --deps-only --with-doc --with-test
 

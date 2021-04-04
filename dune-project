@@ -21,9 +21,14 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   (base (and (>= v0.12.2) (< v0.15.0)))
   cmdliner
   (dune (>= 2.0))
+  js_of_ocaml
+  js_of_ocaml-compiler
+  js_of_ocaml-lwt
+  js_of_ocaml-tyxml
+  js_of_ocaml-ppx
   (menhir (>= 20201201))
   (ocaml (>= 4.07.0))
-  (ocamlformat (and :with-test (= 0.15.0)))
+  (ocamlformat (= 0.16.0))
   pprint
   ppx_compare
   ppx_let
@@ -34,4 +39,5 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   sexplib
   stdio
   zarith
+  zarith_stubs_js
   ))

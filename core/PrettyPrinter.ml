@@ -95,11 +95,11 @@ module Doc : DOC = struct
       | VarR { idr } -> (
           match Env.R.lookup renv idr with
           | Ok v -> parens (of_val v)
-          | Error _ -> !^(Id.R.to_string idr) )
+          | Error _ -> !^(Id.R.to_string idr))
       | VarM { idm } -> !^(Id.M.to_string idm)
       | Fun { idr; ty_id; body } ->
           (parens_if (p > 1))
-            ( fun_kwd
+            (fun_kwd
             ^^ !^(Id.R.to_string idr)
             ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body )
       | Fix { self; ty_id; idr; body } ->
@@ -115,15 +115,15 @@ module Doc : DOC = struct
       | Let { idr; bound; body } ->
           (parens_if (p > 1))
             (group
-               ( let_kwd
+               (let_kwd
                ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body ))
+               ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body))
       | Letbox { idm; boxed; body } ->
           (parens_if (p > 1))
             (group
-               ( letbox_kwd
+               (letbox_kwd
                ^^^ !^(Id.M.to_string idm)
-               ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
+               ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body))
       | Match { matched; zbranch; pred; sbranch } ->
           let indentz = String.length (String.concat [ "| zero "; "=> " ]) in
           let indents =
@@ -131,14 +131,14 @@ module Doc : DOC = struct
               (String.concat [ "| succ "; Id.R.to_string pred; " => " ])
           in
           (parens_if (p > 1))
-            ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
-            ^^^ darrow
+            (match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
+           ^^^ darrow
             ^^^ nest indentz (walk 1 zbranch)
             ^/^ bar ^^^ succ_kwd
             ^^^ !^(Id.R.to_string pred)
             ^^^ darrow
             ^^^ nest indents (walk 1 sbranch)
-            ^/^ end_kwd )
+            ^/^ end_kwd)
     in
     walk 0 expr
 
@@ -163,4 +163,27 @@ module Doc : DOC = struct
         ^^ dot
         ^^^ of_expr_with_free_vars env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
+end
+
+module type STR = sig
+  val of_type : Type.t -> string
+
+  val of_expr : Expr.t -> string
+
+  val of_val : Val.t -> string
+end
+
+(** Convert ASTs into string *)
+module Str : STR = struct
+  let doc2str : PPrint.document -> string =
+   fun doc ->
+    let buffer = Buffer.create 100 in
+    PPrint.ToBuffer.pretty 1.0 80 buffer doc;
+    Buffer.contents buffer
+
+  let of_type t = doc2str @@ Doc.of_type t
+
+  let of_expr e = doc2str @@ Doc.of_expr e
+
+  let of_val v = doc2str @@ Doc.of_val v
 end
