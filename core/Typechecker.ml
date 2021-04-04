@@ -10,8 +10,6 @@ type error =
 
 type 'e lerror = ([> error ] as 'e) Location.located
 
-let type_to_string ty = Sexp.to_string @@ Type.sexp_of_t ty
-
 let check_equal ty1 ty2 msg =
   Result.ok_if_true ([%equal: Type.t] ty1 ty2) ~error:(`TypeMismatchError msg)
 
@@ -98,7 +96,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
                   parameter"
           in
           check_open delta (Env.R.extend gamma idr dom) body cod
-      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected" )
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | Fix _ -> fail_in loc @@ `TypeMismatchError "Fix hasn't been implemented yet"
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
