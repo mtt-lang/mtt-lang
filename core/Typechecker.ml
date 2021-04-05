@@ -97,7 +97,18 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           in
           check_open delta (Env.R.extend gamma idr dom) body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
-  | Fix _ -> fail_in loc @@ `TypeMismatchError "Fix hasn't been implemented yet"
+  | Fix { self; ty_id; idr = _; idr_ty; body } -> (
+      let self_ty = Type.Arr { dom = idr_ty; cod = typ } in
+      match typ with
+      | Type.Arr { dom = _; cod } ->
+          let%bind () =
+            with_error_location loc
+            @@ check_equal self_ty ty_id
+                 "Domain of arrow type is not the same as type of function \
+                  parameter"
+          in
+          check_open delta (Env.R.extend gamma self self_ty) body cod
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
@@ -161,7 +172,12 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Fun { idr; ty_id; body } ->
       let%map ty_body = infer_open delta (Env.R.extend gamma idr ty_id) body in
       Type.Arr { dom = ty_id; cod = ty_body }
-  | Fix _ -> fail_in loc @@ `TypeMismatchError "Fix hasn't been implemented yet"
+  | Fix { self; ty_id; idr; idr_ty; body } ->
+      let fix_gamma = Env.R.extend gamma self ty_id in
+      let%map ty_body =
+        infer_open delta (Env.R.extend fix_gamma idr idr_ty) body
+      in
+      Type.Arr { dom = idr_ty; cod = ty_body }
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with

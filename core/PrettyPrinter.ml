@@ -102,13 +102,13 @@ module Doc : DOC = struct
             (fun_kwd
             ^^ !^(Id.R.to_string idr)
             ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body)
-      | Fix { self; ty_id; idr; body } ->
+      | Fix { self; ty_id; idr; idr_ty; body } ->
           (parens_if (p > 1))
             (fix_kwd
             ^^^ !^(Id.R.to_string self)
             ^^^ colon ^^^ of_type ty_id
             ^^^ !^(Id.R.to_string idr)
-            ^^ dot ^^ space ^^ walk 1 body)
+            ^^^ colon ^^^ of_type idr_ty ^^ dot ^^ space ^^ walk 1 body)
       | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
       | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
