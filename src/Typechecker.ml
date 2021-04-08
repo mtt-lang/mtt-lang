@@ -72,19 +72,17 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
         ~error:(Location.pp ~msg:"Unexpected modal variable type" loc)
   | Fun (idl, t_of_id, body) -> (
       match typ with
-      | Type.Arr (dom, cod) ->
-          if [%equal: Type.t] dom t_of_id then
-            check_open delta (Env.extend_r gamma idl dom) body cod
-          else
-            Result.fail
-            @@ Location.pp
-                 ~msg:
-                   "Domain of arrow type is not the same as type of function \
-                    parameter"
-                 loc
-      | _ -> Result.fail @@ Location.pp ~msg:"Arror type expected" loc )
-  | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
-  | App (fe, arge) -> (
+      | Type.Arr { dom; cod } ->
+          let%bind () =
+            with_error_location loc
+            @@ check_equal dom ty_id
+                 "Domain of arrow type is not the same as type of function \
+                  parameter"
+          in
+          check_open delta (Env.R.extend gamma idr dom) body cod
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected" )
+  | Fix _ -> fail_in loc @@ `TypeMismatchError "Fix hasn't been implemented yet"
+  | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
       | Type.Arr { dom; cod } ->
@@ -173,6 +171,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Fun { idr; ty_id; body } ->
       let%map ty_body = infer_open delta (Env.R.extend gamma idr ty_id) body in
       Type.Arr { dom = ty_id; cod = ty_body }
+  | Fix _ -> fail_in loc @@ `TypeMismatchError "Fix hasn't been implemented yet"
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with

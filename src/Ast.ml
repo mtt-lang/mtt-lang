@@ -36,6 +36,7 @@ module Expr = struct
         these are syntactically distinct from the regular (ordinary) variables *)
     | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
+    | Fix of { self : Id.R.t; ty_id : Type.t; idr : Id.R.t; body : t } (** Fix combinator: fix f x = f (fix x) f *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
     | Box of { e : t }  (** term-level box: [box expr1] *)
     | Let of { idr : Id.R.t; bound : t; body : t }
@@ -69,9 +70,9 @@ module Expr = struct
 
   let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
 
-  let fix idl_fun t_of_id idl_body body = Location.locate @@ Fix (idl_fun, t_of_id, idl_body, body)
+  let fix self ty_id idr body = Location.locate @@ Fix {self; ty_id; idr; body}
 
-  let app fe arge = Location.locate @@ App (fe, arge)
+  let app fe arge = Location.locate @@ App { fe; arge }
 
   let box e = Location.locate @@ Box { e }
 
