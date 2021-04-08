@@ -1,6 +1,6 @@
-let fact = fix (f: Nat -> Nat) n . 
+let fact = fix (f: Nat -> Nat) n. 
   match n with
   | zero => 1
-  | succ m => n * f (n-1)
+  | succ pn => n * f pn
   end
 in fact 5
