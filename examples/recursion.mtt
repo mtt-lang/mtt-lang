@@ -1,4 +1,4 @@
-let fact = fix (f: Nat -> Nat) n. 
+let fact = fix (f: Nat -> Nat) n : Nat. 
   match n with
   | zero => 1
   | succ pn => n * f pn
