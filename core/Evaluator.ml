@@ -126,7 +126,7 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       @@ `EvaluationError
            "Modal variable access is not possible in a well-typed term"
   | Fun { idr; ty_id = _; body } ->
-    return @@ Val.ReClos { self = Id.R.mk ""; idr; body; env = gamma }
+      return @@ Val.ReClos { self = Id.R.mk ""; idr; body; env = gamma }
   | Fix { self; ty_id = _; idr; idr_ty = _; body } ->
       return @@ Val.ReClos { self; idr; body; env = gamma }
   | App { fe; arge } -> (

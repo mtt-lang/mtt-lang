@@ -150,14 +150,11 @@ module Doc : DOC = struct
     | Val.Nat { n } -> !^(Nat.to_string n)
     | Val.Pair { v1; v2 } -> group (angles (of_val v1 ^^ comma ^/^ of_val v2))
     | Val.ReClos { self; idr; body; env } ->
-       let kwd = fun e ->
-          if String.equal (Id.R.to_string self) "" 
-          then fun_kwd ^^ e
-          else fix_kwd ^^ !^(Id.R.to_string self) ^^^ e in
-        kwd (
-        !^(Id.R.to_string idr)
-        ^^ dot
-        ^^^ of_expr_with_free_vars env body)
+        let kwd e =
+          if String.equal (Id.R.to_string self) "" then fun_kwd ^^ e
+          else fix_kwd ^^ !^(Id.R.to_string self) ^^^ e
+        in
+        kwd (!^(Id.R.to_string idr) ^^ dot ^^^ of_expr_with_free_vars env body)
     | Val.Box { e } -> box_kwd ^^^ of_expr e
 end
 

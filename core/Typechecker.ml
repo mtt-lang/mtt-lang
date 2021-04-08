@@ -87,16 +87,16 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       with_error_location loc
       @@ check_equal typ ty "Unexpected modal variable type"
   | Fun { idr; ty_id; body } -> (
-    match typ with
-    | Type.Arr { dom; cod } ->
-        let%bind () =
-          with_error_location loc
-          @@ check_equal dom ty_id
-               "Domain of arrow type is not the same as type of function \
-                parameter"
-        in
-        check_open delta (Env.R.extend gamma idr dom) body cod
-    | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
+      match typ with
+      | Type.Arr { dom; cod } ->
+          let%bind () =
+            with_error_location loc
+            @@ check_equal dom ty_id
+                 "Domain of arrow type is not the same as type of function \
+                  parameter"
+          in
+          check_open delta (Env.R.extend gamma idr dom) body cod
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | Fix { self; ty_id; idr = _; idr_ty; body } -> (
       let self_ty = Type.Arr { dom = idr_ty; cod = typ } in
       match typ with
