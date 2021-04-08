@@ -68,6 +68,8 @@ let arbitrary_ast =
       | Expr.Pair (e1, e2) -> shrink_binary Expr.pair e1 e2
       | Expr.Fun (idl, t_of_id, body) ->
           shrink_unary (Expr.func idl t_of_id) body
+      | Expr.Fix (idl, t_of_id, f_idl, body) ->
+          shrink_unary (Expr.fix idl t_of_id f_idl) body
       | Expr.App (fe, arge) -> shrink_binary Expr.app fe arge
       | Expr.Box e -> shrink_unary Expr.box e
       | Expr.Let (idl, bound_e, body) ->

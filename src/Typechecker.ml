@@ -58,7 +58,8 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       let%bind ty2 = infer_open delta gamma e2 in
       Result.ok_if_true
         ([%equal: Type.t] ty1 Type.Nat && [%equal: Type.t] ty2 Type.Nat)
-        ~error:(Location.pp ~msg:"binary operator's operands must be a numbers" loc)
+        ~error:
+          (Location.pp ~msg:"binary operator's operands must be a numbers" loc)
   | VarL idl ->
       let%bind ty = Env.lookup_r gamma idl in
       Result.ok_if_true
@@ -71,16 +72,19 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
         ~error:(Location.pp ~msg:"Unexpected modal variable type" loc)
   | Fun (idl, t_of_id, body) -> (
       match typ with
-      | Type.Arr { dom; cod } ->
-          let%bind () =
-            with_error_location loc
-            @@ check_equal dom ty_id
-                 "Domain of arrow type is not the same as type of function \
-                  parameter"
-          in
-          check_open delta (Env.R.extend gamma idr dom) body cod
-      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected" )
-  | App { fe; arge } -> (
+      | Type.Arr (dom, cod) ->
+          if [%equal: Type.t] dom t_of_id then
+            check_open delta (Env.extend_r gamma idl dom) body cod
+          else
+            Result.fail
+            @@ Location.pp
+                 ~msg:
+                   "Domain of arrow type is not the same as type of function \
+                    parameter"
+                 loc
+      | _ -> Result.fail @@ Location.pp ~msg:"Arror type expected" loc )
+  | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
+  | App (fe, arge) -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
       | Type.Arr { dom; cod } ->
@@ -142,7 +146,10 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       let%bind ty2 = infer_open delta gamma e2 in
       match (ty1, ty2) with
       | Type.Nat, Type.Nat -> return Type.Nat
-      | _, _ -> Result.fail @@ Location.pp ~msg: "binary operator's operands must be a numbers" loc )
+      | _, _ ->
+          Result.fail
+          @@ Location.pp ~msg:"binary operator's operands must be a numbers" loc
+      )
   | VarL idl -> (
       match Env.lookup_r gamma idl with
       | Ok res -> return res
@@ -154,6 +161,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Fun (idl, dom, body) ->
       let%map cod = infer_open delta (Env.extend_r gamma idl dom) body in
       Type.Arr (dom, cod)
+  | Fix _ -> Result.fail @@ Location.pp ~msg:"Fix hasn't been implemented yet" loc
   | App (fe, arge) -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with

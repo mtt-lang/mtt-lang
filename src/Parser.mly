@@ -33,6 +33,7 @@
 %token FST
 %token SND
 %token FUN
+%token FIX
 %token BOX
 %token LET
 %token LETBOX
@@ -104,6 +105,9 @@ expr:
     (* allow parenthesizing of the bound variable for lambdas *)
   | FUN; LPAREN; idr = IDR; COLON; ty_id = typ; RPAREN; DARROW; body = expr
     { Location.locate_start_end (Fun {idr = Id.R.mk idr; ty_id; body}) $symbolstartpos $endpos }
+
+  | FIX; idr = IDR; COLON; t = typ; DARROW; f = IDR; e = expr
+    { Location.locate_start_end (Fix (Id.R.mk idr, t, Id.R.mk f, e)) $symbolstartpos $endpos }
 
     (* function application (f x) *)
   | fe = parceled_expr; arge = parceled_expr
