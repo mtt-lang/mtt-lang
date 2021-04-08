@@ -47,17 +47,20 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           @@ check_equal typ ty2
                "snd error: inferred type is different from the input one"
       | _ ->
-          fail_in loc
-          @@ `TypeMismatchError "snd is applied to a non-product type" )
-  | VarR { idr } ->
-      let%bind ty = with_error_location loc @@ Env.R.lookup gamma idr in
-      with_error_location loc
-      @@ check_equal typ ty "Unexpected regular variable type"
-  | VarM { idm } ->
-      let%bind ty = with_error_location loc @@ Env.M.lookup delta idm in
-      with_error_location loc
-      @@ check_equal typ ty "Unexpected modal variable type"
-  | Fun { idr; ty_id; body } -> (
+          Result.fail
+          @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
+  | IntZ _i -> assert false
+  | VarL idl ->
+      let%bind ty = Env.lookup_r gamma idl in
+      Result.ok_if_true
+        ([%equal: Type.t] typ ty)
+        ~error:(Location.pp ~msg:"Unexpected regular variable type" loc)
+  | VarG idg ->
+      let%bind ty = Env.lookup_m delta idg in
+      Result.ok_if_true
+        ([%equal: Type.t] typ ty)
+        ~error:(Location.pp ~msg:"Unexpected modal variable type" loc)
+  | Fun (idl, t_of_id, body) -> (
       match typ with
       | Type.Arr { dom; cod } ->
           let%bind () =
@@ -122,14 +125,21 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       match ty with
       | Type.Prod { ty1 = _; ty2 } -> return ty2
       | _ ->
-          fail_in loc
-          @@ `TypeMismatchError "snd is applied to a non-product type" )
-  | VarR { idr } -> with_error_location loc @@ Env.R.lookup gamma idr
-  | VarM { idm } -> with_error_location loc @@ Env.M.lookup delta idm
-  | Fun { idr; ty_id; body } ->
-      let%map ty_body = infer_open delta (Env.R.extend gamma idr ty_id) body in
-      Type.Arr { dom = ty_id; cod = ty_body }
-  | App { fe; arge } -> (
+          Result.fail
+          @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
+  | IntZ _i -> assert false
+  | VarL idl -> (
+      match Env.lookup_r gamma idl with
+      | Ok res -> return res
+      | Error msg -> Result.fail @@ Location.pp ~msg loc )
+  | VarG idg -> (
+      match Env.lookup_m delta idg with
+      | Ok res -> return res
+      | Error msg -> Result.fail @@ Location.pp ~msg loc )
+  | Fun (idl, dom, body) ->
+      let%map cod = infer_open delta (Env.extend_r gamma idl dom) body in
+      Type.Arr (dom, cod)
+  | App (fe, arge) -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
       | Type.Arr { dom; cod } ->

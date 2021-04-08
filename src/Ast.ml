@@ -16,6 +16,14 @@ end
 
 (** Expressions *)
 module Expr = struct
+  (* binary arithmetic operations *)
+  type binop =
+    | Add
+    | Sub
+    | Mul
+    | Div
+  [@@deriving equal, sexp]
+
   type t = t' Location.located
 
   and t' =
@@ -23,7 +31,8 @@ module Expr = struct
     | Pair of t * t  (** pairs [(expr1, expr2)] *)
     | Fst of t  (** first projection of a pair *)
     | Snd of t  (** second projection of a pair *)
-    | Int of Z.t  (** Temp for Numbers *)
+    | IntZ of Nat.t (** numbers *)
+    | BinOp of binop * t * t  (** binary arithmetic operations *)
     | VarL of Id.R.t  (** variables of the regular context *)
     | VarG of Id.M.t
         (** variables of the modal context (or "valid variables"),
@@ -65,12 +74,11 @@ end
 (** Values *)
 module Val = struct
   type t =
-    | Unit  (** [unit] value *)
-    | Pair of { v1 : t; v2 : t }
-        (** [(lit1, lit2)] -- a pair of values is a value *)
-    | Clos of { idr : Id.R.t; body : Expr.t; env : t Env.R.t }
-        (** Deeply embedded closures *)
-    | Box of { e : Expr.t }
-        (** [box] value, basically it's an unevaluated expression *)
+    | Unit  (** [unit] literal *)
+    | IntZ of Nat.t
+    | Pair of t * t  (** [(lit1, lit2)] -- a pair of literals is a literal *)
+    | Clos of Id.R.t * Expr.t * t Env.r  (** Deeply embedded closures *)
+    | Box of Expr.t
+        (** [box] literal, basically it's an unevaluated expression *)
   [@@deriving sexp]
 end

@@ -8,18 +8,19 @@ let rec free_vars_m Location.{ data = term; _ } =
   let open Expr in
   match term with
   | Unit -> Set.empty (module Id.M)
-  | Pair { e1; e2 } -> Set.union (free_vars_m e1) (free_vars_m e2)
-  | Fst { e } | Snd { e } -> free_vars_m e
-  | VarR _ -> Set.empty (module Id.M)
-  | VarM { idm } -> Set.singleton (module Id.M) idm
-  | Fun { idr = _; ty_id = _; body } -> free_vars_m body
-  | App { fe; arge } -> Set.union (free_vars_m fe) (free_vars_m arge)
-  | Box { e } -> free_vars_m e
-  | Let { idr = _; bound; body } ->
-      Set.union (free_vars_m bound) (free_vars_m body)
-  | Letbox { idm; boxed; body } ->
-      Set.union (free_vars_m boxed)
-        (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
+  | Pair (e1, e2) -> Set.union (free_vars_m e1) (free_vars_m e2)
+  | Fst pe | Snd pe -> free_vars_m pe
+  | IntZ _i -> Set.empty (module Id.M)
+  | VarL _i -> Set.empty (module Id.M)
+  | VarG i -> Set.singleton (module Id.M) i
+  | Fun (_i, _t_of_id, body) -> free_vars_m body
+  | App (fe, arge) -> Set.union (free_vars_m fe) (free_vars_m arge)
+  | Box e -> free_vars_m e
+  | Let (_i, bound_e, body) ->
+      Set.union (free_vars_m bound_e) (free_vars_m body)
+  | Letbox (i, boxed_e, body) ->
+      Set.union (free_vars_m boxed_e)
+        (Set.diff (free_vars_m body) (Set.singleton (module Id.M) i))
 
 let refresh_m idm fvs =
   let rec loop (idm : Id.M.t) =
@@ -33,18 +34,21 @@ let rec subst_m term identm Location.{ data = body; _ } =
   let open Expr in
   match body with
   | Unit -> Location.locate body
-  | Pair { e1; e2 } -> pair (subst_m term identm e1) (subst_m term identm e2)
-  | Fst { e } -> fst (subst_m term identm e)
-  | Snd { e } -> snd (subst_m term identm e)
-  | VarR _i -> Location.locate body
-  | VarM { idm } ->
-      if [%equal: Id.M.t] identm idm then term else Location.locate body
-  | Fun { idr; ty_id; body } -> func idr ty_id (subst_m term identm body)
-  | App { fe; arge } -> app (subst_m term identm fe) (subst_m term identm arge)
-  | Box { e } -> box (subst_m term identm e)
-  | Let { idr; bound; body } ->
-      letc idr (subst_m term identm bound) (subst_m term identm body)
-  | Letbox { idm; boxed; body } ->
+  | Pair (e1, e2) ->
+      Location.locate (Pair (subst_m term idg e1, subst_m term idg e2))
+  | Fst pe -> Location.locate (Fst (subst_m term idg pe))
+  | Snd pe -> Location.locate (Snd (subst_m term idg pe))
+  | IntZ _i -> Location.locate body
+  | VarL _i -> Location.locate body
+  | VarG i -> if [%equal: Id.M.t] idg i then term else Location.locate body
+  | Fun (idl, t_of_id, body) ->
+      Location.locate (Fun (idl, t_of_id, subst_m term idg body))
+  | App (fe, arge) ->
+      Location.locate (App (subst_m term idg fe, subst_m term idg arge))
+  | Box e -> Location.locate (Box (subst_m term idg e))
+  | Let (i, bound_e, body) ->
+      Location.locate (Let (i, subst_m term idg bound_e, subst_m term idg body))
+  | Letbox (i, boxed_e, body) ->
       Location.locate
         ( if [%equal: Id.M.t] identm idm then
           Letbox { idm; boxed = subst_m term identm boxed; body }
@@ -84,16 +88,14 @@ let rec eval_open gamma Location.{ data = expr; _ } =
   | Snd { e } -> (
       let%bind pv = eval_open gamma e in
       match pv with
-      | Val.Pair { v1 = _; v2 } -> return v2
-      | _ -> Result.fail @@ `EvaluationError "snd is stuck" )
-  | VarR { idr } -> Env.R.lookup gamma idr
-  | VarM _ ->
-      Result.fail
-      @@ `EvaluationError
-           "Modal variable access is not possible in a well-typed term"
-  | Fun { idr; ty_id = _; body } ->
-      return @@ Val.Clos { idr; body; env = gamma }
-  | App { fe; arge } -> (
+      | Val.Pair (_v1, v2) -> return v2
+      | _ -> Result.fail "snd is stuck" )
+  | IntZ i -> return @@ Val.IntZ i
+  | VarL idl -> Env.lookup_r gamma idl
+  | VarG _idg ->
+      Result.fail "Modal variable access is not possible in a well-typed term"
+  | Fun (idl, _t_of_id, body) -> return @@ Val.Clos (idl, body, gamma)
+  | App (fe, arge) -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
       match fv with

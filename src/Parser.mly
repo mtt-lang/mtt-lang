@@ -6,14 +6,14 @@
 %token <string> IDT
 
 (* Arithmetic *)
-%token <Z.t> INT
+%token <Nat.t> INTZ
 
 (* Parentheses *)
 %token LPAREN RPAREN
 %token LANGLE RANGLE
 
 (* Type-level syntax *)
-%token CROSS
+%token CROSS (** Could be term-level *)
 %token TBOX
 %token COLON
 %token ARROW
@@ -81,9 +81,9 @@ ident:
     { Location.locate_start_end (VarM {idm = Id.M.mk name}) $symbolstartpos $endpos }
 
 expr:
-    (* Temp for integer *)
-  | i = INT
-    { Location.locate_start_end (Int (i)) }
+    (* e1 * e2 *)
+  | e1 = parceled_expr; CROSS; e2 = parceled_expr
+    { Location.locate_start_end (BinOp Mul e1 e2) $symbolstartpos $endpos}
 
     (* First projection *)
   | FST; e = parceled_expr
@@ -124,6 +124,10 @@ parceled_expr:
     (* Unit *)
   | UNIT
     { Location.locate_start_end Unit $symbolstartpos $endpos }
+
+    (* Numbers *)
+  | i = INTZ
+    { Location.locate_start_end (IntZ i) $symbolstartpos $endpos }
 
     (* Identifiers *)
   | i = ident

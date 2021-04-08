@@ -63,15 +63,24 @@ module Doc : DOC = struct
     let rec walk p Location.{ data = e; _ } =
       match e with
       | Unit -> unit_term
-      | Pair { e1; e2 } -> angles (walk 1 e1 ^^ comma ^/^ walk 1 e2)
-      | Fst { e } -> group (parens (fst_kwd ^^ walk 2 e))
-      | Snd { e } -> group (parens (snd_kwd ^^ walk 2 e))
-      | VarR { idr } -> (
-          match Env.R.lookup renv idr with
-          | Ok v -> parens (of_val v)
-          | Error _ -> !^(Id.R.to_string idr) )
-      | VarM { idm } -> !^(Id.M.to_string idm)
-      | Fun { idr; ty_id; body } ->
+      | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
+      | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
+      | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
+      | IntZ _i -> assert false
+      | VarL idl -> (
+          if
+            (* To print free regular variables we use a regular environment with literals *)
+            Set.mem bvs idl
+          then !^(Id.R.to_string idl)
+          else
+            match Env.lookup_r lenv idl with
+            | Ok literal -> parens (of_lit literal)
+            | Error _msg ->
+                failwith
+                  "The precondition for calling Doc.of_expr_with_free_vars_r \
+                   function is violated" )
+      | VarG idg -> !^(Id.M.to_string idg)
+      | Fun (idl, t_of_id, body) ->
           (parens_if (p > 1))
             ( fun_kwd
             ^^ !^(Id.R.to_string idr)
@@ -99,8 +108,9 @@ module Doc : DOC = struct
 
   and of_val = function
     | Val.Unit -> unit_term
-    | Val.Pair { v1; v2 } -> group (angles (of_val v1 ^^ comma ^/^ of_val v2))
-    | Val.Clos { idr; body; env } ->
+    | Val.IntZ _i -> assert false
+    | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
+    | Val.Clos (idl, body, lenv) ->
         fun_kwd
         ^^ !^(Id.R.to_string idr)
         ^^ dot
