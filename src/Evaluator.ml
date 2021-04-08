@@ -10,7 +10,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Unit -> Set.empty (module Id.M)
   | Pair (e1, e2) -> Set.union (free_vars_m e1) (free_vars_m e2)
   | Fst pe | Snd pe -> free_vars_m pe
-  | IntZ _i -> Set.empty (module Id.M)
+  | Nat _n -> Set.empty (module Id.M)
   | BinOp (_op, e1, e2) -> Set.union (free_vars_m e1) (free_vars_m e2)
   | VarL _i -> Set.empty (module Id.M)
   | VarG i -> Set.singleton (module Id.M) i
@@ -40,7 +40,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
       Location.locate (Pair (subst_m term idg e1, subst_m term idg e2))
   | Fst pe -> Location.locate (Fst (subst_m term idg pe))
   | Snd pe -> Location.locate (Snd (subst_m term idg pe))
-  | IntZ _i -> Location.locate body
+  | Nat _n -> Location.locate body
   | BinOp (op, e1, e2) ->
       Location.locate (BinOp (op, subst_m term idg e1, subst_m term idg e2))
   | VarL _i -> Location.locate body
@@ -96,18 +96,17 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       match pv with
       | Val.Pair (_v1, v2) -> return v2
       | _ -> Result.fail "snd is stuck" )
-  | IntZ i -> return @@ Val.IntZ i
+  | Nat n -> return @@ Val.Nat n
   | BinOp (op, e1, e2) -> (
       let%bind lhs = eval_open gamma e1 in
       let%bind rhs = eval_open gamma e2 in
       match (lhs, rhs) with
-      | Val.IntZ i1, Val.IntZ i2 -> (
+      | Val.Nat n1, Val.Nat n2 -> (
           match op with
-          | Add -> return @@ Val.IntZ (Nat.add i1 i2)
-          | Sub -> return @@ Val.IntZ (Nat.sub i1 i2)
-          | Mul -> return @@ Val.IntZ (Nat.mul i1 i2)
-          | Div -> return @@ Val.IntZ (Nat.div i1 i2) )
-      (* only numbers can be multiplied *)
+          | Add -> return @@ Val.Nat (Nat.add n1 n2)
+          | Sub -> return @@ Val.Nat (Nat.sub n1 n2)
+          | Mul -> return @@ Val.Nat (Nat.mul n1 n2)
+          | Div -> return @@ Val.Nat (Nat.div n1 n2) )
       | _, _ -> Result.fail "Only numbers can be multiplied" )
   | VarL idl -> Env.lookup_r gamma idl
   | VarG _idg ->

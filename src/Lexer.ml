@@ -14,7 +14,7 @@ let any_blank = [%sedlex.regexp? blank | newline]
 
 let digit = [%sedlex.regexp? '0' .. '9']
 
-let integer = [%sedlex.regexp? digit, Star digit]
+let unsigned_integer = [%sedlex.regexp? digit, Star digit]
 
 let lower_case_letter = [%sedlex.regexp? 'a' .. 'z']
 
@@ -49,9 +49,9 @@ let token buf =
   | ':' -> COLON
   | ',' -> COMMA
   | '*' | 0x00D7 -> CROSS
-  | '+' -> ADD
-  | '-' -> SUB
-  | '/' -> DIV
+  | '+' -> PLUS
+  | '-' -> MINUS
+  | '/' -> SLASH
   | "fst" | 0x03C0, 0x2081 (* π₁ *) -> FST
   | "snd" | 0x03C0, 0x2082 (* π₂ *) -> SND
   | "in" -> IN
@@ -60,7 +60,7 @@ let token buf =
   | "box" -> BOX
   | "letbox" -> LETBOX
   | "fix" -> FIX
-  | integer -> INTZ (Nat.of_string (Utf8.lexeme buf))
+  | unsigned_integer -> UINTZ (Nat.of_string (Utf8.lexeme buf))
   | regular_ident -> IDR (Utf8.lexeme buf)
   | modal_ident -> IDM (Utf8.lexeme buf)
   | type_ident -> IDT (Utf8.lexeme buf)

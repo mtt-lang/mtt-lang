@@ -77,7 +77,7 @@ module Doc : DOC = struct
       | Pair (e1, e2) -> angles (walk bvs 1 e1 ^^ comma ^/^ walk bvs 1 e2)
       | Fst pe -> group (parens (fst_kwd ^^ walk bvs 2 pe))
       | Snd pe -> group (parens (snd_kwd ^^ walk bvs 2 pe))
-      | IntZ i -> !^(Nat.to_string i)
+      | Nat n -> !^(Nat.to_string n)
       | BinOp (op, e1, e2) ->
           let symb_op =
             match op with
@@ -137,7 +137,7 @@ module Doc : DOC = struct
 
   and of_val = function
     | Val.Unit -> unit_term
-    | Val.IntZ i -> !^(Nat.to_string i)
+    | Val.Nat n -> !^(Nat.to_string n)
     | Val.Pair (l1, l2) -> group (angles (of_lit l1 ^^ comma ^/^ of_lit l2))
     | Val.Clos (idl, body, lenv) ->
         fun_kwd
