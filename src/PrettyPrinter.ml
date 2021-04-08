@@ -164,3 +164,26 @@ module Doc : DOC = struct
         ^^^ of_expr_with_free_vars env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
 end
+
+module type STR = sig
+  val of_type : Type.t -> string
+
+  val of_expr : Expr.t -> string
+
+  val of_val : Val.t -> string
+end
+
+(** Convert ASTs into string *)
+module Str : STR = struct
+  let doc2str : PPrint.document -> string =
+   fun doc ->
+    let buffer = Buffer.create 100 in
+    PPrint.ToBuffer.pretty 1.0 80 buffer doc;
+    Buffer.contents buffer
+
+  let of_type t = doc2str @@ Doc.of_type t
+
+  let of_expr e = doc2str @@ Doc.of_expr e
+
+  let of_val v = doc2str @@ Doc.of_val v
+end

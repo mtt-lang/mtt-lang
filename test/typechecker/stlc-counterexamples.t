@@ -17,18 +17,18 @@ Example of
 
 Pattern matching for Nat
   $ mtt infer -e "1 + ()"
-  mtt: Type inference error: Expected Nat, but found Unit type
+  mtt: Type inference error: Expected ℕ, but found Unit type
        file name :  Not a file, lines :  0 - 0, column :  4 - 6
   [1]
 
 
   $ mtt infer -e "1 + <1,1>"
-  mtt: Type inference error: Expected Nat, but found product type
+  mtt: Type inference error: Expected ℕ, but found product type
        file name :  Not a file, lines :  0 - 0, column :  4 - 9
   [1]
 
   $ mtt infer -e "<1, 1> + 1"
-  mtt: Type inference error: Expected Nat, but found product type
+  mtt: Type inference error: Expected ℕ, but found product type
        file name :  Not a file, lines :  0 - 0, column :  0 - 6
   [1]
 

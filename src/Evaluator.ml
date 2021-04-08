@@ -15,14 +15,8 @@ let rec free_vars_m Location.{ data = term; _ } =
   | VarR _ -> Set.empty (module Id.M)
   | VarM { idm } -> Set.singleton (module Id.M) idm
   | Fun { idr = _; ty_id = _; body } -> free_vars_m body
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   | Fix { self = _; ty_id = _; idr = _ ; body} -> free_vars_m body
->>>>>>> 90961d8... try mk create tests for fix
-=======
   | Fix { self = _; ty_id = _; idr = _; body } -> free_vars_m body
->>>>>>> a210efa... add recursion example
   | App { fe; arge } -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box { e } -> free_vars_m e
   | Let { idr = _; bound; body } ->
@@ -108,8 +102,8 @@ let rec eval_open gamma Location.{ data = expr; _ } =
   | Snd { e } -> (
       let%bind pv = eval_open gamma e in
       match pv with
-      | Val.Pair (_v1, v2) -> return v2
-      | _ -> Result.fail "snd is stuck" )
+      | Val.Pair { v1 = _; v2 } -> return v2
+      | _ -> Result.fail @@ `EvaluationError "snd is stuck" )
   | Nat { n } -> return @@ Val.Nat { n }
   | BinOp { op; e1; e2 } -> (
       let%bind lhs = eval_open gamma e1 in

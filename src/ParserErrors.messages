@@ -26,7 +26,11 @@ Missing closing parenthesis at type level. Or unexpected lexeme, like => is used
 
 type_eof: SND
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 101.
+=======
+## Ends in an error in state: 86.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## type_eof' -> . type_eof [ # ]
 ##
@@ -88,7 +92,11 @@ type_eof: UNIT CROSS SND
 
 type_eof: UNIT UNIT
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 103.
+=======
+## Ends in an error in state: 88.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## typ -> typ . CROSS typ [ EOF CROSS ARROW ]
 ## typ -> typ . ARROW typ [ EOF CROSS ARROW ]
@@ -102,7 +110,11 @@ Please report your example, producing this parsing error
 
 expr_eof: BOX TBOX
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 45.
+=======
+## Ends in an error in state: 37.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## app -> BOX . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
 ##
@@ -126,7 +138,11 @@ An expression after fst is expected. This primitive can be only used fully appli
 
 expr_eof: FUN IDR COLON SND
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 69.
+=======
+## Ends in an error in state: 54.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> FUN IDR COLON . typ DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -138,7 +154,11 @@ Valid type expected. Make sure uninterpreted type identifiers are capitalized an
 
 expr_eof: FUN IDR COLON UNIT DARROW TBOX
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 71.
+=======
+## Ends in an error in state: 56.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> FUN IDR COLON typ DARROW . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -150,7 +170,11 @@ Error when parsing lambda function body: missing body or unexpected lexeme
 
 expr_eof: FUN IDR COLON UNIT UNIT
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 70.
+=======
+## Ends in an error in state: 55.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> FUN IDR COLON typ . DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
@@ -164,7 +188,11 @@ Separator between bound variable and lambda body is missing. Use e.g. => or . Al
 
 expr_eof: FUN IDR UNIT
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 68.
+=======
+## Ends in an error in state: 53.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> FUN IDR . COLON typ DARROW expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -275,7 +303,11 @@ First component of pair expression is expected
 
 expr_eof: LANGLE UNIT COMMA TBOX
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 74.
+=======
+## Ends in an error in state: 59.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## parceled_expr -> LANGLE expr COMMA . expr RANGLE [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
 ##
@@ -287,7 +319,11 @@ Second component of pair expression is expected
 
 expr_eof: LANGLE UNIT COMMA UNIT RPAREN
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 75.
+=======
+## Ends in an error in state: 60.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH RANGLE PLUS MINUS CROSS ]
 ## arith -> expr . MINUS expr [ SLASH RANGLE PLUS MINUS CROSS ]
@@ -302,14 +338,22 @@ expr_eof: LANGLE UNIT COMMA UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Right angle bracket is expected
 
 expr_eof: LANGLE UNIT RPAREN
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 73.
+=======
+## Ends in an error in state: 58.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS CROSS COMMA ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS CROSS COMMA ]
@@ -324,7 +368,11 @@ expr_eof: LANGLE UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Missing comma which separates components of pair expression
@@ -343,7 +391,11 @@ Variable in "let" expression must be term, not type
 
 expr_eof: LET IDR EQ UNIT IN TBOX
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 78.
+=======
+## Ends in an error in state: 63.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> LET IDR EQ expr IN . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -355,7 +407,11 @@ Expected term after "in"-keyword, not type
 
 expr_eof: LET IDR EQ UNIT RPAREN
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 77.
+=======
+## Ends in an error in state: 62.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS IN CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS IN CROSS ]
@@ -370,7 +426,11 @@ expr_eof: LET IDR EQ UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Missing or unexpected lexeme in parenthesized expression
@@ -413,7 +473,11 @@ Right-hand side of lexbox expression is expected
 
 expr_eof: LETBOX IDM EQ UNIT IN TBOX
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 81.
+=======
+## Ends in an error in state: 66.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> LETBOX IDM EQ expr IN . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -425,7 +489,11 @@ Body of letbox expression is expected
 
 expr_eof: LETBOX IDM EQ UNIT RPAREN
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 80.
+=======
+## Ends in an error in state: 65.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS IN CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS IN CROSS ]
@@ -440,7 +508,11 @@ expr_eof: LETBOX IDM EQ UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Missing "in" keyword in letbox expression
@@ -483,7 +555,11 @@ Missing or unexpected lexeme in parenthesized expression
 
 expr_eof: LPAREN UNIT RANGLE
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 95.
+=======
+## Ends in an error in state: 80.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
 ## arith -> expr . MINUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
@@ -498,7 +574,11 @@ expr_eof: LPAREN UNIT RANGLE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Missing closing parenthesis or missing obligatory parentheses for multi-arg function application: (f x) y or maybe using parentheses instead of angle brackets for pairs
@@ -529,7 +609,11 @@ An expression is expected. This may result from a missing or unexpected lexeme o
 
 expr_eof: UNIT RPAREN
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 99.
+=======
+## Ends in an error in state: 84.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS EOF CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS EOF CROSS ]
@@ -544,14 +628,22 @@ expr_eof: UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Binary application must be parenthesized like so: (f x) y
 
 expr_eof: UNIT TBOX
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 47.
+=======
+## Ends in an error in state: 39.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## app -> parceled_expr . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
 ## expr -> parceled_expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -564,7 +656,11 @@ Sometimes this happens when you say "let box" instead of "letbox" or try to appl
 
 expr_eof: FUN IDR COLON UNIT DARROW MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 72.
+=======
+## Ends in an error in state: 57.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -580,7 +676,11 @@ Sometimes this happens when you say "let box" instead of "letbox" or try to appl
 
 expr_eof: FUN LPAREN IDR COLON UNIT RPAREN DARROW MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 67.
+=======
+## Ends in an error in state: 41.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -596,7 +696,11 @@ Sometimes this happens when you say "let box" instead of "letbox" or try to appl
 
 expr_eof: LET IDR EQ UNIT IN MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 79.
+=======
+## Ends in an error in state: 64.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -612,7 +716,11 @@ Sometimes this happens when you say "let box" instead of "letbox" or try to appl
 
 expr_eof: LETBOX IDM EQ UNIT IN MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 82.
+=======
+## Ends in an error in state: 67.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -628,7 +736,11 @@ Sometimes this happens when you say "let box" instead of "letbox" or try to appl
 
 expr_eof: MATCH UNIT RPAREN
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 83.
+=======
+## Ends in an error in state: 68.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH PLUS MINUS CROSS ]
 ## arith -> expr . MINUS expr [ WITH SLASH PLUS MINUS CROSS ]
@@ -643,14 +755,22 @@ expr_eof: MATCH UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Missing "with" keyword
 
 expr_eof: MATCH UNIT WITH PIPE WITH
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 85.
+=======
+## Ends in an error in state: 70.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH PIPE . ZERO DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -662,7 +782,11 @@ Incorrect match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR DARROW UNIT WITH
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 93.
+=======
+## Ends in an error in state: 78.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS END CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS END CROSS ]
@@ -677,14 +801,22 @@ expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR DARROW UNIT WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 END token wasn't found in the end of the match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR DARROW ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 92.
+=======
+## Ends in an error in state: 77.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR DARROW . expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -696,7 +828,11 @@ END token wasn't found in the end of the match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC IDR ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 91.
+=======
+## Ends in an error in state: 76.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC IDR . DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -708,7 +844,11 @@ Empty branch in match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE SUCC ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 90.
+=======
+## Ends in an error in state: 75.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE SUCC . IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -720,7 +860,11 @@ Empty branch in match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT PIPE ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 89.
+=======
+## Ends in an error in state: 74.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH PIPE ZERO DARROW expr PIPE . SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -732,7 +876,11 @@ Redudant branch in the match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT WITH
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 88.
+=======
+## Ends in an error in state: 73.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS PIPE MINUS CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS PIPE MINUS CROSS ]
@@ -747,14 +895,22 @@ expr_eof: MATCH UNIT WITH PIPE ZERO DARROW UNIT WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
+<<<<<<< HEAD
 ## In state 47, spurious reduction of production expr -> parceled_expr
+=======
+## In state 39, spurious reduction of production expr -> parceled_expr
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 
 Empty branch in match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO DARROW ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 87.
+=======
+## Ends in an error in state: 72.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH PIPE ZERO DARROW . expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -766,7 +922,11 @@ Empty branch in match-expression
 
 expr_eof: MATCH UNIT WITH PIPE ZERO ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 86.
+=======
+## Ends in an error in state: 71.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH PIPE ZERO . DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -778,7 +938,11 @@ Empty branch in match-expression
 
 expr_eof: MATCH UNIT WITH ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 84.
+=======
+## Ends in an error in state: 69.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## expr -> MATCH expr WITH . PIPE ZERO DARROW expr PIPE SUCC IDR DARROW expr END [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -802,7 +966,11 @@ END token wasn't found in the end of the match-expression
 
 expr_eof: UNIT CROSS ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 57.
+=======
+## Ends in an error in state: 49.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr CROSS . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -814,7 +982,11 @@ ZERO token can be used in match-expression only
 
 expr_eof: UNIT IDM ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 53.
+=======
+## Ends in an error in state: 45.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## app -> app . parceled_expr [ WITH UNIT UINTZ SLASH RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDR IDM EOF END CROSS COMMA ]
 ## expr -> app . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -827,7 +999,11 @@ Missing or unexpected lexeme in parenthesized expression
 
 expr_eof: UNIT MINUS MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 60.
+=======
+## Ends in an error in state: 52.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -843,7 +1019,11 @@ ZERO token can be used in match-expression only
 
 expr_eof: UNIT MINUS ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 59.
+=======
+## Ends in an error in state: 51.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr MINUS . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -855,7 +1035,11 @@ ZERO token can be used in match-expression only
 
 expr_eof: UNIT PLUS MATCH IDM WITH PIPE ZERO DARROW IDM PIPE SUCC IDR DARROW IDM END ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 56.
+=======
+## Ends in an error in state: 48.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr PLUS expr . [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -871,7 +1055,11 @@ ZERO token can be used in match-expression only
 
 expr_eof: UNIT PLUS ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 55.
+=======
+## Ends in an error in state: 47.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr PLUS . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -883,7 +1071,11 @@ ZERO token can be used in match-expression only
 
 expr_eof: UNIT SLASH ZERO
 ##
+<<<<<<< HEAD
 ## Ends in an error in state: 50.
+=======
+## Ends in an error in state: 42.
+>>>>>>> a57ad90... Add primitive natural numbers (#41)
 ##
 ## arith -> expr SLASH . expr [ WITH SLASH RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
