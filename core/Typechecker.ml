@@ -81,33 +81,22 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
   | VarR { idr } ->
       let%bind ty = with_error_location loc @@ Env.R.lookup gamma idr in
       with_error_location loc
-      @@ check_equal typ Type.Nat
-           [%string "Expected $exp_ty, but found Nat type"]
-  | BinOp { op = _; e1; e2 } ->
-      let%map () = check_open delta gamma e1 Type.Nat
-      and () = check_open delta gamma e2 Type.Nat in
-      ()
-  | VarR { idr } ->
-      let%bind ty = Env.R.lookup gamma idr in
-      Result.ok_if_true
-        ([%equal: Type.t] typ ty)
-        ~error:(Location.pp ~msg:"Unexpected regular variable type" loc)
-  | VarG idg ->
-      let%bind ty = Env.lookup_m delta idg in
-      Result.ok_if_true
-        ([%equal: Type.t] typ ty)
-        ~error:(Location.pp ~msg:"Unexpected modal variable type" loc)
-  | Fun (idl, t_of_id, body) -> (
-      match typ with
-      | Type.Arr { dom; cod } ->
-          let%bind () =
-            with_error_location loc
-            @@ check_equal dom ty_id
-                 "Domain of arrow type is not the same as type of function \
-                  parameter"
-          in
-          check_open delta (Env.R.extend gamma idr dom) body cod
-      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
+      @@ check_equal typ ty "Unexpected regular variable type"
+  | VarM { idm } ->
+      let%bind ty = with_error_location loc @@ Env.M.lookup delta idm in
+      with_error_location loc
+      @@ check_equal typ ty "Unexpected modal variable type"
+  | Fun { idr; ty_id; body } -> (
+    match typ with
+    | Type.Arr { dom; cod } ->
+        let%bind () =
+          with_error_location loc
+          @@ check_equal dom ty_id
+               "Domain of arrow type is not the same as type of function \
+                parameter"
+        in
+        check_open delta (Env.R.extend gamma idr dom) body cod
+    | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | Fix { self; ty_id; idr = _; idr_ty; body } -> (
       let self_ty = Type.Arr { dom = idr_ty; cod = typ } in
       match typ with
