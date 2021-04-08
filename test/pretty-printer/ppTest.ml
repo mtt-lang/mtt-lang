@@ -54,6 +54,11 @@ let generator =
                      (self (size / 3))
                      (map regular_id lowercase_id)
                    <*> self (size / 3);
+                   map3 fix
+                     (map regular_id lowercase_id)
+                     (return (Type.Arr { dom = Type.Nat; cod = Type.Nat }))
+                     (map regular_id lowercase_id)
+                   <*> self (size - 1);
                  ]))
 
 let arbitrary_ast =
