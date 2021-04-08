@@ -125,14 +125,66 @@ mtt: Parse error: Boxed expression is expected
   mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
   [1]
 
-$ mtt parse -e "let x = () x"
-mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
-[1]
+  $ mtt parse -e "let x = () x"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  [1]
 
-$ mtt parse -e "let x = () y = x"
-mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
-[1]
+  $ mtt parse -e "let x = () y = x"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  [1]
 
-$ mtt parse -e "let x = (fun z: A. z) y = () in x y"
-mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
-[1]
+  $ mtt parse -e "let x = (fun z: A. z) y = () in x y"
+  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  [1]
+
+### Match-expression
+  $ mtt parse <<EOF
+  > match () with
+  > end
+  > EOF
+  mtt: Parse error: Empty branch in match-expression
+  [1]
+
+  $ mtt parse <<EOF
+  > match x with
+  > | zero
+  > end
+  > EOF
+  mtt: Parse error: Empty branch in match-expression
+  [1]
+
+  $ mtt parse <<EOF
+  > match x
+  > | zero
+  > end
+  > EOF
+  mtt: Parse error: Missing "with" keyword
+  [1]
+
+  $ mtt parse <<EOF
+  > match x with
+  > | zero => ()
+  > EOF
+  mtt: Parse error: Empty branch in match-expression
+  [1]
+
+  $ mtt parse <<EOF
+  > match x with
+  > | zero => ()
+  > | succ n => ()
+  > EOF
+  mtt: Parse error: END token wasn't found in the end of the match-expression
+  [1]
+
+  $ mtt parse <<EOF
+  > match x with
+  > | succ n => ()
+  > | zero => ()
+  > end
+  > EOF
+  mtt: Parse error: Incorrect match-expression
+  [1]
+
+  $ mtt parse -e "() + zero"
+  mtt: Parse error: ZERO token can be used in match-expression only
+  [1]

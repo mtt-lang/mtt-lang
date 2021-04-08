@@ -1,1 +1,1 @@
-fix (self: Nat -> Nat . fun n . 0) 5
+(λx:[](A -> B). λy:[]A. letbox u' = x in letbox w' = y in box (u' w'))

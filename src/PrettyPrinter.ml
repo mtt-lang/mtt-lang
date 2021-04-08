@@ -53,7 +53,7 @@ module Doc : DOC = struct
 
   let end_kwd = !^"end"
 
-  let nil_kwd = !^"nil" (* A temporary token for pattern matching on Nat *)
+  let zero_kwd = !^"zero" (* A temporary token for pattern matching on Nat *)
 
   let succ_kwd = !^"succ" (* A temporary token for pattern matching on Nat *)
 
@@ -92,7 +92,9 @@ module Doc : DOC = struct
             | Mul -> star
             | Div -> slash
           in
-          (parens_if (p > 1)) (group (walk 2 e1) ^^^ symb_op ^^^ walk 1 e2)
+          group
+            ((parens_if (p > 1))
+               (parens (walk 1 e1) ^^^ symb_op ^^^ parens (walk 1 e2)))
       | VarR { idr } -> (
           match Env.R.lookup renv idr with
           | Ok v -> parens (of_val v)
@@ -103,13 +105,14 @@ module Doc : DOC = struct
             ( fun_kwd
             ^^ !^(Id.R.to_string idr)
             ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body )
-      | Fix {self; ty_id; idr; body} ->
-            (parens_if (p > 1))
-              ( fix_kwd
-              ^^ !^(Id.R.to_string self)
-              ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space
-              ^^ space ^^ !^(Id.R.to_string idr) ^^ space
-              ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body )
+      | Fix { self; ty_id; idr; body } ->
+          (parens_if (p > 1))
+            ( fix_kwd
+            ^^ !^(Id.R.to_string self)
+            ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ space
+            ^^ !^(Id.R.to_string idr)
+            ^^ space ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body
+            )
       | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
       | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
@@ -126,11 +129,20 @@ module Doc : DOC = struct
                ^^^ !^(Id.M.to_string idm)
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body ))
       | Match { matched; zbranch; pred; sbranch } ->
+          let indentz = String.length (String.concat [ "| zero "; "=> " ]) in
+          let indents =
+            String.length
+              (String.concat [ "| succ "; Id.R.to_string pred; " => " ])
+          in
           (parens_if (p > 1))
-            ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ nil_kwd
-            ^^^ darrow ^^^ walk 2 zbranch ^/^ bar ^^^ succ_kwd
+            ( match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
+            ^^^ darrow
+            ^^^ nest indentz (walk 1 zbranch)
+            ^/^ bar ^^^ succ_kwd
             ^^^ !^(Id.R.to_string pred)
-            ^^^ darrow ^^^ walk 2 sbranch ^^^ end_kwd )
+            ^^^ darrow
+            ^^^ nest indents (walk 1 sbranch)
+            ^/^ end_kwd )
     in
     walk 0 expr
 
@@ -148,12 +160,11 @@ module Doc : DOC = struct
         ^^^ (* when print out closures, substitute the free vars in its body with
                the corresponding values from the closures' regular environment *)
         of_expr_with_free_vars env body
-    | Val.ReClos {self; idr; body; env} ->
-        fix_kwd
+    | Val.ReClos { self; idr; body; env } ->
+        fix_kwd ^^ space
         ^^ !^(Id.R.to_string self)
-        ^^ dot 
-        ^^ !^(Id.R.to_string idr)
-        ^^^ 
-        of_expr_with_free_vars env body
+        ^^^ dot
+        ^^^ !^(Id.R.to_string idr)
+        ^^^ of_expr_with_free_vars env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
 end
