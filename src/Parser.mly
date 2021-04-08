@@ -5,6 +5,9 @@
 %token <string> IDM
 %token <string> IDT
 
+(* Arithmetic *)
+%token <Z.t> INT
+
 (* Parentheses *)
 %token LPAREN RPAREN
 %token LANGLE RANGLE
@@ -78,6 +81,10 @@ ident:
     { Location.locate_start_end (VarM {idm = Id.M.mk name}) $symbolstartpos $endpos }
 
 expr:
+    (* Temp for integer *)
+  | i = INT
+    { Location.locate_start_end (Int (i)) }
+
     (* First projection *)
   | FST; e = parceled_expr
     { Location.locate_start_end (Fst {e}) $symbolstartpos $endpos }

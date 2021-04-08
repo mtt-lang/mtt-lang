@@ -20,11 +20,12 @@ module Expr = struct
 
   and t' =
     | Unit  (** [unit] *)
-    | Pair of { e1 : t; e2 : t }  (** pairs [(expr1, expr2)] *)
-    | Fst of { e : t }  (** first projection of a pair *)
-    | Snd of { e : t }  (** second projection of a pair *)
-    | VarR of { idr : Id.R.t }  (** variables of the regular context *)
-    | VarM of { idm : Id.M.t }
+    | Pair of t * t  (** pairs [(expr1, expr2)] *)
+    | Fst of t  (** first projection of a pair *)
+    | Snd of t  (** second projection of a pair *)
+    | Int of Z.t  (** Temp for Numbers *)
+    | VarL of Id.R.t  (** variables of the regular context *)
+    | VarG of Id.M.t
         (** variables of the modal context (or "valid variables"),
         these are syntactically distinct from the regular (ordinary) variables *)
     | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
