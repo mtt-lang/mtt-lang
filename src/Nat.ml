@@ -12,4 +12,10 @@ let t_of_sexp se = Z.of_string (Sexp.to_string se)
 
 let sexp_of_t z = Sexp.Atom (Z.to_string z)
 
+let add = Z.add
+
+let sub = Z.sub
+
 let mul = Z.mul
+
+let div = Z.div

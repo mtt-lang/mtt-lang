@@ -49,7 +49,16 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | IntZ _i -> assert false
+  | IntZ _i ->
+      Result.ok_if_true
+        ([%equal: Type.t] typ Type.Nat)
+        ~error:(Location.pp ~msg:"expected nat type" loc)
+  | BinOp (_op, e1, e2) ->
+      let%bind ty1 = infer_open delta gamma e1 in
+      let%bind ty2 = infer_open delta gamma e2 in
+      Result.ok_if_true
+        ([%equal: Type.t] ty1 Type.Nat && [%equal: Type.t] ty2 Type.Nat)
+        ~error:(Location.pp ~msg:"binary operator's operands must be a numbers" loc)
   | VarL idl ->
       let%bind ty = Env.lookup_r gamma idl in
       Result.ok_if_true
@@ -127,7 +136,13 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       | _ ->
           Result.fail
           @@ Location.pp ~msg:"snd is applied to a non-product type" loc )
-  | IntZ _i -> assert false
+  | IntZ _i -> return Type.Nat
+  | BinOp (_op, e1, e2) -> (
+      let%bind ty1 = infer_open delta gamma e1 in
+      let%bind ty2 = infer_open delta gamma e2 in
+      match (ty1, ty2) with
+      | Type.Nat, Type.Nat -> return Type.Nat
+      | _, _ -> Result.fail @@ Location.pp ~msg: "binary operator's operands must be a numbers" loc )
   | VarL idl -> (
       match Env.lookup_r gamma idl with
       | Ok res -> return res

@@ -49,6 +49,9 @@ let token buf =
   | ':' -> COLON
   | ',' -> COMMA
   | '*' | 0x00D7 -> CROSS
+  | '+' -> ADD
+  | '-' -> SUB
+  | '/' -> DIV
   | "fst" | 0x03C0, 0x2081 (* π₁ *) -> FST
   | "snd" | 0x03C0, 0x2082 (* π₂ *) -> SND
   | "in" -> IN
