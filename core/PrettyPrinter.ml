@@ -149,19 +149,15 @@ module Doc : DOC = struct
     | Val.Unit -> unit_term
     | Val.Nat { n } -> !^(Nat.to_string n)
     | Val.Pair { v1; v2 } -> group (angles (of_val v1 ^^ comma ^/^ of_val v2))
-    | Val.Clos { idr; body; env } ->
-        fun_kwd
-        ^^ !^(Id.R.to_string idr)
-        ^^ dot
-        ^^^ (* when print out closures, substitute the free vars in its body with
-               the corresponding values from the closures' regular environment *)
-        of_expr_with_free_vars env body
     | Val.ReClos { self; idr; body; env } ->
-        fix_kwd
-        ^^ !^(Id.R.to_string self)
-        ^^^ !^(Id.R.to_string idr)
+       let kwd = fun e ->
+          if String.equal (Id.R.to_string self) "" 
+          then fun_kwd ^^ e
+          else fix_kwd ^^ !^(Id.R.to_string self) ^^^ e in
+        kwd (
+        !^(Id.R.to_string idr)
         ^^ dot
-        ^^^ of_expr_with_free_vars env body
+        ^^^ of_expr_with_free_vars env body)
     | Val.Box { e } -> box_kwd ^^^ of_expr e
 end
 
