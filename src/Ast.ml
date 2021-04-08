@@ -36,16 +36,24 @@ module Expr = struct
         these are syntactically distinct from the regular (ordinary) variables *)
     | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
-    | Fix of Id.R.t * Type.t * Id.R.t * t 
-        (** Fix combinator: fix f x = f (fix x) f *)
-    | App of t * t  (** function application: [f x] *)
-    | Box of t  (** term-level box: [box expr1] *)
-    | Let of Id.R.t * t * t  (** [let u = expr1 in expr2] *)
-    | Letbox of Id.M.t * t * t  (** [letbox u = expr1 in expr2] *)
+    | App of { fe : t; arge : t }  (** function application: [f x] *)
+    | Box of { e : t }  (** term-level box: [box expr1] *)
+    | Let of { idr : Id.R.t; bound : t; body : t }
+        (** [let u = expr1 in expr2] *)
+    | Letbox of { idm : Id.M.t; boxed : t; body : t }
+        (** [letbox u = expr1 in expr2] *)
+    | Match of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
+        (** FOR NAT ONLY
+          [match matched with 
+              | zero => <zbranch>
+              | succ pred => <sbranch>
+            end] *)
   [@@deriving equal, sexp]
 
   (* Wrappers for constructors *)
   let unit = Location.locate Unit
+
+  let nat n = Location.locate @@ Nat { n }
 
   let pair e1 e2 = Location.locate @@ Pair { e1; e2 }
 
@@ -70,6 +78,9 @@ module Expr = struct
   let letc idr bound body = Location.locate @@ Let { idr; bound; body }
 
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
+
+  let match_with matched zbranch pred sbranch =
+    Location.locate @@ Match { matched; zbranch; pred; sbranch }
 end
 
 (** Values *)

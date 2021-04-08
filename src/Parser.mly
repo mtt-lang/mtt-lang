@@ -9,6 +9,7 @@
 %token <Nat.t> UINTZ
 
 (* Arithmetic *)
+%token ZERO SUCC (* for pattern-matching *)
 %token PLUS
 %token MINUS
 (* multiplication is `CROSS` token *)
@@ -21,6 +22,7 @@
 (* Type-level syntax *)
 %token CROSS (** Could be term-level *)
 %token TBOX
+%token TNAT
 %token COLON
 %token ARROW
 
@@ -38,6 +40,7 @@
 %token LET
 %token LETBOX
 %token IN
+%token MATCH WITH PIPE END
 
 %left PLUS MINUS
 %right ARROW   (* Type arrows associate to the right *)
@@ -59,6 +62,10 @@ typ:
     (* Unit type *)
   | UNIT
     { Type.Unit }
+
+    (* Type of Nat (UIntZ now) *)
+  | TNAT
+    { Type.Nat }
 
     (* Uninterpreted base types *)
   | idt = IDT
@@ -121,10 +128,14 @@ expr:
   | LET; idr = IDR; EQ; bound = expr; IN; body = expr
     { Location.locate_start_end (Let {idr = Id.R.mk idr; bound; body}) $symbolstartpos $endpos }
 
-    (* letbox idg = expr in expr *)
-  | LETBOX; idg = IDM; EQ; e = expr; IN; body = expr
-    { Location.locate_start_end (Letbox (Id.M.mk idg, e, body)) $symbolstartpos $endpos }
-  
+    (* letbox idm = expr in expr *)
+  | LETBOX; idm = IDM; EQ; boxed = expr; IN; body = expr
+    { Location.locate_start_end (Letbox {idm = Id.M.mk idm; boxed; body}) $symbolstartpos $endpos }
+
+    (* match expr with ... end *)
+  | MATCH; matched = expr; WITH; PIPE; ZERO; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
+    { Location.locate_start_end (Match {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
+
   | e = parceled_expr
     { e }
 

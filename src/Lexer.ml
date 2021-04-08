@@ -42,6 +42,7 @@ let token buf =
   | "=>" | 0x21D2 | '.' -> DARROW
   | "=" -> EQ
   | "()" -> UNIT
+  | "Nat" | 0x2115 -> TNAT
   | '(' -> LPAREN
   | ')' -> RPAREN
   | '<' -> LANGLE
@@ -52,6 +53,7 @@ let token buf =
   | '+' -> PLUS
   | '-' -> MINUS
   | '/' -> SLASH
+  | '|' -> PIPE
   | "fst" | 0x03C0, 0x2081 (* π₁ *) -> FST
   | "snd" | 0x03C0, 0x2082 (* π₂ *) -> SND
   | "in" -> IN
@@ -59,7 +61,11 @@ let token buf =
   | "let" -> LET
   | "box" -> BOX
   | "letbox" -> LETBOX
-  | "fix" -> FIX
+  | "match" -> MATCH
+  | "with" -> WITH
+  | "end" -> END
+  | "zero" -> ZERO
+  | "succ" -> SUCC
   | unsigned_integer -> UINTZ (Nat.of_string (Utf8.lexeme buf))
   | regular_ident -> IDR (Utf8.lexeme buf)
   | modal_ident -> IDM (Utf8.lexeme buf)
