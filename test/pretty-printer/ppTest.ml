@@ -18,6 +18,7 @@ let generator =
                oneof
                  [
                    return Expr.unit;
+                   map (fun n -> Expr.nat (Nat.of_int n)) big_nat;
                    map (fun idr -> Expr.var_r (regular_id idr)) lowercase_id;
                    map (fun idm -> Expr.var_m (modal_id idm)) lowercase_id;
                  ]
@@ -36,6 +37,10 @@ let generator =
                      (return Type.Unit)
                      (self (size - 1));
                    unary_node box;
+                   binary_node (binop Add);
+                   binary_node (binop Sub);
+                   binary_node (binop Mul);
+                   binary_node (binop Div);
                    map3 letc
                      (map regular_id lowercase_id)
                      (self (size / 2))
@@ -44,6 +49,10 @@ let generator =
                      (map modal_id lowercase_id)
                      (self (size / 2))
                      (self (size / 2));
+                   map3 Expr.match_with (self (-1))
+                     (self (size / 2))
+                     (map regular_id lowercase_id)
+                   <*> self (size / 2);
                  ]))
 
 let arbitrary_ast =
@@ -57,6 +66,12 @@ let arbitrary_ast =
       of_list [ arg1; arg2 ]
       <+> (shrink_ast arg1 >|= fun arg1' -> cons arg1' arg2)
       <+> (shrink_ast arg2 >|= fun arg2' -> cons arg1 arg2')
+    in
+    let shrink_ternary cons arg1 arg2 arg3 =
+      of_list [ arg1; arg2; arg3 ]
+      <+> (shrink_ast arg1 >|= fun arg1' -> cons arg1' arg2 arg3)
+      <+> (shrink_ast arg2 >|= fun arg2' -> cons arg1 arg2' arg3)
+      <+> (shrink_ast arg3 >|= fun arg3' -> cons arg1 arg2 arg3')
     in
     fun Mtt.Location.{ data = expr; _ } ->
       match expr with
@@ -74,7 +89,9 @@ let arbitrary_ast =
       | Expr.Letbox { idm; boxed; body } ->
           shrink_binary (Expr.letbox idm) boxed body
       | Expr.Match { matched; zbranch; pred; sbranch } ->
-          shrink_unary (Expr.match_with matched zbranch pred) sbranch
+          shrink_ternary
+            (fun m z s -> Expr.match_with m z pred s)
+            matched zbranch sbranch
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
 
