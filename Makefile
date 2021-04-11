@@ -23,14 +23,14 @@ gold:
 fmt:
 	dune build @fmt --auto-promote
 
-# Update src/ParserErrors.messages
+# Update core/ParserErrors.messages
 update-messages:
-	menhir --list-errors src/Parser.mly >src/NewParserErrorsStubs.messages
-	menhir --merge-errors src/ParserErrors.messages \
-		   --merge-errors src/NewParserErrorsStubs.messages \
-		   src/Parser.mly  >src/NewParserErrors.messages
-	mv src/NewParserErrors.messages src/ParserErrors.messages
-	rm src/NewParserErrorsStubs.messages
+	menhir --list-errors core/Parser.mly >core/NewParserErrorsStubs.messages
+	menhir --merge-errors core/ParserErrors.messages \
+		   --merge-errors core/NewParserErrorsStubs.messages \
+		   core/Parser.mly  >core/NewParserErrors.messages
+	mv core/NewParserErrors.messages core/ParserErrors.messages
+	rm core/NewParserErrorsStubs.messages
 
 # CI: lint OCaml and dune source files, all the opam files in the project root
 lint:
