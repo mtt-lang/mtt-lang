@@ -152,7 +152,7 @@ module Doc : DOC = struct
     | Val.ReClos { self; idr; body; env } ->
         let kwd e =
           if String.equal (Id.R.to_string self) "" then fun_kwd ^^ e
-          else fix_kwd ^^ !^(Id.R.to_string self) ^^^ e
+          else fix_kwd ^^^ !^(Id.R.to_string self) ^^^ e
         in
         kwd (!^(Id.R.to_string idr) ^^ dot ^^^ of_expr_with_free_vars env body)
     | Val.Box { e } -> box_kwd ^^^ of_expr e
