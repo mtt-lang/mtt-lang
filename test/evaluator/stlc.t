@@ -244,6 +244,54 @@ Priority tests
   > EOF
   40
 
+Recursion Tests
+
+  $ mtt eval <<EOF
+  > let fact = fix (f: Nat -> Nat) n : Nat. 
+  > match n with
+  > | zero => 1
+  > | succ pn => n * f pn
+  > end
+  > in fact 5
+  > EOF
+  120
+
+  $ mtt eval <<EOF
+  > let power = fix (f : Nat -> Nat -> Nat) a : Nat .
+  > λb : Nat.
+  >  match b with
+  >  | zero => 1
+  >  | succ sb => ((f a) sb) * a
+  >  end
+  > in (power 3) 4
+  > EOF
+  81
+
+  $ mtt eval <<EOF
+  > let fib = fix (f : Nat -> Nat ) n : Nat .
+  > match n with 
+  > | zero => 0
+  > | succ prev => 
+  >   match prev with
+  >   | zero => 1
+  >   | succ prev2 => (f prev) + (f prev2)
+  >   end
+  > end
+  > in fib 12
+  > EOF
+  144
+
+  $ mtt eval <<EOF
+  > let pow_n = fix (f: (Nat -> [](Nat -> Nat))) n : Nat.
+  > match n with
+  > | zero => box (λb : Nat. 1)
+  > | succ pn => letbox pred_pow' = f pn in box (λb : Nat . b * (pred_pow' b))
+  > end
+  > in 
+  > letbox pow' = pow_n 5 in pow' 3
+  > EOF
+  243
+
 Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.
