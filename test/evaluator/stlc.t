@@ -66,9 +66,7 @@ Church numerals
   > let plus = λn:N. λm:N. λf:F. λx:X. (n f) ((m f) x) in
   > let mult = λn:N. λm:N. λf:F. λx:X. (n (m f)) x in
   > 
-  > let fixcomb = λf:F. (λx:X. f (λv:V. (x x) v)) (λx:X. f (λv:V. (x x) v)) in
-  > let fact = λfact:F. λn:N. (((if (iszero n)) (λu:(). n1)) (λu:(). (mult n) (fact (pred n)))) () in
-  > let factorial = fixcomb fact in
+  > let factorial = fix (f : A -> A) n : A . (((if (iszero n)) (λu:(). n1)) (λu:(). (mult n) (f (pred n)))) () in
   > 
   > let test1 = (eq n3) n2 in
   > let test2 = (eq n2) n3 in
