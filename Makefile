@@ -32,7 +32,6 @@ update-messages:
 	mv core/NewParserErrors.messages core/ParserErrors.messages
 	rm core/NewParserErrorsStubs.messages
 
-
 # CI: lint OCaml and dune source files, all the opam files in the project root
 lint:
 	dune build @fmt
