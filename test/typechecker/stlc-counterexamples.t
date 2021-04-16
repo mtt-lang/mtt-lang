@@ -14,3 +14,44 @@ Example of
   mtt: Type inference error: Unexpected regular variable type
        file name :  Not a file, lines :  0 - 0, column :  37 - 38
   [1]
+
+Pattern matching for Nat
+  $ mtt infer -e "1 + ()"
+  mtt: Type inference error: Expected ℕ, but found Unit type
+       file name :  Not a file, lines :  0 - 0, column :  4 - 6
+  [1]
+
+
+  $ mtt infer -e "1 + <1,1>"
+  mtt: Type inference error: Expected ℕ, but found product type
+       file name :  Not a file, lines :  0 - 0, column :  4 - 9
+  [1]
+
+  $ mtt infer -e "<1, 1> + 1"
+  mtt: Type inference error: Expected ℕ, but found product type
+       file name :  Not a file, lines :  0 - 0, column :  0 - 6
+  [1]
+
+  $ mtt infer <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => <0, 0>
+  >   | succ m => ()
+  >   end
+  > in f 0
+  > EOF
+  mtt: Type inference error: All branches of pattern matching must have the same type
+       file name :  Not a file, lines :  2 - 5, column :  2 - 5
+  [1]
+
+  $ mtt infer <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => <0, 0>
+  >   | succ m => ()
+  >   end
+  > in f 42
+  > EOF
+  mtt: Type inference error: All branches of pattern matching must have the same type
+       file name :  Not a file, lines :  2 - 5, column :  2 - 5
+  [1]

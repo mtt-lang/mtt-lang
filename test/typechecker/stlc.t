@@ -85,3 +85,50 @@ Shadowing x
   > let x = () in let x = (fun a: A. a) in x
   > EOF
   A → A
+
+tests for location
+  $ mtt infer <<EOF
+  > let if = λp:A -> B -> C . λt:B . λe:B. (p t) e in if
+  > EOF
+  mtt: Type inference error: Unexpected regular variable type
+       file name :  Not a file, lines :  1 - 1, column :  42 - 43
+  [1]
+
+  $ mtt infer <<EOF
+  > let true = λx:A. λy:B . x in
+  > let false = λx:A . λy:B . y in
+  > let if = λp:A -> B -> C . λt:B . λe:B. (p t) e in if
+  > EOF
+  mtt: Type inference error: Unexpected regular variable type
+       file name :  Not a file, lines :  3 - 3, column :  42 - 43
+  [1]
+
+Evaluator for Nat
+  $ mtt infer <<EOF
+  > let predpred = fun n: Nat.
+  >   match n with
+  >   | zero => 0
+  >   | succ m => m - 1
+  >   end
+  > in predpred 4
+  > EOF
+  ℕ
+
+  $ mtt infer <<EOF
+  > let f = fun n: Nat.
+  >   match n with
+  >   | zero => <0, 0>
+  >   | succ m => <m, n>
+  >   end
+  > in f 0
+  > EOF
+  ℕ×ℕ
+
+  $ mtt infer <<EOF
+  > let f = fun x:(). 10 in
+  > match f () with
+  > | zero => 1
+  > | succ m => 2
+  > end
+  > EOF
+  ℕ

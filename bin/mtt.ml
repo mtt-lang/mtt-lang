@@ -1,38 +1,7 @@
 open Base
 open Stdio
-open Result.Let_syntax
 open Mtt
 open ParserInterface
-
-(* Parsing with error handling utilities *)
-let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
- fun ast_kind source ->
-  parse_from ast_kind source
-  |> Result.map_error ~f:(fun parse_error ->
-         [%string "Parse error: $parse_error"])
-
-(* Parsing and typechecking with error handling utilities *)
-let parse_and_typecheck source typ_str =
-  let%bind ast = parse_from_e Term source in
-  let%bind typ = parse_from_e Type (String typ_str) in
-  Typechecker.check ast typ
-  |> Result.map_error ~f:(fun eval_err ->
-         [%string "Typechecking error: $eval_err"])
-
-(* Parsing and type inference with error handling utilities *)
-let parse_and_typeinfer source =
-  let%bind ast = parse_from_e Term source in
-  Typechecker.infer ast
-  |> Result.map_error ~f:(fun eval_err ->
-         [%string "Type inference error: $eval_err"])
-
-(* Parsing and evaluation with error handling utilities *)
-let parse_and_eval source =
-  let open Result.Let_syntax in
-  let%bind ast = parse_from_e Term source in
-  Evaluator.eval ast
-  |> Result.map_error ~f:(fun eval_err ->
-         [%string "Evaluation error: $eval_err"])
 
 let osource source_file source_arg =
   match (source_file, source_arg) with
@@ -45,50 +14,75 @@ let parse_expr source_file source_arg =
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to parse")
   | Some source -> (
-      match parse_from_e Term source with
+      match Util.parse_from_e Term source with
       | Ok ast ->
           let document = PrettyPrinter.Doc.of_expr ast in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
 
 let check_expr source_file source_arg typ verbose =
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to typecheck")
   | Some source -> (
-      match parse_and_typecheck source typ with
+      match Util.parse_and_typecheck source typ with
       | Ok () ->
           if verbose then (
             Out_channel.output_string stdout "OK. Expression typechecks.";
-            Out_channel.newline stdout );
+            Out_channel.newline stdout);
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
 
 let infer_type source_file source_arg =
   match osource source_file source_arg with
   | None ->
       `Error (true, "Please provide exactly one expression to infer its type")
   | Some source -> (
-      match parse_and_typeinfer source with
+      match Util.parse_and_typeinfer source with
       | Ok typ ->
           let document = PrettyPrinter.Doc.of_type typ in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
 
 let eval_expr source_file source_arg =
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to evaluate")
   | Some source -> (
-      match parse_and_eval source with
-      | Ok literal ->
-          let document = PrettyPrinter.Doc.of_lit literal in
+      match Util.parse_and_eval source with
+      | Ok value ->
+          let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg) )
+      | Error err_msg -> `Error (false, err_msg))
+
+let parse_and_evalc source =
+  let open Result.Let_syntax in
+  let%bind ast = Util.parse_from_e Term source in
+  let mast = Compiler.compile ast in
+  let mval = Malfunction_compiler.compile_and_load mast in
+  return @@ Caml.Obj.magic mval
+
+let compile_expr source_file source_arg =
+  match osource source_file source_arg with
+  | None -> `Error (true, "...")
+  | Some source -> (
+      match parse_and_evalc source with
+      | Ok mval ->
+          let value = Compiler.obj2val mval in
+          (* mval can be ONLY int now *)
+          (* let value =
+             if Caml.Obj.is_int mval then
+               Val.Nat { n = Mtt.Nat.of_int @@ Int.to_int mval }
+              else failwith "unsupported" *)
+          let document = PrettyPrinter.Doc.of_val value in
+          PPrint.ToChannel.pretty 1.0 80 stdout document;
+          Out_channel.newline stdout;
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg))
 
 (* Command line interface *)
 
@@ -260,6 +254,32 @@ let eval_cmd =
   ( Term.(ret (const eval_expr $ source_file $ source_arg)),
     Term.info "eval" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
+let compile_cmd =
+  let source_file =
+    let doc = "The file with expression to evaluate." in
+    Arg.(value & pos 0 (some non_dir_file) None & info [] ~docv:"FILE" ~doc)
+  in
+  let source_arg =
+    let doc = "The expression to evaluate given as a CLI argument." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
+  in
+  let doc = "evaluate an expression" in
+  let exits = Term.default_exits in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "Evaluates an expression either from stdin, a file, or given as a \
+         command-line parameter";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(ret (const compile_expr $ source_file $ source_arg)),
+    Term.info "compile" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+
 let default_cmd =
   let doc = "a modal type theory implementation" in
   let sdocs = Manpage.s_common_options in
@@ -268,6 +288,6 @@ let default_cmd =
   ( Term.(ret (const (`Help (`Pager, None)))),
     Term.info "mtt" ~version:"v0.0.0" ~doc ~sdocs ~exits ~man )
 
-let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
+let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; compile_cmd; help_cmd ]
 
 let () = Term.(exit @@ eval_choice default_cmd cmds)

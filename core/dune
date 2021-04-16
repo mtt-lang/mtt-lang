@@ -1,0 +1,51 @@
+(menhir
+ (flags "--table" "--strict")
+ (modules Parser))
+
+;; Generate ParserErrors module (to make parsing messages more user-friendly)
+;; The stub for ParserErrors.messages file is generated using the following command:
+;; menhir --list-errors src/Parser.mly > src/ParserErrors.messages
+
+(rule
+ (targets ParserErrors.ml)
+ (deps ParserErrors.messages UpdParserErrors.messages
+   NewParserErrors.messages Parser.mly)
+ (action
+  (with-stdout-to
+   ParserErrors.ml
+   (run %{bin:menhir} --compile-errors ParserErrors.messages Parser.mly))))
+
+(library
+ (name mtt)
+ (modes byte native)
+ (public_name mtt)
+ (wrapped true)
+ (libraries base stdio sexplib sedlex menhirLib pprint zarith zarith_stubs_js)
+ (preprocess
+  (pps ppx_let ppx_compare ppx_sexp_conv ppx_string_interpolation sedlex.ppx))
+ (synopsis "Modal Type Theory Library"))
+
+;; Rules for generation a fresh ParserErrors.messages file
+
+(rule
+ (targets NewParserErrors.messages)
+ (deps Parser.mly)
+ (action
+  (with-stdout-to
+   NewParserErrors.messages
+   (run %{bin:menhir} --list-errors Parser.mly))))
+
+(rule
+ (targets UpdParserErrors.messages)
+ (deps NewParserErrors.messages Parser.mly)
+ (action
+  (with-stdout-to
+   UpdParserErrors.messages
+   (run %{bin:menhir} --merge-errors ParserErrors.messages --merge-errors
+     NewParserErrors.messages Parser.mly))))
+
+(rule
+ (alias runtest)
+ (deps ParserErrors.messages UpdParserErrors.messages)
+ (action
+  (diff ParserErrors.messages UpdParserErrors.messages)))

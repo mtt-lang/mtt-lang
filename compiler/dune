@@ -1,0 +1,7 @@
+(library
+ (name compiler)
+ (modes native)
+ (flags :standard -safe-string)
+ (libraries base malfunction mtt)
+ (preprocess
+  (pps ppx_let ppx_string_interpolation)))
