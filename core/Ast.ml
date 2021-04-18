@@ -98,7 +98,7 @@ module Val = struct
     | Nat of { n : Nat.t }  (** nat *)
     | Pair of { v1 : t; v2 : t }
         (** [(lit1, lit2)] -- a pair of values is a value *)
-    | ReClos of { self : Id.R.t; idr : Id.R.t; body : Expr.t; env : t Env.R.t }
+    | RecClos of { self : Id.R.t; idr : Id.R.t; body : Expr.t; env : t Env.R.t }
         (** Recursion closures *)
     | Box of { e : Expr.t }
         (** [box] value, basically it's an unevaluated expression *)

@@ -149,7 +149,7 @@ module Doc : DOC = struct
     | Val.Unit -> unit_term
     | Val.Nat { n } -> !^(Nat.to_string n)
     | Val.Pair { v1; v2 } -> group (angles (of_val v1 ^^ comma ^/^ of_val v2))
-    | Val.ReClos { self; idr; body; env } ->
+    | Val.RecClos { self; idr; body; env } ->
         let kwd e =
           if String.equal (Id.R.to_string self) "" then fun_kwd ^^ e
           else fix_kwd ^^^ !^(Id.R.to_string self) ^^^ e
