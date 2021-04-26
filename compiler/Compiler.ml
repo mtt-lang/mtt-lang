@@ -53,8 +53,14 @@ let rec compile_open (gamma : var Env.R.t) Location.{ data = expr; _ } =
          let compile_open_body = Mvar (fresh "x") in -- not work
          Mlet ([ `Named (var, compile_open_bound) ], compile_open_body) *)
   | Letbox { idm = _; boxed = _; body = _ } -> failwith "error letbox"
-  | Match { matched = _; zbranch = _; pred = _; sbranch = _ } ->
-      failwith "error match"
+  | Match { matched; zbranch; pred; sbranch } ->
+      let mc = compile_open gamma matched in
+      let zc = compile_open gamma zbranch in
+      let v = fresh @@ Id.R.to_string pred in
+      let predv = IntArith.( - ) mc (Mnum (`Int 1)) in
+      let sbranchc = compile_open (Env.R.extend gamma pred v) sbranch in
+      let sc = Mlet ([ `Named (v, predv) ], sbranchc) in
+      Mswitch (mc, [ ([ `Intrange (0, 0) ], zc); ([ `Deftag ], sc) ])
 
 let compile = compile_open Env.R.emp
 
