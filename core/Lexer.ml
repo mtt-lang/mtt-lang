@@ -5,6 +5,7 @@ type token = Parser.token
 open Parser
 
 exception LexError of Lexing.position * string
+exception CommentsError of string
 
 let blank = [%sedlex.regexp? ' ' | '\t']
 
@@ -76,4 +77,17 @@ let token buf =
       let tok = Utf8.lexeme buf in
       raise @@ LexError (position, Printf.sprintf "unexpected character %S" tok)
 
-let lexer buf = Sedlexing.with_tokenizer token buf
+let rec parse_comments n uchar_list =
+  match uchar_list with
+  | [] -> if n != 0 then Result.error  "no closing comment" else Result.ok []
+  | 0x0028 :: 0x002A :: str -> parse_comments (n+1) str
+  | 0x002A :: 0x0029 :: str -> if n == 0 then Result.error "no opening comment" else parse_comments (n-1) str
+  | c :: str ->
+    if n == 0 then Result.map (fun x -> c :: x) (parse_comments n str) else parse_comments n str
+
+let lexer buf = 
+  let uchar_list = Array.to_list (Sedlexing.lexeme buf) in
+  let r_char_list = parse_comments 0 @@ (List.map Uchar.to_int uchar_list) in
+  match r_char_list with
+  | Error x -> raise @@ CommentsError x
+  | Ok i_list -> Sedlexing.with_tokenizer token (Sedlexing.from_int_array (Array.of_list i_list))
