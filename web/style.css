@@ -45,12 +45,12 @@ html {
     border-left: 4px solid #536115;
 }
 
-#text > h1 {
+.links {
     text-align: center;
 }
 
-#text > div {
-    margin-left: 50px;
+#text > h1 {
+    text-align: center;
 }
 
 .ace_hidden-cursors {
