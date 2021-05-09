@@ -24,26 +24,20 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
   | BinOp { op; e1; e2 } -> (
       let lhs = compile_open gamma delta e1 in
       let rhs = compile_open gamma delta e2 in
+      (* TODO: trancate sub and zero division *)
       match op with
       | Add -> IntArith.( + ) lhs rhs
-      | Sub -> (
-          match (lhs, rhs) with
-          | Mnum (`Int l), Mnum (`Int r) ->
-              if l <= r then IntArith.zero else IntArith.( - ) lhs rhs
-          | _ -> failwith "not a number")
+      | Sub -> IntArith.( - ) lhs rhs
       | Mul -> IntArith.( * ) lhs rhs
-      | Div -> (
-          match rhs with
-          | Mnum (`Int r) ->
-              if phys_equal r 0 then failwith "Division by zero"
-              else IntArith.( / ) lhs rhs
-          | _ -> failwith "not a number"))
+      | Div -> IntArith.( / ) lhs rhs)
   | VarR { idr } -> (
       match Env.R.lookup gamma idr with
       | Ok v -> Mvar v
       | Error _ -> failwith "unknown regular variable")
   | VarM { idm } -> (
-      match Env.M.lookup delta idm with
+      (* After translation all modal variables goes to regular context *)
+      let idr = Id.R.mk @@ Id.M.to_string idm in
+      match Env.R.lookup gamma idr with
       | Ok v -> Mvar v
       | Error _ -> failwith "unknown modal variable")
   | Fun { idr; ty_id = _; body } ->
@@ -54,8 +48,15 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       let fec = compile_open gamma delta fe in
       let argec = [ compile_open gamma delta arge ] in
       Mapply (fec, argec)
-  (* Pay attention that box can't be in the return value *)
-  | Box { e } -> compile_open gamma delta e
+  | Box { e } ->
+      (* Very dangerous, it isn't checked that `fresh` really free in e *)
+      let x = Id.R.mk "fresh" in
+      let translated = func x Ast.Type.Unit e in
+      (* nat (Nat.of_int 0) is `Unit` in this context.
+         After translation we get a function: () -> A.
+          So, we should apply this to Unit. *)
+      compile_open gamma delta (app translated (nat @@ Nat.of_int 0))
+      (* compile_open gamma delta e *)
   | Let { idr; bound; body } ->
       let v = fresh @@ Id.R.to_string idr in
       let boundc = compile_open gamma delta bound in
@@ -68,10 +69,17 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
          let compile_open_body = Mvar (fresh "x") in -- not work
          Mlet ([ `Named (var, compile_open_bound) ], compile_open_body) *)
   | Letbox { idm; boxed; body } ->
-      let v = fresh @@ Id.M.to_string idm in
-      let boxedc = compile_open gamma delta boxed in
-      let bodyc = compile_open gamma (Env.M.extend delta idm v) body in
-      Mlet ([ `Named (v, boxedc) ], bodyc)
+      let x = Id.R.mk @@ Id.M.to_string idm in
+      let ty =
+        Ast.Type.Arr { dom = Ast.Type.Unit; cod = Ast.Type.Base { idt = "A" } }
+      in
+      let translated = app (func x ty body) boxed in
+      compile_open gamma delta translated
+      (* Naive approach:
+         let v = fresh @@ Id.M.to_string idm in
+         let boxedc = compile_open gamma delta boxed in
+         let bodyc = compile_open gamma (Env.M.extend delta idm v) body in
+         Mlet ([ `Named (v, boxedc) ], bodyc) *)
   | Match { matched; zbranch; pred; sbranch } ->
       let mc = compile_open gamma delta matched in
       let zc = compile_open gamma delta zbranch in

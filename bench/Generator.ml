@@ -64,10 +64,17 @@ let _ =
   1000000 iterations
   n^100, where 1 <= n <= 5
 
+  --------Naive approach----
   Evaluator + slow: 30.60 secs
   Compiler + slow: 0.42 secs
   Evaluator + fast: 27.13 secs
   Compiler + fast: 0.36 secs  
+
+  --------To lambda---------
+  Evaluator + slow: 29.80 secs
+  Compiler + slow: 0.38 secs
+  Evaluator + fast: 26.92 secs
+  Compiler + fast: 0.50 secs
 *)
 
 (* 
