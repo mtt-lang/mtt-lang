@@ -42,7 +42,7 @@ module Expr = struct
         idr : Id.R.t;
         idr_ty : Type.t;
         body : t;
-      }  (** Fix combinator: fix f x = f (fix x) f *)
+      }  (** Fix combinator: fix f x = f (fix f) x *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
     | Box of { e : t }  (** term-level box: [box expr1] *)
     | Let of { idr : Id.R.t; bound : t; body : t }

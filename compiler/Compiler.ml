@@ -1,6 +1,7 @@
 open Malfunction
 open Mtt
 
+(* Simple implemetnation *)
 let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
     Location.{ data = expr; _ } =
   let open Ast.Expr in
@@ -71,6 +72,12 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       let sbranchc = compile_open (Env.R.extend gamma pred v) delta sbranch in
       let sc = Mlet ([ `Named (v, predv) ], sbranchc) in
       Mswitch (mc, [ ([ `Intrange (0, 0) ], zc); ([ `Deftag ], sc) ])
+  | Fix { self; ty_id = _; idr; idr_ty = _; body } ->
+      let f = fresh @@ Id.R.to_string self in
+      let x = fresh @@ Id.R.to_string idr in
+      let extend_ctx = Env.R.extend (Env.R.extend gamma idr x) self f in
+      let bodyc = compile_open extend_ctx delta body in
+      Mlet ([ `Recursive [ (f, Mlambda ([ x ], bodyc)) ] ], Mvar f)
 
 let compile = compile_open Env.R.emp Env.M.emp
 
