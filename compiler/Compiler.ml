@@ -52,10 +52,7 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       (* Very dangerous, it isn't checked that `fresh` really free in e *)
       let x = Id.R.mk "fresh" in
       let translated = func x Ast.Type.Unit e in
-      (* nat (Nat.of_int 0) is `Unit` in this context.
-         After translation we get a function: () -> A.
-          So, we should apply this to Unit. *)
-      compile_open gamma delta (app translated (nat @@ Nat.of_int 0))
+      compile_open gamma delta translated
       (* compile_open gamma delta e *)
   | Let { idr; bound; body } ->
       let v = fresh @@ Id.R.to_string idr in
@@ -73,7 +70,10 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       let ty =
         Ast.Type.Arr { dom = Ast.Type.Unit; cod = Ast.Type.Base { idt = "A" } }
       in
-      let translated = app (func x ty body) boxed in
+      (* nat (Nat.of_int 0) is `Unit` in this context.
+           After translation we get a function: () -> A.
+          So, we should apply this to Unit. *)
+      let translated = app (func x ty body) (app boxed (nat @@ Nat.of_int 0)) in
       compile_open gamma delta translated
       (* Naive approach:
          let v = fresh @@ Id.M.to_string idm in
