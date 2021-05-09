@@ -1,3 +1,4 @@
+open Base
 open Malfunction
 open Mtt
 
@@ -25,11 +26,18 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       let rhs = compile_open gamma delta e2 in
       match op with
       | Add -> IntArith.( + ) lhs rhs
-      (* TODO: truncate subtraction *)
-      | Sub -> IntArith.( - ) lhs rhs
+      | Sub -> (
+          match (lhs, rhs) with
+          | Mnum (`Int l), Mnum (`Int r) ->
+              if l <= r then IntArith.zero else IntArith.( - ) lhs rhs
+          | _ -> failwith "not a number")
       | Mul -> IntArith.( * ) lhs rhs
-      (* TODO: division by zero *)
-      | Div -> IntArith.( / ) lhs rhs)
+      | Div -> (
+          match rhs with
+          | Mnum (`Int r) ->
+              if phys_equal r 0 then failwith "Division by zero"
+              else IntArith.( / ) lhs rhs
+          | _ -> failwith "not a number"))
   | VarR { idr } -> (
       match Env.R.lookup gamma idr with
       | Ok v -> Mvar v
