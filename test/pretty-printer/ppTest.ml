@@ -54,6 +54,12 @@ let generator =
                      (self (size / 3))
                      (map regular_id lowercase_id)
                    <*> self (size / 3);
+                   map3 fix
+                     (map regular_id lowercase_id)
+                     (return (Type.Arr { dom = Type.Nat; cod = Type.Nat }))
+                     (map regular_id lowercase_id)
+                   <*> return Type.Nat
+                   <*> self (size - 1);
                  ]))
 
 let arbitrary_ast =
@@ -83,6 +89,8 @@ let arbitrary_ast =
       | Expr.Nat _ -> empty
       | Expr.BinOp { op; e1; e2 } -> shrink_binary (Expr.binop op) e1 e2
       | Expr.Fun { idr; ty_id; body } -> shrink_unary (Expr.func idr ty_id) body
+      | Expr.Fix { self; ty_id; idr; idr_ty; body } ->
+          shrink_unary (Expr.fix self ty_id idr idr_ty) body
       | Expr.App { fe; arge } -> shrink_binary Expr.app fe arge
       | Expr.Box { e } -> shrink_unary Expr.box e
       | Expr.Let { idr; bound; body } ->
