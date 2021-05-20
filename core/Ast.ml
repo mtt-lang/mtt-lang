@@ -58,6 +58,11 @@ module Expr = struct
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
     | MatchExpr of { matched : t; branch : matchBranch list }
+        (** [match matched with 
+                | pattern1 => body1
+                | pattern2 => body2
+                ...
+              end ] *)
     | MatchNum of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
         (** FOR NAT ONLY
           [match matched with 
