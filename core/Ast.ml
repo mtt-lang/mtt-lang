@@ -20,7 +20,15 @@ module Expr = struct
   (* binary arithmetic operations *)
   type binop = Add | Sub | Mul | Div [@@deriving equal, sexp]
 
+  type pattern = 
+    | Wildcard
+    | Binder of Id.R.t
+    | Constructor of (Id.R.t * pattern) list
+  [@@deriving equal, sexp]
+
   type t = t' Location.located
+
+  and matchBranch = { pattern : pattern; body : t }
 
   and t' =
     | Unit  (** [unit] *)
@@ -49,6 +57,7 @@ module Expr = struct
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
+    | MatchExpr of { matched : t; branch : matchBranch list }
     | MatchNum of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
         (** FOR NAT ONLY
           [match matched with 
