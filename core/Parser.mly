@@ -139,7 +139,7 @@ expr:
 
     (* match expr with ... end *)
   | MATCH; matched = expr; WITH; PIPE; ZERO; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
-    { Location.locate_start_end (Match {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
+    { Location.locate_start_end (MatchNum {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
 
 app:
   | fe = app; arge = parceled_expr

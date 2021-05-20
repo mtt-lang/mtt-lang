@@ -124,7 +124,7 @@ module Doc : DOC = struct
                (letbox_kwd
                ^^^ !^(Id.M.to_string idm)
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body))
-      | Match { matched; zbranch; pred; sbranch } ->
+      | MatchNum { matched; zbranch; pred; sbranch } ->
           let indentz = String.length (String.concat [ "| zero "; "=> " ]) in
           let indents =
             String.length

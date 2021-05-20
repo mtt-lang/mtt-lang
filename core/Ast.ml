@@ -49,7 +49,7 @@ module Expr = struct
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
-    | Match of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
+    | MatchNum of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
         (** FOR NAT ONLY
           [match matched with 
               | zero => <zbranch>
@@ -88,7 +88,7 @@ module Expr = struct
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 
   let match_with matched zbranch pred sbranch =
-    Location.locate @@ Match { matched; zbranch; pred; sbranch }
+    Location.locate @@ MatchNum { matched; zbranch; pred; sbranch }
 end
 
 (** Values *)

@@ -23,7 +23,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
-  | Match { matched; zbranch; pred = _; sbranch } ->
+  | MatchNum { matched; zbranch; pred = _; sbranch } ->
       Set.union (free_vars_m matched)
       @@ Set.union (free_vars_m zbranch) (free_vars_m sbranch)
 
@@ -79,7 +79,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   boxed = subst_m term identm boxed;
                   body = subst_m term identm body;
                 })
-  | Match { matched; zbranch; pred; sbranch } ->
+  | MatchNum { matched; zbranch; pred; sbranch } ->
       match_with
         (subst_m term identm matched)
         (subst_m term identm zbranch)
@@ -150,7 +150,7 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
-  | Match { matched; zbranch; pred; sbranch } -> (
+  | MatchNum { matched; zbranch; pred; sbranch } -> (
       let%bind v = eval_open gamma matched in
       match v with
       | Nat { n } ->

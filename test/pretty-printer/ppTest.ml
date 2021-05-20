@@ -97,7 +97,7 @@ let arbitrary_ast =
           shrink_binary (Expr.letc idr) bound body
       | Expr.Letbox { idm; boxed; body } ->
           shrink_binary (Expr.letbox idm) boxed body
-      | Expr.Match { matched; zbranch; pred; sbranch } ->
+      | Expr.MatchNum { matched; zbranch; pred; sbranch } ->
           shrink_ternary
             (fun m z s -> Expr.match_with m z pred s)
             matched zbranch sbranch
