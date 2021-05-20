@@ -28,7 +28,7 @@ module Expr = struct
 
   type t = t' Location.located
 
-  and matchBranch = { pattern : pattern; body : t }
+  and clause = { pattern : pattern; branch : t }
 
   and t' =
     | Unit  (** [unit] *)
@@ -57,7 +57,7 @@ module Expr = struct
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
-    | MatchExpr of { matched : t; branch : matchBranch list }
+    | MatchExpr of { matched : t; clause : clause list }
         (** [match matched with 
                 | pattern1 => body1
                 | pattern2 => body2
