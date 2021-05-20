@@ -61,6 +61,7 @@ let token buf =
   | "let" -> LET
   | "box" -> BOX
   | "letbox" -> LETBOX
+  | "fix" -> FIX
   | "match" -> MATCH
   | "with" -> WITH
   | "end" -> END

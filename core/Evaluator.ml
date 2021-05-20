@@ -15,6 +15,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | VarR _ -> Set.empty (module Id.M)
   | VarM { idm } -> Set.singleton (module Id.M) idm
   | Fun { idr = _; ty_id = _; body } -> free_vars_m body
+  | Fix { self = _; ty_id = _; idr = _; idr_ty = _; body } -> free_vars_m body
   | App { fe; arge } -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box { e } -> free_vars_m e
   | Let { idr = _; bound; body } ->
@@ -22,7 +23,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
-  | Match { matched; zbranch; pred = _; sbranch } ->
+  | MatchNum { matched; zbranch; pred = _; sbranch } ->
       Set.union (free_vars_m matched)
       @@ Set.union (free_vars_m zbranch) (free_vars_m sbranch)
 
@@ -48,6 +49,8 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | VarM { idm } ->
       if [%equal: Id.M.t] identm idm then term else Location.locate body
   | Fun { idr; ty_id; body } -> func idr ty_id (subst_m term identm body)
+  | Fix { self; ty_id; idr; idr_ty; body } ->
+      fix self ty_id idr idr_ty (subst_m term identm body)
   | App { fe; arge } -> app (subst_m term identm fe) (subst_m term identm arge)
   | Box { e } -> box (subst_m term identm e)
   | Let { idr; bound; body } ->
@@ -76,7 +79,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   boxed = subst_m term identm boxed;
                   body = subst_m term identm body;
                 })
-  | Match { matched; zbranch; pred; sbranch } ->
+  | MatchNum { matched; zbranch; pred; sbranch } ->
       match_with
         (subst_m term identm matched)
         (subst_m term identm zbranch)
@@ -123,13 +126,16 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       @@ `EvaluationError
            "Modal variable access is not possible in a well-typed term"
   | Fun { idr; ty_id = _; body } ->
-      return @@ Val.Clos { idr; body; env = gamma }
+      return @@ Val.RecClos { self = Id.R.mk ""; idr; body; env = gamma }
+  | Fix { self; ty_id = _; idr; idr_ty = _; body } ->
+      return @@ Val.RecClos { self; idr; body; env = gamma }
   | App { fe; arge } -> (
       let%bind fv = eval_open gamma fe in
       let%bind argv = eval_open gamma arge in
       match fv with
-      | Val.Clos { idr; body; env } ->
-          eval_open (Env.R.extend env idr argv) body
+      | Val.RecClos { self; idr; body; env } ->
+          let fix_gamma = Env.R.extend env self fv in
+          eval_open (Env.R.extend fix_gamma idr argv) body
       | _ ->
           Result.fail
           @@ `EvaluationError "Trying to apply an argument to a non-function")
@@ -144,7 +150,7 @@ let rec eval_open gamma Location.{ data = expr; _ } =
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
-  | Match { matched; zbranch; pred; sbranch } -> (
+  | MatchNum { matched; zbranch; pred; sbranch } -> (
       let%bind v = eval_open gamma matched in
       match v with
       | Nat { n } ->

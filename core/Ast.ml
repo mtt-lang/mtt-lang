@@ -20,7 +20,15 @@ module Expr = struct
   (* binary arithmetic operations *)
   type binop = Add | Sub | Mul | Div [@@deriving equal, sexp]
 
+  type pattern = 
+    | Wildcard
+    | Binder of Id.R.t
+    | Constructor of (Id.R.t * pattern) list
+  [@@deriving equal, sexp]
+
   type t = t' Location.located
+
+  and clause = { pattern : pattern; branch : t }
 
   and t' =
     | Unit  (** [unit] *)
@@ -36,13 +44,26 @@ module Expr = struct
         these are syntactically distinct from the regular (ordinary) variables *)
     | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
+    | Fix of {
+        self : Id.R.t;
+        ty_id : Type.t;
+        idr : Id.R.t;
+        idr_ty : Type.t;
+        body : t;
+      }  (** Fix combinator: fix f x = f (fix x) f *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
     | Box of { e : t }  (** term-level box: [box expr1] *)
     | Let of { idr : Id.R.t; bound : t; body : t }
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
-    | Match of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
+    | MatchExpr of { matched : t; clause : clause list }
+        (** [match matched with 
+                | pattern1 => body1
+                | pattern2 => body2
+                ...
+              end ] *)
+    | MatchNum of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
         (** FOR NAT ONLY
           [match matched with 
               | zero => <zbranch>
@@ -69,6 +90,9 @@ module Expr = struct
 
   let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
 
+  let fix self ty_id idr idr_ty body =
+    Location.locate @@ Fix { self; ty_id; idr; idr_ty; body }
+
   let app fe arge = Location.locate @@ App { fe; arge }
 
   let box e = Location.locate @@ Box { e }
@@ -78,7 +102,7 @@ module Expr = struct
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 
   let match_with matched zbranch pred sbranch =
-    Location.locate @@ Match { matched; zbranch; pred; sbranch }
+    Location.locate @@ MatchNum { matched; zbranch; pred; sbranch }
 end
 
 (** Values *)
@@ -88,8 +112,8 @@ module Val = struct
     | Nat of { n : Nat.t }  (** nat *)
     | Pair of { v1 : t; v2 : t }
         (** [(lit1, lit2)] -- a pair of values is a value *)
-    | Clos of { idr : Id.R.t; body : Expr.t; env : t Env.R.t }
-        (** Deeply embedded closures *)
+    | RecClos of { self : Id.R.t; idr : Id.R.t; body : Expr.t; env : t Env.R.t }
+        (** Recursion closures *)
     | Box of { e : Expr.t }
         (** [box] value, basically it's an unevaluated expression *)
   [@@deriving sexp]

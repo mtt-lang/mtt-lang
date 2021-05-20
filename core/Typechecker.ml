@@ -97,6 +97,18 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
           in
           check_open delta (Env.R.extend gamma idr dom) body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
+  | Fix { self; ty_id; idr = _; idr_ty; body } -> (
+      let self_ty = Type.Arr { dom = idr_ty; cod = typ } in
+      match typ with
+      | Type.Arr { dom = _; cod } ->
+          let%bind () =
+            with_error_location loc
+            @@ check_equal self_ty ty_id
+                 "Domain of arrow type is not the same as type of function \
+                  parameter"
+          in
+          check_open delta (Env.R.extend gamma self self_ty) body cod
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
@@ -124,7 +136,7 @@ let rec check_open delta gamma Location.{ data = expr; loc } typ =
       match ty with
       | Type.Box { ty } -> check_open (Env.M.extend delta idm ty) gamma body typ
       | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
-  | Match { matched; zbranch; pred; sbranch } ->
+  | MatchNum { matched; zbranch; pred; sbranch } ->
       let%bind _ = check_open delta gamma matched Type.Nat in
       let%bind ty_empty = infer_open delta gamma zbranch in
       check_open delta (Env.R.extend gamma pred Type.Nat) sbranch ty_empty
@@ -160,6 +172,12 @@ and infer_open delta gamma Location.{ data = expr; loc } =
   | Fun { idr; ty_id; body } ->
       let%map ty_body = infer_open delta (Env.R.extend gamma idr ty_id) body in
       Type.Arr { dom = ty_id; cod = ty_body }
+  | Fix { self; ty_id; idr; idr_ty; body } ->
+      let fix_gamma = Env.R.extend gamma self ty_id in
+      let%map ty_body =
+        infer_open delta (Env.R.extend fix_gamma idr idr_ty) body
+      in
+      Type.Arr { dom = idr_ty; cod = ty_body }
   | App { fe; arge } -> (
       let%bind ty = infer_open delta gamma fe in
       match ty with
@@ -186,7 +204,7 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       match tyb with
       | Type.Box { ty } -> infer_open (Env.M.extend delta idm ty) gamma body
       | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
-  | Match { matched; zbranch; pred; sbranch } ->
+  | MatchNum { matched; zbranch; pred; sbranch } ->
       let%bind _ = check_open delta gamma matched Type.Nat in
       let%bind ty_zero = infer_open delta gamma zbranch in
       let%bind ty_succ =

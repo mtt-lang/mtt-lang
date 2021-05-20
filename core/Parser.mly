@@ -35,11 +35,13 @@
 %token FST
 %token SND
 %token FUN
+%token FIX
 %token BOX
 %token LET
 %token LETBOX
 %token IN
 %token MATCH WITH PIPE END
+%token UNDERSCORE
 
 %right DARROW
 %right IN
@@ -119,6 +121,15 @@ expr:
   | FUN; LPAREN; idr = IDR; COLON; ty_id = typ; RPAREN; DARROW; body = expr
     { Location.locate_start_end (Fun {idr = Id.R.mk idr; ty_id; body}) $symbolstartpos $endpos }
 
+  | FIX; self = IDR; COLON; ty_id = typ; idr = IDR; COLON; idr_ty = typ; DARROW; body = expr;
+    { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; idr_ty; body}) $symbolstartpos $endpos }
+
+  | FIX; LPAREN; self = IDR; COLON; ty_id = typ; RPAREN; idr = IDR; COLON; idr_ty = typ; DARROW; body = expr;
+    { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; idr_ty; body}) $symbolstartpos $endpos }
+
+  | FIX; LPAREN; self = IDR; COLON; ty_id = typ; RPAREN; LPAREN; idr = IDR; COLON; idr_ty = typ;RPAREN; DARROW; body = expr;
+    { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; idr_ty; body}) $symbolstartpos $endpos }
+    
     (* let idr = expr in expr *)
   | LET; idr = IDR; EQ; bound = expr; IN; body = expr
     { Location.locate_start_end (Let {idr = Id.R.mk idr; bound; body}) $symbolstartpos $endpos }
@@ -129,7 +140,12 @@ expr:
 
     (* match expr with ... end *)
   | MATCH; matched = expr; WITH; PIPE; ZERO; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
-    { Location.locate_start_end (Match {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
+    { Location.locate_start_end (MatchNum {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
+
+
+clause:
+  | PIPE; p = pattern; DARROW; e = expr; 
+    { p, e }
 
 app:
   | fe = app; arge = parceled_expr
