@@ -41,6 +41,7 @@
 %token LETBOX
 %token IN
 %token MATCH WITH PIPE END
+%token UNDERSCORE
 
 %right DARROW
 %right IN
@@ -140,6 +141,18 @@ expr:
     (* match expr with ... end *)
   | MATCH; matched = expr; WITH; PIPE; ZERO; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
     { Location.locate_start_end (MatchNum {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
+
+  (*| MATCH; matched = expr; WITH; () END;*)
+
+(**
+
+pattern:
+
+*)
+  (** | pattern => expr *)
+clause:
+  | PIPE; p = pattern; DARROW; e = expr; 
+    { p, e }
 
 app:
   | fe = app; arge = parceled_expr
