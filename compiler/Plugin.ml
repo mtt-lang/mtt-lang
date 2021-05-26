@@ -1,0 +1,1 @@
+let () = FromMal.s := !Mal.x

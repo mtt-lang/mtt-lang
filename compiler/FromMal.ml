@@ -1,0 +1,1 @@
+let s = ref @@ Mtt.Nat.of_int 1

@@ -2,6 +2,18 @@ open Base
 open Malfunction
 open Mtt
 
+(* 
+let write2file (filename : string) (content : string) =
+  Stdio.Out_channel.write_all filename ~data:content
+
+let dump_term (term : Malfunction.t) : string =
+  let show_term t =
+    match t with
+    | Mnum (`Int n) -> "(block (tag 0) " ^ Int.to_string n ^ ")"
+    | _ -> failwith "not impl"
+  in
+  "(module (_" ^ show_term term ^ ")\n(export))" *)
+
 (* Simple implemetnation *)
 let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
     Location.{ data = expr; _ } =
@@ -35,10 +47,8 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       | Ok v -> Mvar v
       | Error _ -> failwith "unknown regular variable")
   | VarM { idm } -> (
-      (* After translation all modal variables goes to regular context *)
-      let idr = Id.R.mk @@ Id.M.to_string idm in
-      match Env.R.lookup gamma idr with
-      | Ok v -> Mvar v
+      match Env.M.lookup delta idm with
+      | Ok v -> Mforce (Mvar v)
       | Error _ -> failwith "unknown modal variable")
   | Fun { idr; ty_id = _; body } ->
       let v = fresh @@ Id.R.to_string idr in
@@ -48,38 +58,17 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       let fec = compile_open gamma delta fe in
       let argec = [ compile_open gamma delta arge ] in
       Mapply (fec, argec)
-  | Box { e } ->
-      (* Very dangerous, it isn't checked that `fresh` really free in e *)
-      let x = Id.R.mk "fresh" in
-      let translated = func x Ast.Type.Unit e in
-      compile_open gamma delta translated
-      (* compile_open gamma delta e *)
+  | Box { e } -> Mlazy (compile_open gamma delta e)
   | Let { idr; bound; body } ->
       let v = fresh @@ Id.R.to_string idr in
       let boundc = compile_open gamma delta bound in
       let bodyc = compile_open (Env.R.extend gamma idr v) delta body in
       Mlet ([ `Named (v, boundc) ], bodyc)
-      (* let varname = "x" in
-         let var = Ident.create varname in
-         let compile_open_bound = compile_open (Expr.nat @@ Nat.of_int 1) in
-         let compile_open_body = MVar var in         -- working
-         let compile_open_body = Mvar (fresh "x") in -- not work
-         Mlet ([ `Named (var, compile_open_bound) ], compile_open_body) *)
   | Letbox { idm; boxed; body } ->
-      let x = Id.R.mk @@ Id.M.to_string idm in
-      let ty =
-        Ast.Type.Arr { dom = Ast.Type.Unit; cod = Ast.Type.Base { idt = "A" } }
-      in
-      (* nat (Nat.of_int 0) is `Unit` in this context.
-           After translation we get a function: () -> A.
-          So, we should apply this to Unit. *)
-      let translated = app (func x ty body) (app boxed (nat @@ Nat.of_int 0)) in
-      compile_open gamma delta translated
-      (* Naive approach:
-         let v = fresh @@ Id.M.to_string idm in
-         let boxedc = compile_open gamma delta boxed in
-         let bodyc = compile_open gamma (Env.M.extend delta idm v) body in
-         Mlet ([ `Named (v, boxedc) ], bodyc) *)
+      let v = fresh @@ Id.M.to_string idm in
+      let boxedc = compile_open gamma delta boxed in
+      let bodyc = compile_open gamma (Env.M.extend delta idm v) body in
+      Mlet ([ `Named (v, boxedc) ], bodyc)
   | Match { matched; zbranch; pred; sbranch } ->
       let mc = compile_open gamma delta matched in
       let zc = compile_open gamma delta zbranch in
@@ -95,7 +84,43 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       let bodyc = compile_open extend_ctx delta body in
       Mlet ([ `Recursive [ (f, Mlambda ([ x ], bodyc)) ] ], Mvar f)
 
-let compile = compile_open Env.R.emp Env.M.emp
+let cogen Location.{ data = expr; _ } =
+  let open Ast.Expr in
+  match expr with
+  | Unit -> failwith "error unit"
+  | Pair _ -> failwith "error pair"
+  | Fst _ -> failwith "error fst"
+  | Snd _ -> failwith "error snd"
+  | Nat { n = _ } ->
+      (* let num = `Int (Nat.to_int n) in
+           let _compiled = Mnum num in
+           (* let _ = write2file "cogen.mlf" (dump_term compiled) in *)
+         in *)
+      let _x = Malfunction_compiler.compile_cmx "compiler/Mal.mlf" in
+      let _ = Dynlink.loadfile "compiler/Mal.cmx" in
+      (* let _ = Malfunction_compiler.link_executable "result" x in *)
+      Mnum (`Int (Nat.to_int @@ !FromMal.s))
+      (* Mnum (`Int (!Mal.s)) *)
+      (* compiled *)
+      (* Malfunction_parser.read_expression @@ Lexing.from_string "(+ 42 43)" *)
+  | BinOp _ -> failwith "error binop"
+  | VarR _ -> failwith "error varr"
+  | VarM _ -> failwith "error varm"
+  | Fun _ -> failwith "error fun"
+  | App _ -> failwith "error app"
+  | Box { e = _ } -> failwith "error box"
+  | Let _ -> failwith "error let"
+  | Letbox _ -> failwith "error letbox"
+  | Match _ -> failwith "error match"
+  | Fix _ -> failwith "error fix"
+
+(* let compile = compile_open Env.R.emp Env.M.emp *)
+
+let compile_naive = compile_open Env.R.emp Env.M.emp
+
+let compile =
+  (* let _ = Caml.Sys.command "ocamlc -opaque -c .mli" in *)
+  cogen
 
 (* VERY UNSAFE!
    The result must be a nat or a pair *)
