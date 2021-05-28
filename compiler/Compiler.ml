@@ -74,10 +74,7 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       Mlet ([ `Recursive [ (f, Mlambda ([ x ], bodyc)) ] ], Mvar f)
 
 (* TODO: find analog haskell-replicate  *)
-let rec instr_for_var (n : int) =
-  if phys_equal n 0 then [ Instructions.Snd ]
-  else Instructions.Fst :: instr_for_var (n - 1)
-
+(* 
 let rec codegen (omega : int Env.R.t) (delta : Cam.Instructions.t list Env.M.t)
     Location.{ data = expr; _ } : Cam.Instructions.t list =
   let open Ast.Expr in
@@ -189,39 +186,56 @@ let rec compile_with_codegen (gamma : var Env.R.t)
       let x = fresh @@ Id.R.to_string idr in
       let extend_ctx = Env.R.extend (Env.R.extend gamma idr x) self f in
       let bodyc = compile_with_codegen extend_ctx delta body in
-      Mlet ([ `Recursive [ (f, Mlambda ([ x ], bodyc)) ] ], Mvar f)
+      Mlet ([ `Recursive [ (f, Mlambda ([ x ], bodyc)) ] ], Mvar f) *)
 
-(* let rec compile_only_codegen (gamma : Values.t Env.R.t)
-    (delta : Cam.Instructions.t list Env.M.t) Location.{ data = expr; _ } =
+let rec instr_for_var (n : int) =
+  if phys_equal n 0 then [ ISnd ] else IFst :: instr_for_var (n - 1)
+
+let rec compile_only_codegen (omega : int Env.R.t)
+    (delta : instructionCAM list Env.M.t) Location.{ data = expr; _ } =
   let open Ast.Expr in
-  let open Values in
   match expr with
-  | Unit -> VUnit
+  | Unit -> [ IQuote { v = VUnit } ]
   | Pair { e1; e2 } ->
-      let e = compile_only_codegen gamma delta e1 in
-      let f = compile_only_codegen gamma delta e2 in
-      VPair { e; f }
+      let e =
+        CamInterpreter.interept [ VUnit ] @@ compile_only_codegen omega delta e1
+      in
+      let f =
+        CamInterpreter.interept [ VUnit ] @@ compile_only_codegen omega delta e2
+      in
+      [ IQuote { v = VPair { e; f } } ]
   | Fst _ -> failwith "fst"
   | Snd _ -> failwith "snd"
-  | Nat { n } -> VNum { n = Nat.to_int n }
+  | Nat { n } -> [ IQuote { v = VNum { n = Nat.to_int n } } ]
   | BinOp _ -> failwith "binop"
   | VarR { idr } -> (
-      match Env.R.lookup gamma idr with
-      | Ok v -> v
+      match Env.R.lookup omega idr with
+      | Ok v -> instr_for_var v
       | Error _ -> failwith "unknown regular variable")
   | VarM { idm } -> (
       match Env.M.lookup delta idm with
-      | Ok v -> CamInterpreter.interept [ VUnit ] v
+      | Ok code -> code
       | Error _ -> failwith "unknown modal variable")
-  | Fun { idr; ty_id = _; body } -> failwith "unsupported"
-  | App _ -> failwith "app"
-  | Box _ -> failwith "box isn't supported"
+  | Fun { idr; ty_id = _; body } ->
+      let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
+      let gen_body =
+        compile_only_codegen (Env.R.extend shifted_omega idr 0) delta body
+      in
+      [ ICur { prog = gen_body } ]
+  | App { fe; arge } ->
+      (* TODO: check shifting *)
+      let gen_fe = compile_only_codegen omega delta fe in
+      let gen_arge = compile_only_codegen omega delta arge in
+      [ IPush ] @ gen_fe @ [ ISwap ] @ gen_arge @ [ ICons; IApp ]
+  | Box { e } ->
+      (* now box is ignored *)
+      compile_only_codegen omega delta e
   | Let _ -> failwith "let isn't supported"
   | Letbox _ -> failwith "letbox isn't supported"
   | Match _ -> failwith "match isn't supported"
-  | Fix _ -> failwith "fix isn't supported" *)
+  | Fix _ -> failwith "fix isn't supported"
 
-let compile = compile_with_codegen Env.R.emp Env.M.emp
+let compile = compile_only_codegen Env.R.emp Env.M.emp
 
 let compile_simple = compile_open Env.R.emp Env.M.emp
 
@@ -236,3 +250,7 @@ let rec obj2val obj =
         let va1 = obj2val a in
         let va2 = obj2val b in
         Ast.Val.Pair { v1 = va1; v2 = va2 }
+
+let cam2val v =
+  let open Mtt.Ast in
+  match v with VUnit -> Val.Unit | _ -> failwith "TODO"

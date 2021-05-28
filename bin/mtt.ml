@@ -62,9 +62,8 @@ let eval_expr source_file source_arg =
 let parse_and_evalc source =
   let open Result.Let_syntax in
   let%bind ast = Util.parse_from_e Term source in
-  let mast = Compiler.compile ast in
-  let mval = Malfunction_compiler.compile_and_load mast in
-  return @@ Caml.Obj.magic mval
+  let cam_bytecode = Compiler.compile ast in
+  return @@  [ Cam.VUnit ] cam_bytecode
 
 let compile_expr source_file source_arg =
   match osource source_file source_arg with
@@ -72,12 +71,7 @@ let compile_expr source_file source_arg =
   | Some source -> (
       match parse_and_evalc source with
       | Ok mval ->
-          let value = Compiler.obj2val mval in
-          (* mval can be ONLY int now *)
-          (* let value =
-             if Caml.Obj.is_int mval then
-               Val.Nat { n = Mtt.Nat.of_int @@ Int.to_int mval }
-              else failwith "unsupported" *)
+          let value = Cam.cam2val mval in
           let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;

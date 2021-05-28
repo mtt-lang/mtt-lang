@@ -1,12 +1,6 @@
-; (rule
-;  (targets Module.cmi)
-;  (action
-;    (run %{bin:ocamlc} -opaque -c Module.mli)))
-
 (library
  (name compiler)
  (modes native)
- ; (modules_without_implementation mal)
  (flags :standard -safe-string)
  (libraries base malfunction mtt)
  (preprocess
