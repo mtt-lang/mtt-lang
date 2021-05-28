@@ -221,7 +221,7 @@ let rec compile_with_codegen (gamma : var Env.R.t)
   | Match _ -> failwith "match isn't supported"
   | Fix _ -> failwith "fix isn't supported" *)
 
-let compile = compile_only_codegen Env.R.emp Env.M.emp
+let compile = compile_with_codegen Env.R.emp Env.M.emp
 
 let compile_simple = compile_open Env.R.emp Env.M.emp
 
