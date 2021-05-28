@@ -1,0 +1,1 @@
+letbox v' = box (fun x : Nat. x) in v' 1

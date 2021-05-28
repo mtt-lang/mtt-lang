@@ -14,3 +14,5 @@ and valueCAM =
   | VClos of { e : valueCAM; p : instructionCAM list }
   | VPair of { e : valueCAM; f : valueCAM }
   | VNum of { n : int }
+
+val cam2val : valueCAM -> Mtt.Ast.Val.t

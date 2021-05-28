@@ -1,6 +1,6 @@
 (executable
  (name generator)
  (public_name generator)
- (libraries base mtt compiler util)
+ (libraries base mtt mtt_compiler util)
  (preprocess
   (pps ppx_let)))

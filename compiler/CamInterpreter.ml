@@ -17,7 +17,10 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
           match stack with
           | VPair { e = _; f } :: s -> interept (f :: s) others
           | _ -> failwith "error stack for Snd")
-      | IQuote _ -> failwith "todo quote"
+      | IQuote { v } -> (
+          match stack with
+          | _ :: s -> interept (v :: s) others
+          | _ -> failwith "error stack for Quote")
       | IPush -> (
           match stack with
           | e :: s -> interept (e :: e :: s) others
@@ -28,8 +31,7 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
           | _ -> failwith "error stack for Swap")
       | ICons -> (
           match stack with
-          | e' :: f' :: s ->
-              interept (VPair { e = f'; f = e' } :: s) others
+          | e' :: f' :: s -> interept (VPair { e = f'; f = e' } :: s) others
           | _ -> failwith "error stack for Cons")
       | ICur { prog } -> (
           match stack with
@@ -43,8 +45,6 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
       | IPlus -> (
           match stack with
           (* only Nat-type is supported for now  *)
-          | VPair
-              { e = VNum { n = ne }; f = VNum { n = nf } }
-            :: s ->
+          | VPair { e = VNum { n = ne }; f = VNum { n = nf } } :: s ->
               interept (VNum { n = ne + nf } :: s) others
           | _ -> failwith "error stack for Plus"))

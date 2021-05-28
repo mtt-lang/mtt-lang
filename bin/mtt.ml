@@ -62,8 +62,8 @@ let eval_expr source_file source_arg =
 let parse_and_evalc source =
   let open Result.Let_syntax in
   let%bind ast = Util.parse_from_e Term source in
-  let cam_bytecode = Compiler.compile ast in
-  return @@  [ Cam.VUnit ] cam_bytecode
+  let cam_bytecode = Mtt_compiler.Compiler.compile ast in
+  return @@ Mtt_compiler.CamInterpreter.interept [ Mtt_compiler.Cam.VUnit ] cam_bytecode
 
 let compile_expr source_file source_arg =
   match osource source_file source_arg with
@@ -71,7 +71,7 @@ let compile_expr source_file source_arg =
   | Some source -> (
       match parse_and_evalc source with
       | Ok mval ->
-          let value = Cam.cam2val mval in
+          let value = Mtt_compiler.Cam.cam2val mval in
           let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;

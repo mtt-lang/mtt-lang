@@ -1,0 +1,1 @@
+(fun x: Nat. x + 3) ((fun x: Nat. x + 2) ((fun x: Nat. x + 1) 1))

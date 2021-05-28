@@ -1,0 +1,6 @@
+let pow_n = fix (f: (Nat -> [](Nat -> Nat))) n : Nat.
+  match n with
+   | zero => box (λb : Nat. 1)
+   | succ pn => letbox pred_pow' = f pn in box (λb : Nat . b * (pred_pow' b))
+  end
+  in letbox pow' = pow_n 5 in pow' 3

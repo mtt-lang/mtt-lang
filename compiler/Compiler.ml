@@ -207,11 +207,16 @@ let rec compile_only_codegen (omega : int Env.R.t)
   | Fst _ -> failwith "fst"
   | Snd _ -> failwith "snd"
   | Nat { n } -> [ IQuote { v = VNum { n = Nat.to_int n } } ]
-  | BinOp _ -> failwith "binop"
+  | BinOp { op; e1; e2 } -> (
+      let lhs = compile_only_codegen omega delta e1 in
+      let rhs = compile_only_codegen omega delta e2 in
+      match op with
+      | Add -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IPlus ]
+      | _ -> failwith "only Add is supported")
   | VarR { idr } -> (
       match Env.R.lookup omega idr with
       | Ok v -> instr_for_var v
-      | Error _ -> failwith "unknown regular variable")
+      | Error _ -> failwith ("unknown regular variable " ^ Id.R.to_string idr))
   | VarM { idm } -> (
       match Env.M.lookup delta idm with
       | Ok code -> code
@@ -230,8 +235,17 @@ let rec compile_only_codegen (omega : int Env.R.t)
   | Box { e } ->
       (* now box is ignored *)
       compile_only_codegen omega delta e
-  | Let _ -> failwith "let isn't supported"
-  | Letbox _ -> failwith "letbox isn't supported"
+  | Let { idr; bound; body } ->
+      (* TODO: remove exrta redex *)
+      let f = func idr Ast.Type.Unit body in
+      let redex = app f bound in
+      compile_only_codegen omega delta redex
+  | Letbox { idm; boxed; body } ->
+      (* check regular context must be empty, but see example eval-apply.mtt *)
+      (* check shifting *)
+      let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
+      let boxed_gen = compile_only_codegen omega delta boxed in
+      compile_only_codegen shifted_omega (Env.M.extend delta idm boxed_gen) body
   | Match _ -> failwith "match isn't supported"
   | Fix _ -> failwith "fix isn't supported"
 
@@ -250,7 +264,3 @@ let rec obj2val obj =
         let va1 = obj2val a in
         let va2 = obj2val b in
         Ast.Val.Pair { v1 = va1; v2 = va2 }
-
-let cam2val v =
-  let open Mtt.Ast in
-  match v with VUnit -> Val.Unit | _ -> failwith "TODO"

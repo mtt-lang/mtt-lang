@@ -67,3 +67,9 @@ let rec dump_value (value : valuesCAM) =
   | VPair { e; f } -> "VPair{ " ^ dump_value e ^ " ; " ^ dump_value f ^ "}"
   | VNum { n } -> "VNum {" ^ Int.to_string n ^ "}" *)
 
+let cam2val v =
+  let open Mtt.Ast in
+  match v with
+  | VUnit -> Val.Unit
+  | VNum { n } -> Val.Nat { n = Mtt.Nat.of_int n }
+  | _ -> failwith "this kind of value isn't implemented"

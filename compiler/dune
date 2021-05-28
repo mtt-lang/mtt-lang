@@ -1,5 +1,5 @@
 (library
- (name compiler)
+ (name mtt_compiler)
  (modes native)
  (flags :standard -safe-string)
  (libraries base malfunction mtt)
