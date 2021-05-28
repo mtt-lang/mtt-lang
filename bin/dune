@@ -1,7 +1,8 @@
 (executable
  (name mtt)
  (flags :standard -safe-string)
- (libraries base cmdliner mtt pprint)
+ (modes native)
+ (libraries base cmdliner malfunction mtt util pprint)
  (preprocess
   (pps ppx_let ppx_sexp_conv ppx_string_interpolation)))
 

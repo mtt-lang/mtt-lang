@@ -8,6 +8,8 @@ val zero : t
 
 val one : t
 
+val to_int : t -> int
+
 val of_int : int -> t
 
 val add : t -> t -> t

@@ -1,0 +1,6 @@
+(executable
+ (name generator)
+ (public_name generator)
+ (libraries base mtt compiler util)
+ (preprocess
+  (pps ppx_let)))

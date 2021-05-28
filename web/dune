@@ -3,6 +3,6 @@
  (modes js)
  (js_of_ocaml
   (flags +base/runtime.js --disable genprim --source-map))
- (libraries js_of_ocaml-lwt base mtt pprint js_of_ocaml-tyxml)
+ (libraries js_of_ocaml-lwt base mtt pprint util js_of_ocaml-tyxml)
  (preprocess
   (pps ppx_let js_of_ocaml-ppx ppx_sexp_conv ppx_string_interpolation)))

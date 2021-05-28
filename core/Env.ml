@@ -35,6 +35,9 @@ struct
   (** Extend environment with a key and the corresponding value *)
   let extend env k v = (k, v) :: env
 
+  (** Current size of envirnoment  *)
+  let size env = List.length env
+
   (** Find the value corresponding to a key identifier
       NOTE: effectively type of error (EnvUnboundRegularVarError or
             EnvUnboundModalVariableError) depends on type of ID, but ocaml can't check it.
