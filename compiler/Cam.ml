@@ -34,6 +34,7 @@ type instructionCAM =
   | IApp
   | IQuote of { v : valueCAM }
   | ICur of { prog : instructionCAM list }
+  | ICurRec of { prog : instructionCAM list }
   | IBranch of {
       cond : instructionCAM list;
       c1 : instructionCAM list;
@@ -41,10 +42,13 @@ type instructionCAM =
     }
   | IPlus
   | IMinus
+  | IMul
+  | IDiv
 
 and valueCAM =
   | VUnit
   | VClos of { e : valueCAM; p : instructionCAM list }
+  | VClosRec of { e : valueCAM; p : instructionCAM list }
   | VPair of { e : valueCAM; f : valueCAM }
   | VNum of { n : int }
 
@@ -60,9 +64,12 @@ let rec dump_instruction (inst : instructionCAM) : string =
   | IBranch { cond; c1; c2 } ->
       "Branch [ cond=" ^ dump_instructions cond ^ "; c1=" ^ dump_instructions c1
       ^ "; c2=" ^ dump_instructions c2 ^ "]"
-  | ICur { prog } -> "Cur " ^ "[" ^ dump_instructions prog ^ "]"
+  | ICurRec { prog } -> "CurRec [" ^ dump_instructions prog ^ "]"
+  | ICur { prog } -> "Cur [" ^ dump_instructions prog ^ "]"
   | IPlus -> "Plus"
   | IMinus -> "Minus"
+  | IMul -> "Mult"
+  | IDiv -> "Div"
 
 and dump_instructions (program : instructionCAM list) : string =
   let strings = List.map dump_instruction program in
@@ -72,7 +79,10 @@ and dump_value (value : valueCAM) =
   match value with
   | VUnit -> "VUnit"
   | VClos { e; p } ->
-      "VClos[ arg=" ^ dump_value e ^ "; intrs = {" ^ dump_instructions p ^ "}]"
+      "VClos[ env=" ^ dump_value e ^ "; intrs = {" ^ dump_instructions p ^ "}]"
+  | VClosRec { e; p } ->
+      "VClosRec [ env=" ^ dump_value e ^ "; instrs = {" ^ dump_instructions p
+      ^ "}]"
   | VPair { e; f } -> "VPair{ " ^ dump_value e ^ " ; " ^ dump_value f ^ "}"
   | VNum { n } -> "VNum {" ^ Int.to_string n ^ "}"
 

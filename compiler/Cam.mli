@@ -7,6 +7,7 @@ type instructionCAM =
   | IApp
   | IQuote of { v : valueCAM }
   | ICur of { prog : instructionCAM list }
+  | ICurRec of { prog : instructionCAM list }
   | IBranch of {
       cond : instructionCAM list;
       c1 : instructionCAM list;
@@ -14,10 +15,13 @@ type instructionCAM =
     }
   | IPlus
   | IMinus
+  | IMul
+  | IDiv
 
 and valueCAM =
   | VUnit
   | VClos of { e : valueCAM; p : instructionCAM list }
+  | VClosRec of { e : valueCAM; p : instructionCAM list }
   | VPair of { e : valueCAM; f : valueCAM }
   | VNum of { n : int }
 
