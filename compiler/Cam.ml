@@ -34,7 +34,13 @@ type instructionCAM =
   | IApp
   | IQuote of { v : valueCAM }
   | ICur of { prog : instructionCAM list }
+  | IBranch of {
+      cond : instructionCAM list;
+      c1 : instructionCAM list;
+      c2 : instructionCAM list;
+    }
   | IPlus
+  | IMinus
 
 and valueCAM =
   | VUnit
@@ -42,7 +48,7 @@ and valueCAM =
   | VPair of { e : valueCAM; f : valueCAM }
   | VNum of { n : int }
 
-(* let rec dump_instruction (inst : instructionCAM) : string =
+let rec dump_instruction (inst : instructionCAM) : string =
   match inst with
   | IFst -> "Fst"
   | ISnd -> "Snd"
@@ -50,22 +56,25 @@ and valueCAM =
   | ISwap -> "Swap"
   | ICons -> "Cons"
   | IApp -> "App"
-  | IQuote { expr = _ } -> failwith "not implemented"
-  (* | Num { n } -> "Num " ^ Nat.to_string n *)
+  | IQuote { v } -> "Quote " ^ "[" ^ dump_value v ^ "]"
+  | IBranch { cond; c1; c2 } ->
+      "Branch [ cond=" ^ dump_instructions cond ^ "; c1=" ^ dump_instructions c1
+      ^ "; c2=" ^ dump_instructions c2 ^ "]"
   | ICur { prog } -> "Cur " ^ "[" ^ dump_instructions prog ^ "]"
   | IPlus -> "Plus"
+  | IMinus -> "Minus"
 
 and dump_instructions (program : instructionCAM list) : string =
   let strings = List.map dump_instruction program in
   String.concat ";\n" strings
 
-let rec dump_value (value : valuesCAM) =
+and dump_value (value : valueCAM) =
   match value with
   | VUnit -> "VUnit"
   | VClos { e; p } ->
       "VClos[ arg=" ^ dump_value e ^ "; intrs = {" ^ dump_instructions p ^ "}]"
   | VPair { e; f } -> "VPair{ " ^ dump_value e ^ " ; " ^ dump_value f ^ "}"
-  | VNum { n } -> "VNum {" ^ Int.to_string n ^ "}" *)
+  | VNum { n } -> "VNum {" ^ Int.to_string n ^ "}"
 
 let cam2val v =
   let open Mtt.Ast in

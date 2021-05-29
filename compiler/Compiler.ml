@@ -212,7 +212,8 @@ let rec compile_only_codegen (omega : int Env.R.t)
       let rhs = compile_only_codegen omega delta e2 in
       match op with
       | Add -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IPlus ]
-      | _ -> failwith "only Add is supported")
+      | Sub -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IMinus ]
+      | _ -> failwith "only Add and Sub are supported")
   | VarR { idr } -> (
       match Env.R.lookup omega idr with
       | Ok v -> instr_for_var v
@@ -243,10 +244,18 @@ let rec compile_only_codegen (omega : int Env.R.t)
   | Letbox { idm; boxed; body } ->
       (* check regular context must be empty, but see example eval-apply.mtt *)
       (* check shifting *)
-      let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
+      (* let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in *)
       let boxed_gen = compile_only_codegen omega delta boxed in
-      compile_only_codegen shifted_omega (Env.M.extend delta idm boxed_gen) body
-  | Match _ -> failwith "match isn't supported"
+      compile_only_codegen omega (Env.M.extend delta idm boxed_gen) body
+  | Match { matched; zbranch; pred; sbranch } ->
+      let gen_matched = compile_only_codegen omega delta matched in
+      let gen_zbranch = compile_only_codegen omega delta zbranch in
+      (* TODO: think about better approach *)
+      let sbranch' =
+        letc pred (binop Sub matched (nat @@ Nat.of_int 1)) sbranch
+      in
+      let gen_sbranch = compile_only_codegen omega delta sbranch' in
+      [ IBranch { cond = gen_matched; c1 = gen_zbranch; c2 = gen_sbranch } ]
   | Fix _ -> failwith "fix isn't supported"
 
 let compile = compile_only_codegen Env.R.emp Env.M.emp

@@ -2,7 +2,7 @@ open Base
 open Cam
 
 let rec interept (stack : valueCAM list) (program : instructionCAM list) =
-  (* let insts = Cam.dump_instructions program in
+  (* let insts = dump_instructions program in
      let _ = Stdio.print_string (insts ^ "\n=======\n") in *)
   match program with
   | [] -> (
@@ -20,7 +20,8 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
       | IQuote { v } -> (
           match stack with
           | _ :: s -> interept (v :: s) others
-          | _ -> failwith "error stack for Quote")
+          (* TODO: check this case *)
+          | [] -> interept [ v ] others)
       | IPush -> (
           match stack with
           | e :: s -> interept (e :: e :: s) others
@@ -37,6 +38,15 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
           match stack with
           | e :: s -> interept (VClos { e; p = prog } :: s) others
           | _ -> failwith "error stack for Cur")
+      | IBranch { cond; c1; c2 } -> (
+          match stack with
+          | _ :: s -> (
+              match interept stack cond with
+              | VNum { n } ->
+                  if phys_equal n 0 then interept s (c1 @ others)
+                  else interept stack (c2 @ others)
+              | _ -> failwith "error stack for if")
+          | _ -> failwith "only nat supports pattern-mathcing")
       | IApp -> (
           match stack with
           | VPair { e = VClos { e = e'; p = p' }; f } :: s ->
@@ -47,4 +57,10 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
           (* only Nat-type is supported for now  *)
           | VPair { e = VNum { n = ne }; f = VNum { n = nf } } :: s ->
               interept (VNum { n = ne + nf } :: s) others
-          | _ -> failwith "error stack for Plus"))
+          | _ -> failwith "error stack for Plus")
+      | IMinus -> (
+          match stack with
+          (* only Nat-type is supported for now  *)
+          | VPair { e = VNum { n = ne }; f = VNum { n = nf } } :: s ->
+              interept (VNum { n = ne - nf } :: s) others
+          | _ -> failwith "error stack for Minus"))
