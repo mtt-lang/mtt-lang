@@ -76,6 +76,14 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
 let rec instr_for_var (n : int) =
   if phys_equal n 0 then [ ISnd ] else IFst :: instr_for_var (n - 1)
 
+let rec shift_in_generated (code : instructionCAM list)
+    (generated : instructionCAM list) =
+  match code with
+  | [] -> generated
+  (* shift *)
+  | ISnd :: s -> shift_in_generated s (IFst :: ISnd :: generated)
+  | e :: s -> shift_in_generated s (e :: generated)
+
 let rec compile_only_codegen (omega : int Env.R.t)
     (delta : instructionCAM list Env.M.t) Location.{ data = expr; _ } =
   let open Ast.Expr in
@@ -110,8 +118,13 @@ let rec compile_only_codegen (omega : int Env.R.t)
       | Error _ -> failwith ("unknown modal variable " ^ Id.M.to_string idm))
   | Fun { idr; ty_id = _; body } ->
       let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
+      let shifted_delta =
+        List.map delta ~f:(fun (x, c) -> (x, shift_in_generated c []))
+      in
       let gen_body =
-        compile_only_codegen (Env.R.extend shifted_omega idr 0) delta body
+        compile_only_codegen
+          (Env.R.extend shifted_omega idr 0)
+          shifted_delta body
       in
       [ ICur { prog = gen_body } ]
   | App { fe; arge } ->
@@ -124,9 +137,14 @@ let rec compile_only_codegen (omega : int Env.R.t)
       compile_only_codegen omega delta e
   | Let { idr; bound; body } ->
       let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
+      let shifted_delta = 
+        List.map delta ~f:(fun (x, c) -> (x, shift_in_generated c []))
+      in
       let gen_bound = compile_only_codegen omega delta bound in
       let gen_body =
-        compile_only_codegen (Env.R.extend shifted_omega idr 0) delta body
+        compile_only_codegen
+          (Env.R.extend shifted_omega idr 0)
+          shifted_delta body
       in
       [ IPush ] @ gen_bound @ [ ICons ] @ gen_body
   | Letbox { idm; boxed; body } ->
@@ -136,6 +154,7 @@ let rec compile_only_codegen (omega : int Env.R.t)
       let gen_matched = compile_only_codegen omega delta matched in
       let gen_zbranch = compile_only_codegen omega delta zbranch in
       (* TODO: think about better approach *)
+      (* modal shifting will be in Let-expression *)
       let sbranch' =
         letc pred (binop Sub matched (nat @@ Nat.of_int 1)) sbranch
       in
@@ -146,7 +165,13 @@ let rec compile_only_codegen (omega : int Env.R.t)
       let extended_omega =
         Env.R.extend (Env.R.extend shifted_omega self 1) idr 0
       in
-      let gen_body = compile_only_codegen extended_omega delta body in
+      let shifted_delta1 =
+        List.map delta ~f:(fun (x, c) -> (x, shift_in_generated c []))
+      in
+      let shifted_delta =
+        List.map shifted_delta1 ~f:(fun (x, c) -> (x, shift_in_generated c []))
+      in
+      let gen_body = compile_only_codegen extended_omega shifted_delta body in
       [ ICurRec { prog = gen_body } ]
 
 let compile = compile_only_codegen Env.R.emp Env.M.emp
