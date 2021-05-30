@@ -107,7 +107,7 @@ let rec compile_only_codegen (omega : int Env.R.t)
   | VarM { idm } -> (
       match Env.M.lookup delta idm with
       | Ok code -> code
-      | Error _ -> failwith "unknown modal variable")
+      | Error _ -> failwith ("unknown modal variable " ^ Id.M.to_string idm))
   | Fun { idr; ty_id = _; body } ->
       let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
       let gen_body =
@@ -123,9 +123,6 @@ let rec compile_only_codegen (omega : int Env.R.t)
       (* now box is ignored *)
       compile_only_codegen omega delta e
   | Let { idr; bound; body } ->
-      (* let f = func idr Ast.Type.Unit body in
-         let redex = app f bound in
-         compile_only_codegen omega delta redex *)
       let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
       let gen_bound = compile_only_codegen omega delta bound in
       let gen_body =
@@ -133,8 +130,6 @@ let rec compile_only_codegen (omega : int Env.R.t)
       in
       [ IPush ] @ gen_bound @ [ ICons ] @ gen_body
   | Letbox { idm; boxed; body } ->
-      (* check shifting *)
-      (* let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in *)
       let boxed_gen = compile_only_codegen omega delta boxed in
       compile_only_codegen omega (Env.M.extend delta idm boxed_gen) body
   | Match { matched; zbranch; pred; sbranch } ->

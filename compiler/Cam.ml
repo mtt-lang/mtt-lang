@@ -1,6 +1,9 @@
-(* module rec Instructions : sig
+(* module type CamInner = sig
   type t
-end = struct
+  val dump : t -> string
+end
+
+module rec Instruction : CamInner = struct
   type t =
     | Fst
     | Snd
@@ -8,21 +11,39 @@ end = struct
     | Swap
     | Cons
     | App
-    | Quote of { n : Values.t }
-    | Cur of { prog : t list }
+    | Quote of { v : Value.t }
+    | Cur of { prog : Instruction.t list }
+    | CurRec of { prog : Instruction.t list }
+    | Branch of {
+        cond : Instruction.t list;
+        c1 : Instruction.t list;
+        c2 : Instruction.t list;
+      }
     | Plus
-  [@@deriving sexp]
+    | Minus
+    | Mul
+    | Div
+  [@@deriving equal, sexp]
+
+  let rec dump inst =
+    match inst with
+    | Fst -> "Fst"
+    | Quote { v } -> "Quote [" ^ dump v ^ " ]"
+    | _ -> failwith ""
+
 end
 
-and Values : sig
-  type t
-end = struct
+and Value : CamInner = struct
   type t =
-    | VUnit
-    | VClos of { e : t; p : Instructions.t list }
-    | VPair of { e : t; f : t }
-    | VNum of { n : int } (* there is no nat in article *)
-  [@@deriving sexp] 
+    | Unit
+    | Clos of { e : Value.t; p : Instruction.t list }
+    | ClosRec of { e : Value.t; p : Instruction.t list }
+    | Pair of { e : Value.t; f : Value.t }
+    | Num of { n : int }
+  [@@deriving equal, sexp]
+
+  let rec dump = failwith ""
+
 end *)
 
 type instructionCAM =
