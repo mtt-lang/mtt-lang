@@ -86,9 +86,11 @@ and dump_value (value : valueCAM) =
   | VPair { e; f } -> "VPair{ " ^ dump_value e ^ " ; " ^ dump_value f ^ "}"
   | VNum { n } -> "VNum {" ^ Int.to_string n ^ "}"
 
-let cam2val v =
+let rec cam2val v =
   let open Mtt.Ast in
   match v with
   | VUnit -> Val.Unit
   | VNum { n } -> Val.Nat { n = Mtt.Nat.of_int n }
-  | _ -> failwith "this kind of value isn't implemented"
+  | VPair { e; f } -> Val.Pair { v1 = cam2val e; v2 = cam2val f }
+  | VClos _ -> failwith "VClos isn't implemented"
+  | VClosRec _ -> failwith "VClosRec isn't implemented"
