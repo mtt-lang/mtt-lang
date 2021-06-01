@@ -67,10 +67,9 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
                   ~f:Stdio.print_string
               in
               failwith "error stack for App")
-      | IVar { i } ->
-          (* failwith "this instruction only for compiler" *)
+      | IVar { i } -> 
           let code = instr_for_var i in
-             interept stack (code @ others)
+          interept stack (code @ others)
       | IPlus -> (
           match stack with
           (* only Nat-type is supported for now  *)

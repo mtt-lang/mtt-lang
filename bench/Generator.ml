@@ -53,7 +53,7 @@ let benchmark name pwr_desc ver =
     let b = 1 + Random.int 5 in
     let _n = Cam.IQuote { v = Cam.VNum { n = b } } in
 
-    if phys_equal name "compiler" then
+    if String.equal name "compiler" then
       let compiled =
         cpwr
         (* [ Cam.IPush ] @ compiled_pwr @ [ Cam.ISwap ] @ [ n; ICons; IApp ] *)

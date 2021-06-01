@@ -99,13 +99,12 @@ let rec gen_modal_code (* in current environment *) (cur_env : int Env.R.t)
       | Div -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IDiv ])
   | VarR { idr } -> (
       match Env.R.lookup cur_env idr with
-      | Ok idx -> [ IVar { i = idx } ] (* instr_for_var idx *)
+      | Ok idx -> [ IVar { i = idx } ]
       | Error _ -> (
           match Env.R.lookup global_reg_env idr with
           | Ok idx ->
               (* check *)
               let sh = Env.R.size cur_env in
-              (* instr_for_var (idx + sh) *)
               [ IVar { i = idx + sh } ]
           | Error _ -> failwith "no such regular variable"))
   | VarM { idm = _ } -> failwith "((("
