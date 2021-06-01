@@ -14,7 +14,7 @@ let rec gen_fib (n : int) : Expr.t' Location.located =
   if n <= 2 then Expr.nat @@ Nat.of_int n
   else Expr.binop Expr.Add (gen_fib (n - 1)) (gen_fib (n - 2))
 
-(* let power_slow_100 =
+let power_slow_100 =
   let power_slow_text_100 =
     "fun x: Nat.\n\
     \  let power = fix (f : Nat -> Nat -> Nat) a : Nat.\n\
@@ -36,38 +36,45 @@ let power_fast_100 =
     \    end\n\
     \  in letbox pow' = pow_n 100 in pow'"
   in
-  Util.parse_from_e Term (ParserInterface.String power_fast_text_100) *)
+  Util.parse_from_e Term (ParserInterface.String power_fast_text_100)
 
-let benchmark name =
+let benchmark name pwr_desc ver =
   let open Mtt_compiler in
+  let open Result.Let_syntax in
+  let%bind pwr = ver in
+  let compiled_pwr = Mtt_compiler.Compiler.compile pwr in
+  let iter_num = 100000 in
+  let cpwr =
+    [ Cam.IPush ] @ compiled_pwr @ [ Cam.ISwap ]
+    @ [ Cam.IQuote { v = Cam.VNum { n = 5 } }; ICons; IApp ]
+  in
   let tstart = Unix.gettimeofday () in
-  let compiled = Compiler.compile (gen_fib 20) in
-  for _ = 1 to 10000 do
-    (* 10 : 30 *)
-    let _ = Cam.cam2val @@ CamInterpreter.interept [ Cam.VUnit ] compiled in
-    (* let _ = Evaluator.eval (gen_fib 20) in *)
-    ()
+  for _ = 1 to iter_num do
+    let b = 1 + Random.int 5 in
+    let _n = Cam.IQuote { v = Cam.VNum { n = b } } in
+
+    if phys_equal name "compiler" then
+      let compiled =
+        cpwr
+        (* [ Cam.IPush ] @ compiled_pwr @ [ Cam.ISwap ] @ [ n; ICons; IApp ] *)
+      in
+      let _ = CamInterpreter.interept [ Cam.VUnit ] compiled in
+      ()
+    else
+      let evaled = Ast.Expr.app pwr (Ast.Expr.nat (Nat.of_int b)) in
+      let _ = Evaluator.eval evaled in
+      ()
   done;
   let tend = Unix.gettimeofday () in
-  Stdio.print_endline (Printf.sprintf "%12s: %.2f secs%!" name (tend -. tstart))
-
-(* let%bind pwr = ver in
-   let tstart = Unix.gettimeofday () in
-   for _ = 1 to 1000000 do
-     let b = 1 + Random.int 5 in
-     let _ = exec @@ Expr.app pwr_ver (Expr.nat (Nat.of_int b)) in
-     ()
-   done;
-   let tend = Unix.gettimeofday () in
-   Stdio.print_endline (Printf.sprintf "%12s: %.2f secs%!" name (tend -. tstart));
-   Ok () *)
+  Stdio.print_endline
+    (Printf.sprintf "%12s: %.2f secs%!"
+       (name ^ "+" ^ pwr_desc)
+       (tend -. tstart));
+  Ok ()
 
 let _ =
-  (* let _ = benchmark "Evaluator" gen_fib Evaluator.eval in *)
-  let _ = benchmark "compiler" in
-  (* "Compiler" gen_fib Mtt_compiler.Compiler.compile in *)
-  (* let _ = benchmark "Evaluator + fast" (gen_fib 100) Evaluator.eval in
-     let _ =
-       benchmark "Compiler + fast" (gen_fib 100) Mtt_compiler.Compiler.compile *)
-  (* in *)
+  let _ = benchmark "compiler" "fast" power_fast_100 in
+  let _ = benchmark "compiler" "slow" power_slow_100 in
+  let _ = benchmark "evaluator" "fast" power_fast_100 in
+  let _ = benchmark "evaluator" "slow" power_slow_100 in
   Ok ()

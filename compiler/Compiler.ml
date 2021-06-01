@@ -73,19 +73,91 @@ let rec compile_open (gamma : var Env.R.t) (delta : var Env.M.t)
       let bodyc = compile_open extend_ctx delta body in
       Mlet ([ `Recursive [ (f, Mlambda ([ x ], bodyc)) ] ], Mvar f)
 
-let rec instr_for_var (n : int) =
-  if phys_equal n 0 then [ ISnd ] else IFst :: instr_for_var (n - 1)
+(* let rec instr_for_var (n : int) =
+  if phys_equal n 0 then [ ISnd ] else IFst :: instr_for_var (n - 1) *)
 
-let rec shift_in_generated (code : instructionCAM list)
-    (generated : instructionCAM list) =
-  match code with
-  | [] -> generated
-  (* shift *)
-  | ISnd :: s -> shift_in_generated s (IFst :: ISnd :: generated)
-  | e :: s -> shift_in_generated s (e :: generated)
+let rec gen_modal_code (* in current environment *) (cur_env : int Env.R.t)
+    (* global de brujin index *)
+      (global_reg_env : int Env.R.t)
+    (* term for current modal variable *)
+      (modal_env : Ast.Expr.t' Location.located Env.M.t)
+    Location.{ data = expr; _ } =
+  let open Ast.Expr in
+  match expr with
+  | Unit -> [ IQuote { v = VUnit } ]
+  | Pair _ -> failwith "non-impl pair"
+  | Fst _ -> failwith "non-impl fst"
+  | Snd _ -> failwith "non-impl snd"
+  | Nat { n } -> [ IQuote { v = VNum { n = Nat.to_int n } } ]
+  | BinOp { op; e1; e2 } -> (
+      let lhs = gen_modal_code cur_env global_reg_env modal_env e1 in
+      let rhs = gen_modal_code cur_env global_reg_env modal_env e2 in
+      match op with
+      | Add -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IPlus ]
+      | Sub -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IMinus ]
+      | Mul -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IMul ]
+      | Div -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IDiv ])
+  | VarR { idr } -> (
+      match Env.R.lookup cur_env idr with
+      | Ok idx -> [ IVar { i = idx } ] (* instr_for_var idx *)
+      | Error _ -> (
+          match Env.R.lookup global_reg_env idr with
+          | Ok idx ->
+              (* check *)
+              let sh = Env.R.size cur_env in
+              (* instr_for_var (idx + sh) *)
+              [ IVar { i = idx + sh } ]
+          | Error _ -> failwith "no such regular variable"))
+  | VarM { idm = _ } -> failwith "((("
+  | Fun { idr; ty_id = _; body } ->
+      let shifted_cur_env = List.map cur_env ~f:(fun (x, y) -> (x, y + 1)) in
+      let gen_body =
+        gen_modal_code
+          (Env.R.extend shifted_cur_env idr 0)
+          global_reg_env modal_env body
+      in
+      [ ICur { prog = gen_body } ]
+  | App { fe; arge } ->
+      let gen_fe = gen_modal_code cur_env global_reg_env modal_env fe in
+      let gen_arge = gen_modal_code cur_env global_reg_env modal_env arge in
+      [ IPush ] @ gen_fe @ [ ISwap ] @ gen_arge @ [ ICons; IApp ]
+  | Box _ -> failwith "nested box error"
+  | Let { idr; bound; body } ->
+      let shifted_cur_env = List.map cur_env ~f:(fun (x, y) -> (x, y + 1)) in
+      let gen_bound = gen_modal_code cur_env global_reg_env modal_env bound in
+      let gen_body =
+        gen_modal_code
+          (Env.R.extend shifted_cur_env idr 0)
+          global_reg_env modal_env body
+      in
+      [ IPush ] @ gen_bound @ [ ICons ] @ gen_body
+  | Letbox _ -> failwith "nested letbox error"
+  | Match { matched; zbranch; pred; sbranch } ->
+      let gen_matched =
+        gen_modal_code cur_env global_reg_env modal_env matched
+      in
+      let gen_zbranch =
+        gen_modal_code cur_env global_reg_env modal_env zbranch
+      in
+      let sbranch' =
+        letc pred (binop Sub matched (nat @@ Nat.of_int 1)) sbranch
+      in
+      let gen_sbranch =
+        gen_modal_code cur_env global_reg_env modal_env sbranch'
+      in
+      [ IBranch { cond = gen_matched; c1 = gen_zbranch; c2 = gen_sbranch } ]
+  | Fix { self; ty_id = _; idr; idr_ty = _; body } ->
+      let shifted_omega = List.map cur_env ~f:(fun (x, y) -> (x, y + 2)) in
+      let extended_omega =
+        Env.R.extend (Env.R.extend shifted_omega self 1) idr 0
+      in
+      let gen_body =
+        gen_modal_code extended_omega global_reg_env modal_env body
+      in
+      [ ICurRec { prog = gen_body } ]
 
 let rec compile_only_codegen (omega : int Env.R.t)
-    (delta : instructionCAM list Env.M.t) Location.{ data = expr; _ } =
+    (delta : Ast.Expr.t' Location.located Env.M.t) Location.{ data = expr; _ } =
   let open Ast.Expr in
   match expr with
   | Unit -> [ IQuote { v = VUnit } ]
@@ -110,51 +182,36 @@ let rec compile_only_codegen (omega : int Env.R.t)
       | Div -> [ IPush ] @ lhs @ [ ISwap ] @ rhs @ [ ICons; IDiv ])
   | VarR { idr } -> (
       match Env.R.lookup omega idr with
-      | Ok v -> instr_for_var v
+      | Ok i -> [ IVar { i } ]
       | Error _ -> failwith ("unknown regular variable " ^ Id.R.to_string idr))
   | VarM { idm } -> (
       match Env.M.lookup delta idm with
-      | Ok code -> code
+      | Ok term -> gen_modal_code Env.R.emp omega delta term
       | Error _ -> failwith ("unknown modal variable " ^ Id.M.to_string idm))
   | Fun { idr; ty_id = _; body } ->
       let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
-      let shifted_delta =
-        List.map delta ~f:(fun (x, c) -> (x, shift_in_generated c []))
-      in
       let gen_body =
-        compile_only_codegen
-          (Env.R.extend shifted_omega idr 0)
-          shifted_delta body
+        compile_only_codegen (Env.R.extend shifted_omega idr 0) delta body
       in
       [ ICur { prog = gen_body } ]
   | App { fe; arge } ->
-      (* TODO: check shifting *)
       let gen_fe = compile_only_codegen omega delta fe in
       let gen_arge = compile_only_codegen omega delta arge in
       [ IPush ] @ gen_fe @ [ ISwap ] @ gen_arge @ [ ICons; IApp ]
-  | Box { e } ->
-      (* now box is ignored *)
-      compile_only_codegen omega delta e
+  | Box { e } -> compile_only_codegen omega delta e
   | Let { idr; bound; body } ->
       let shifted_omega = List.map omega ~f:(fun (x, y) -> (x, y + 1)) in
-      let shifted_delta = 
-        List.map delta ~f:(fun (x, c) -> (x, shift_in_generated c []))
-      in
       let gen_bound = compile_only_codegen omega delta bound in
       let gen_body =
-        compile_only_codegen
-          (Env.R.extend shifted_omega idr 0)
-          shifted_delta body
+        compile_only_codegen (Env.R.extend shifted_omega idr 0) delta body
       in
       [ IPush ] @ gen_bound @ [ ICons ] @ gen_body
   | Letbox { idm; boxed; body } ->
-      let boxed_gen = compile_only_codegen omega delta boxed in
-      compile_only_codegen omega (Env.M.extend delta idm boxed_gen) body
+      (* let boxed_gen = compile_only_codegen omega delta boxed in *)
+      compile_only_codegen omega (Env.M.extend delta idm boxed) body
   | Match { matched; zbranch; pred; sbranch } ->
       let gen_matched = compile_only_codegen omega delta matched in
       let gen_zbranch = compile_only_codegen omega delta zbranch in
-      (* TODO: think about better approach *)
-      (* modal shifting will be in Let-expression *)
       let sbranch' =
         letc pred (binop Sub matched (nat @@ Nat.of_int 1)) sbranch
       in
@@ -165,13 +222,7 @@ let rec compile_only_codegen (omega : int Env.R.t)
       let extended_omega =
         Env.R.extend (Env.R.extend shifted_omega self 1) idr 0
       in
-      let shifted_delta1 =
-        List.map delta ~f:(fun (x, c) -> (x, shift_in_generated c []))
-      in
-      let shifted_delta =
-        List.map shifted_delta1 ~f:(fun (x, c) -> (x, shift_in_generated c []))
-      in
-      let gen_body = compile_only_codegen extended_omega shifted_delta body in
+      let gen_body = compile_only_codegen extended_omega delta body in
       [ ICurRec { prog = gen_body } ]
 
 let compile = compile_only_codegen Env.R.emp Env.M.emp

@@ -13,6 +13,7 @@ type instructionCAM =
       c1 : instructionCAM list;
       c2 : instructionCAM list;
     }
+  | IVar of { i : int }
   | IPlus
   | IMinus
   | IMul

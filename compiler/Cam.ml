@@ -61,6 +61,11 @@ type instructionCAM =
       c1 : instructionCAM list;
       c2 : instructionCAM list;
     }
+      (** 
+    This instructions is needed for
+    correct substitution in `letbox` expression.
+    i is De Bruijn index  *)
+  | IVar of { i : int }
   | IPlus
   | IMinus
   | IMul
@@ -85,6 +90,7 @@ let rec dump_instruction (inst : instructionCAM) : string =
   | IBranch { cond; c1; c2 } ->
       "Branch [ cond=" ^ dump_instructions cond ^ "; c1=" ^ dump_instructions c1
       ^ "; c2=" ^ dump_instructions c2 ^ "]"
+  | IVar { i } -> "Var [ i=" ^ Int.to_string i ^ "]"
   | ICurRec { prog } -> "CurRec [" ^ dump_instructions prog ^ "]"
   | ICur { prog } -> "Cur [" ^ dump_instructions prog ^ "]"
   | IPlus -> "Plus"

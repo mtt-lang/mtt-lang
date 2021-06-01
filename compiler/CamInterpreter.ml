@@ -1,6 +1,9 @@
 open Base
 open Cam
 
+let rec instr_for_var (n : int) =
+  if phys_equal n 0 then [ ISnd ] else IFst :: instr_for_var (n - 1)
+
 let rec interept (stack : valueCAM list) (program : instructionCAM list) =
   (* let insts = dump_instructions program in
      let _ = Stdio.print_string (insts ^ "\n=======\n") in *)
@@ -64,6 +67,10 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
                   ~f:Stdio.print_string
               in
               failwith "error stack for App")
+      | IVar { i } ->
+          (* failwith "this instruction only for compiler" *)
+          let code = instr_for_var i in
+             interept stack (code @ others)
       | IPlus -> (
           match stack with
           (* only Nat-type is supported for now  *)

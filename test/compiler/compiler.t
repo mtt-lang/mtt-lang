@@ -67,3 +67,12 @@ Same test as for evaluator
   > letbox pow' = pow_n 5 in pow' 3
   > EOF
   243
+
+  $ mtt compile <<EOF
+  > let x = box 42 in
+  > letbox x' = x in
+  > let f = (λy : Nat . x') in
+  > f 73
+  > EOF
+  42
+
