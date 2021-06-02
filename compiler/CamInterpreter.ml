@@ -67,7 +67,7 @@ let rec interept (stack : valueCAM list) (program : instructionCAM list) =
                   ~f:Stdio.print_string
               in
               failwith "error stack for App")
-      | IVar { i } -> 
+      | IVar { i } ->
           let code = instr_for_var i in
           interept stack (code @ others)
       | IPlus -> (
