@@ -1,11 +1,6 @@
-open Mtt.Ast
+open Mtt
 
-val compile : Expr.t -> Cam.instructionCAM list
+type error = [ `CompilationError of string | Env.error ]
+(** type of errors *)
 
-val compile_simple : Expr.t -> Malfunction.t
-
-val obj2val : Obj.t -> Val.t
-(** VERY UNSAFE FOR NOW!!!
-    This is unsafe function for transform
-    Obj.t to mtt value. The result must be
-    a nat or a pair  *)
+val compile : Ast.Expr.t -> (Cam.instructionCAM list, [> error ]) Result.t

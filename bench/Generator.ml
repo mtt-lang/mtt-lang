@@ -50,7 +50,7 @@ let power_fast_100 =
   in
   Util.parse_from_e Term (ParserInterface.String power_fast_text_100) *)
 
-(* let power_fast_100_unit =
+let power_fast_100_unit =
   let power_fast_100_unit_text =
     "let pow_n = fix (f: (Nat -> [](Nat -> Nat))) n : Nat.\n\
     \    match n with\n\
@@ -61,39 +61,42 @@ let power_fast_100 =
     \    in\n\
     \    (fun a: () -> Nat. (a ()) 5) (pow_n 100)"
   in
-  Util.parse_from_e Term (ParserInterface.String power_fast_100_unit_text) *)
+  Util.parse_from_e Term (ParserInterface.String power_fast_100_unit_text)
 
-let benchmark name pwr_desc ver =
-  let open Mtt_compiler in
-  let open Result.Let_syntax in
-  let%bind pwr = ver in
-  let compiled_pwr = Mtt_compiler.Compiler.compile pwr in
-  let iter_num = 500000 in
-  let tstart = Unix.gettimeofday () in
-  for _ = 1 to iter_num do
-    let b = 1 + Random.int 10000 in
-    let compiled =
-      [ Cam.IPush ] @ compiled_pwr @ [ Cam.ISwap ]
-      @ [ Cam.IQuote { v = Cam.VNum { n = b } }; ICons; IApp ]
-    in
-    let evaled = Ast.Expr.app pwr (Ast.Expr.nat (Nat.of_int b)) in
-    if String.equal name "compiler" then
-      let _ = CamInterpreter.interept [ Cam.VUnit ] compiled in
-      ()
-    else
-      let _ = Evaluator.eval evaled in
-      ()
-  done;
-  let tend = Unix.gettimeofday () in
-  Stdio.print_endline
-    (Printf.sprintf "%12s: %.2f secs%!"
-       (name ^ "+" ^ pwr_desc)
-       (tend -. tstart));
-  Ok ()
+let benchmark _name _pwr_desc _ver = failwith "TODO"
+
+(* let open Mtt_compiler in
+   let open Result.Let_syntax in
+   let%bind pwr = ver in
+   let compiled_pwr = Mtt_compiler.Compiler.compile pwr in
+   let iter_num = 500000 in
+   let tstart = Unix.gettimeofday () in
+   for _ = 1 to iter_num do
+     let b = 1 + Random.int 10000 in
+     let compiled =
+       Mtt_compiler.Cam.genidx
+         ([ Cam.IPush ] @ compiled_pwr @ [ Cam.ISwap ]
+         @ [ Cam.IQuote { v = Cam.VNum { n = b } }; ICons; IApp ])
+         []
+     in
+     let evaled = Ast.Expr.app pwr (Ast.Expr.nat (Nat.of_int b)) in
+     if String.equal name "compiler" then
+       let _ = CamInterpreter.interept [ Cam.VUnit ] compiled in
+       ()
+     else
+       let _ = Evaluator.eval evaled in
+       ()
+   done;
+   let tend = Unix.gettimeofday () in
+   Stdio.print_endline
+     (Printf.sprintf "%12s: %.2f secs%!"
+        (name ^ "+" ^ pwr_desc)
+        (tend -. tstart));
+   Ok () *)
 
 let _ =
-  let _ = benchmark "compiler" "fast" power_fast_100 in
-  let _ = benchmark "compiler" "slow" power_slow_100 in
-  let _ = benchmark "evaluator" "fast" power_fast_100 in
-  let _ = benchmark "evaluator" "slow" power_slow_100 in
+  (* let _ = benchmark "compiler" "fast" power_fast_100 in *)
+  (* let _ = benchmark "compiler" "slow" power_slow_100 in *)
+  (* let _ = benchmark "evaluator" "fast" power_fast_100 in *)
+  (* let _ = benchmark "evaluator" "slow" power_slow_100 in *)
   Ok ()

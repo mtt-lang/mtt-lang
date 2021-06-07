@@ -2,6 +2,6 @@
  (name util)
  (flags :standard -safe-string)
  (modes byte native)
- (libraries base mtt)
+ (libraries base mtt_compiler mtt)
  (preprocess
   (pps ppx_let ppx_compare ppx_sexp_conv ppx_string_interpolation sedlex.ppx)))

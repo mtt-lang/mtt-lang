@@ -1,5 +1,3 @@
-(* open Base *)
-
 let located_to_string Location.{ data = error; loc } =
   match error with
   | `TypeMismatchError msg -> Location.pp ~msg loc
@@ -14,3 +12,4 @@ let to_string error =
   | `EnvUnboundRegularVarError (_, msg) -> msg
   | `EnvUnboundModalVarError (_, msg) -> msg
   | `TypeMismatchError msg -> msg
+  | `CompilationError msg -> msg

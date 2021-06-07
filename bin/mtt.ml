@@ -59,51 +59,18 @@ let eval_expr source_file source_arg =
           `Ok ()
       | Error err_msg -> `Error (false, err_msg))
 
-let rec genidx insts generated =
-  let open Mtt_compiler.Cam in
-  let rec instr_for_var (n : int) =
-    if phys_equal n 0 then [ ISnd ] else IFst :: instr_for_var (n - 1)
-  in
-  match insts with
-  | [] -> generated
-  | IVar { i } :: s -> genidx s (generated @ instr_for_var i)
-  | ICur { prog } :: s ->
-      genidx s (generated @ [ ICur { prog = genidx prog [] } ])
-  | ICurRec { prog } :: s ->
-      genidx s (generated @ [ ICurRec { prog = genidx prog [] } ])
-  | IBranch { cond; c1; c2 } :: s ->
-      genidx s
-        (generated
-        @ [
-            IBranch
-              { cond = genidx cond []; c1 = genidx c1 []; c2 = genidx c2 [] };
-          ])
-  | IQuote { v } :: s -> genidx s (generated @ [ IQuote { v = genval v } ])
-  | e :: s -> genidx s (generated @ [ e ])
-
-and genval value =
-  let open Mtt_compiler.Cam in
-  match value with
-  | VClos { e; p } -> VClos { e = genval e; p = genidx p [] }
-  | VClosRec { e; p } -> VClosRec { e = genval e; p = genidx p [] }
-  | VPair { e; f } -> VPair { e = genval e; f = genval f }
-  | v -> v
-
-let parse_and_evalc source =
-  let open Result.Let_syntax in
-  let%bind ast = Util.parse_from_e Term source in
-  let cam_bytecode = genidx (Mtt_compiler.Compiler.compile ast) [] in
-  return
-  @@ Mtt_compiler.CamInterpreter.interept [ Mtt_compiler.Cam.VUnit ]
-       cam_bytecode
-
 let compile_expr source_file source_arg =
   match osource source_file source_arg with
-  | None -> `Error (true, "...")
+  | None -> `Error (true, "Please provide exactly one expression to compile")
   | Some source -> (
-      match parse_and_evalc source with
-      | Ok mval ->
-          let value = Mtt_compiler.Cam.cam2val mval in
+      match Util.parse_and_compile source with
+      | Ok insts ->
+          let bytecode = Mtt_compiler.Cam.genidx insts [] in
+          let interpreted =
+            Mtt_compiler.CamInterpreter.interept [ Mtt_compiler.Cam.VUnit ]
+              bytecode
+          in
+          let value = Mtt_compiler.Cam.cam2val interpreted in
           let document = PrettyPrinter.Doc.of_val value in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;

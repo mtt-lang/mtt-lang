@@ -1,5 +1,6 @@
 open Base
 open Mtt
+open Mtt_compiler
 open Result.Let_syntax
 open ParserInterface
 
@@ -32,3 +33,10 @@ let parse_and_eval source =
   Evaluator.eval ast
   |> Result.map_error ~f:(fun eval_err ->
          [%string "Evaluation error: $(MttError.to_string eval_err)"])
+
+(* Parsing and evaluation with error handling utilities *)
+let parse_and_compile source =
+  let%bind ast = parse_from_e Term source in
+  Compiler.compile ast
+  |> Result.map_error ~f:(fun comp_err ->
+         [%string "Compilation error: $(MttError.to_string comp_err)"])

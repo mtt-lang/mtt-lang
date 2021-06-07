@@ -31,3 +31,7 @@ val cam2val : valueCAM -> Mtt.Ast.Val.t
 val dump_instructions : instructionCAM list -> string
 
 val dump_value : valueCAM -> string
+
+val genidx : instructionCAM list -> instructionCAM list -> instructionCAM list
+
+val genval : valueCAM -> valueCAM

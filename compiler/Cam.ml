@@ -113,6 +113,34 @@ and dump_value (value : valueCAM) =
   | VPair { e; f } -> "VPair{ " ^ dump_value e ^ " ; " ^ dump_value f ^ "}"
   | VNum { n } -> "VNum {" ^ Int.to_string n ^ "}"
 
+let rec genidx insts generated =
+  let rec instr_for_var (n : int) =
+    if Base.phys_equal n 0 then [ ISnd ] else IFst :: instr_for_var (n - 1)
+  in
+  match insts with
+  | [] -> generated
+  | IVar { i } :: s -> genidx s (generated @ instr_for_var i)
+  | ICur { prog } :: s ->
+      genidx s (generated @ [ ICur { prog = genidx prog [] } ])
+  | ICurRec { prog } :: s ->
+      genidx s (generated @ [ ICurRec { prog = genidx prog [] } ])
+  | IBranch { cond; c1; c2 } :: s ->
+      genidx s
+        (generated
+        @ [
+            IBranch
+              { cond = genidx cond []; c1 = genidx c1 []; c2 = genidx c2 [] };
+          ])
+  | IQuote { v } :: s -> genidx s (generated @ [ IQuote { v = genval v } ])
+  | e :: s -> genidx s (generated @ [ e ])
+
+and genval value =
+  match value with
+  | VClos { e; p } -> VClos { e = genval e; p = genidx p [] }
+  | VClosRec { e; p } -> VClosRec { e = genval e; p = genidx p [] }
+  | VPair { e; f } -> VPair { e = genval e; f = genval f }
+  | v -> v
+
 let rec cam2val v =
   let open Mtt.Ast in
   match v with
