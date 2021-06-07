@@ -111,7 +111,7 @@ and dump_value (value : valueCAM) =
       "VClosRec [ env=" ^ dump_value e ^ "; instrs = {" ^ dump_instructions p
       ^ "}]"
   | VPair { e; f } -> "VPair{ " ^ dump_value e ^ " ; " ^ dump_value f ^ "}"
-  | VNum { n } -> "VNum {" ^ Int.to_string n ^ "}"
+  | VNum { n } -> "VNum {" ^ string_of_int n ^ "}"
 
 let rec genidx insts generated =
   let rec instr_for_var (n : int) =
