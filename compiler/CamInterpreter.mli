@@ -1,3 +1,4 @@
+open Base
 open Cam
 
 type error = [ `InterpretationError of string ]
