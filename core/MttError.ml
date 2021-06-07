@@ -13,3 +13,4 @@ let to_string error =
   | `EnvUnboundModalVarError (_, msg) -> msg
   | `TypeMismatchError msg -> msg
   | `CompilationError msg -> msg
+  | `InterpretationError msg -> msg

@@ -3,7 +3,7 @@ open Base.Result.Let_syntax
 open Cam
 open Mtt
 
-type error = [ `CompilationError of string | Env.error ]
+type error = [ `CompilationError of string | CamInterpreter.error | Env.error ]
 
 let rec gen_bytecode_modal (cur_env : int Env.R.t) (global_env : int Env.R.t)
     (modal_env : Ast.Expr.t' Location.located Env.M.t)
@@ -11,18 +11,20 @@ let rec gen_bytecode_modal (cur_env : int Env.R.t) (global_env : int Env.R.t)
   let open Ast.Expr in
   match expr with
   | Unit -> [ IQuote { v = VUnit } ]
-  | Pair { e1; e2 } ->
-      let e =
+  | Pair { e1; e2 } -> (
+      let er =
         CamInterpreter.interept [ VUnit ]
           (gen_bytecode_modal cur_env global_env modal_env e1)
       in
-      let f =
+      let fr =
         CamInterpreter.interept [ VUnit ]
           (gen_bytecode_modal cur_env global_env modal_env e2)
       in
-      [ IQuote { v = VPair { e; f } } ]
-  | Fst _ -> failwith "non-impl fst"
-  | Snd _ -> failwith "non-impl snd"
+      match (er, fr) with
+      | Ok e, Ok f -> [ IQuote { v = VPair { e; f } } ]
+      | _ -> failwith "compilation error in pair")
+  | Fst { e } -> gen_bytecode_modal cur_env global_env modal_env e @ [ IFst ]
+  | Snd { e } -> gen_bytecode_modal cur_env global_env modal_env e @ [ ISnd ]
   | Nat { n } -> [ IQuote { v = VNum { n = Nat.to_int n } } ]
   | BinOp { op; e1; e2 } -> (
       let lhs = gen_bytecode_modal cur_env global_env modal_env e1 in
@@ -94,21 +96,26 @@ let rec compile2CAM (omega : int Env.R.t)
   let open Ast.Expr in
   match expr with
   | Unit -> return [ IQuote { v = VUnit } ]
-  | Pair { e1; e2 } ->
+  | Pair { e1; e2 } -> (
       (* TODO: remove interept call *)
-      let%bind e =
+      let%bind er =
         Result.map
           ~f:(CamInterpreter.interept [ VUnit ])
           (compile2CAM omega delta e1)
       in
-      let%bind f =
+      let%bind fr =
         Result.map
           ~f:(CamInterpreter.interept [ VUnit ])
           (compile2CAM omega delta e2)
       in
-      return @@ [ IQuote { v = VPair { e; f } } ]
-  | Fst _ -> failwith "fst"
-  | Snd _ -> failwith "snd"
+      match (er, fr) with
+      | Ok e, Ok f -> return @@ [ IQuote { v = VPair { e; f } } ]
+      | Error err_msg, _ -> Result.fail err_msg
+      | _, Error err_msg -> Result.fail err_msg)
+  | Fst { e } ->
+      Result.map (compile2CAM omega delta e) ~f:(fun xs -> xs @ [ IFst ])
+  | Snd { e } ->
+      Result.map (compile2CAM omega delta e) ~f:(fun xs -> xs @ [ ISnd ])
   | Nat { n } -> return [ IQuote { v = VNum { n = Nat.to_int n } } ]
   | BinOp { op; e1; e2 } -> (
       let%bind lhs = compile2CAM omega delta e1 in

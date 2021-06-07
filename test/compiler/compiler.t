@@ -23,6 +23,12 @@ Same test as for evaluator
   40
 
   $ mtt compile <<EOF
+  > let f = fun p: (Nat * Nat). fst p + snd p in
+  > f <20, 22>
+  > EOF
+  42
+
+  $ mtt compile <<EOF
   > let fact = fix (f: Nat -> Nat) n : Nat. 
   > match n with
   > | zero => 1
