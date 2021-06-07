@@ -78,7 +78,9 @@ and valueCAM =
   | VPair of { e : valueCAM; f : valueCAM }
   | VNum of { n : int }
 
-let rec dump_instruction (inst : instructionCAM) : string =
+let rec dump_instruction (indent : int) (inst : instructionCAM) : string =
+  String.make indent ' '
+  ^
   match inst with
   | IFst -> "Fst"
   | ISnd -> "Snd"
@@ -86,32 +88,62 @@ let rec dump_instruction (inst : instructionCAM) : string =
   | ISwap -> "Swap"
   | ICons -> "Cons"
   | IApp -> "App"
-  | IQuote { v } -> "Quote " ^ "[" ^ dump_value v ^ "]"
+  | IQuote { v } ->
+      "Quote " ^ "[\n"
+      ^ dump_value (indent + 2) v
+      ^ "\n" ^ String.make indent ' ' ^ "]"
   | IBranch { cond; c1; c2 } ->
-      "Branch [ cond=" ^ dump_instructions cond ^ "; c1=" ^ dump_instructions c1
-      ^ "; c2=" ^ dump_instructions c2 ^ "]"
-  | IVar { i } -> "Var [ i=" ^ string_of_int i ^ "]"
-  | ICurRec { prog } -> "CurRec [" ^ dump_instructions prog ^ "]"
-  | ICur { prog } -> "Cur [" ^ dump_instructions prog ^ "]"
+      "Branch [\n" ^ String.make indent ' ' ^ "cond:\n" ^ String.make indent ' '
+      ^ dump_instructions (indent + 2) cond
+      ^ ";\n" ^ String.make indent ' ' ^ "branchT:\n" ^ String.make indent ' '
+      ^ "--------\n"
+      ^ dump_instructions (indent + 2) c1
+      ^ ";\n" ^ String.make indent ' ' ^ "branchF:\n" ^ String.make indent ' '
+      ^ "--------\n"
+      ^ dump_instructions (indent + 2) c2
+      ^ "\n"
+      ^ String.make (indent + 2) ' '
+      ^ "]"
+  | IVar { i } -> "Var [ i: " ^ string_of_int i ^ "]"
+  | ICurRec { prog } ->
+      "CurRec [\n"
+      ^ dump_instructions (indent + 2) prog
+      ^ "\n" ^ String.make indent ' ' ^ "]"
+  | ICur { prog } ->
+      "Cur [\n"
+      ^ dump_instructions (indent + 2) prog
+      ^ "\n" ^ String.make indent ' ' ^ "]"
   | IPlus -> "Plus"
   | IMinus -> "Minus"
   | IMul -> "Mult"
   | IDiv -> "Div"
 
-and dump_instructions (program : instructionCAM list) : string =
-  let strings = List.map dump_instruction program in
+and dump_instructions (indent : int) (program : instructionCAM list) : string =
+  let strings = List.map (dump_instruction indent) program in
   String.concat ";\n" strings
 
-and dump_value (value : valueCAM) =
+and dump_value (indent : int) (value : valueCAM) : string =
+  String.make indent ' '
+  ^
   match value with
   | VUnit -> "VUnit"
   | VClos { e; p } ->
-      "VClos[ env=" ^ dump_value e ^ "; intrs = {" ^ dump_instructions p ^ "}]"
+      "VClos[ env=" ^ dump_value indent e ^ ";\n intrs = {\n"
+      ^ dump_instructions (indent + 2) p
+      ^ "\n" ^ String.make indent ' ' ^ "}]"
   | VClosRec { e; p } ->
-      "VClosRec [ env=" ^ dump_value e ^ "; instrs = {" ^ dump_instructions p
-      ^ "}]"
-  | VPair { e; f } -> "VPair{ " ^ dump_value e ^ " ; " ^ dump_value f ^ "}"
+      "VClosRec [ env: " ^ dump_value indent e ^ "; instrs = {"
+      ^ dump_instructions (indent + 2) p
+      ^ "\n" ^ String.make indent ' ' ^ "}]"
+  | VPair { e; f } ->
+      "VPair{ fst: \n"
+      ^ dump_value (indent + 2) e
+      ^ " ;\n snd: \n"
+      ^ dump_value (indent + 2) f
+      ^ String.make indent ' ' ^ "}"
   | VNum { n } -> "VNum {" ^ string_of_int n ^ "}"
+
+let dump_bytecode = dump_instructions 0
 
 let rec genidx insts generated =
   let rec instr_for_var (n : int) =
