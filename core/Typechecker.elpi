@@ -1,0 +1,25 @@
+From elpi Require Import elpi.
+
+Elpi Program typechecker lp:{{
+    kind term type.
+    type ap term -> term -> term.
+    type fun (term -> term) -> term.
+    kind ty type.
+    type arr ty -> ty -> ty.
+
+    type box term -> term.
+    type boxT ty -> ty.
+
+    type pair term -> term -> term.
+    type pairT ty -> ty -> ty.
+
+    type unit term.
+
+    pred of i:term, o:ty.
+
+    of (app Hd Arg) B :-
+        of Hd (arr A B), of Arg A.
+
+    of (fun F) (arr A B) :-
+        pi x\ of x A => of (F x) B.
+}}
