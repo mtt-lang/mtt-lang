@@ -25,6 +25,16 @@ let parse_and_typeinfer source =
          [%string
            "Type inference error: $(MttError.located_to_string infer_err)"])
 
+(* Parsing and type inference using lambda-Prolog  *)
+let parse_and_linfer source =
+  let%bind ast = parse_from_e Term source in
+  let p = LambdaTypechecker.linfer ast in
+  return p
+
+(* Result.map_error ~f:(fun infer_err -> *)
+(* [%string *)
+(* "Type inference error: $(MttError.located_to_string infer_err)"]) *)
+
 (* Parsing and evaluation with error handling utilities *)
 let parse_and_eval source =
   let%bind ast = parse_from_e Term source in

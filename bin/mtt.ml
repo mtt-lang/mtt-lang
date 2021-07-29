@@ -59,6 +59,22 @@ let eval_expr source_file source_arg =
           `Ok ()
       | Error err_msg -> `Error (false, err_msg))
 
+let linfer_expr source_file source_arg =
+  match osource source_file source_arg with
+  | None -> `Error (true, "Please provide exactly one expression to linfer")
+  | Some source -> (
+    let _p = Util.parse_and_linfer source in
+
+    `Ok()
+  )
+      (* match Util.parse_and_linfer source with
+      | Ok value ->
+          let document = PrettyPrinter.Doc.of_type value in
+          PPrint.ToChannel.pretty 1.0 80 stdout document;
+          Out_channel.newline stdout;
+          `Ok ()
+      | Error err_msg -> `Error (false, err_msg)) *)
+
 (* Command line interface *)
 
 open Cmdliner
@@ -203,6 +219,34 @@ let infer_cmd =
   ( Term.(ret (const infer_type $ source_file $ source_arg)),
     Term.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
+
+(* TODO: write description *)
+let linfer_cmd =
+  let source_file =
+    let doc = "The file with expression to infer its type." in
+    Arg.(value & pos 0 (some non_dir_file) None & info [] ~docv:"FILE" ~doc)
+  in
+  let source_arg =
+    let doc = "The expression to infer the type of given as a CLI argument." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
+  in
+  let doc = "infer the type of an expression" in
+  let exits = Term.default_exits in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "Infers the type of an expression either from stdin, a file, or given \
+         as a command-line parameter";
+      `Blocks help_secs;
+    ]
+  in
+  ( Term.(ret (const linfer_expr $ source_file $ source_arg)),
+    Term.info "linfer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+
 let eval_cmd =
   let source_file =
     let doc = "The file with expression to evaluate." in
@@ -237,6 +281,6 @@ let default_cmd =
   ( Term.(ret (const (`Help (`Pager, None)))),
     Term.info "mtt" ~version:"v0.0.0" ~doc ~sdocs ~exits ~man )
 
-let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
+let cmds = [ parse_cmd; check_cmd; infer_cmd; linfer_cmd; eval_cmd; help_cmd ]
 
 let () = Term.(exit @@ eval_choice default_cmd cmds)
