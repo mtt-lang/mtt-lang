@@ -7,4 +7,6 @@ let rec translate Location.{ data = expr; _ } =
   | Fun { idr; ty_id = _; body } -> "fun (" ^ Id.R.to_string idr ^ "\\" ^ (translate body) ^ ")"
   | App { fe; arge } -> "(" ^ translate fe ^ ") " ^ translate arge
   | Pair { e1; e2 } -> "pair " ^ translate e1 ^ " " ^ translate e2
+  | Fst { e } -> "fst " ^ translate e
+  | Snd { e } -> "snd " ^ translate e
   | _ -> failwith "not supported yet"
