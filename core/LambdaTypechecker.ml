@@ -32,10 +32,11 @@ let get_outcome = function
 
 let linfer expr =
   let elpi, _ =
-    (API.Setup.init ~builtins:[ Builtin.std_builtins ] ~basedir:".") []
+    (API.Setup.init ~builtins:[ Builtin.std_builtins ] ~basedir:"./core/elpi")
+      []
   in
   let ast =
-    API.Parse.program ~elpi ~print_accumulated_files:false [ "tmp.elpi" ]
+    API.Parse.program ~elpi ~print_accumulated_files:false [ "mtt-infer.elpi" ]
   in
   let prog = API.Compile.program ~elpi [ ast ] in
   let prolog_term = "(" ^ Typechecker2.translate expr ^ ")" in

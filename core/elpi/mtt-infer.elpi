@@ -3,8 +3,8 @@ kind term type.
 type app term -> term -> term.
 type fun (term -> term) -> term.
 
-kind  ty   type.
-type  arr  ty -> ty -> ty.
+kind ty   type.
+type arr  ty -> ty -> ty.
 
 type pair term -> term -> term.
 type pairT ty -> ty -> ty.
@@ -19,3 +19,5 @@ of (app Hd Arg) B :-
 
 of (fun F) (arr A B) :-
     pi x\ of x A => of (F x) B.
+
+of unit unitT.
