@@ -11,7 +11,7 @@ let parse_from_e_linfer :
 
 let rec prolog2str expr =
   match API.RawData.look ~depth:0 expr with
-  | API.RawData.Const x -> string_of_int x
+  | API.RawData.Const x -> let s = string_of_int x in let _ = print_string s in s
   | API.RawData.Lam lam -> "(" ^ prolog2str lam ^ ")"
   (* now cons is only `arr` and `size t2 = 1`  *)
   | API.RawData.App (_cons, t1, t2) ->

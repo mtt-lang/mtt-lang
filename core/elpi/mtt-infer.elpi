@@ -5,6 +5,7 @@ type fun (term -> term) -> term.
 
 kind ty   type.
 type arr  ty -> ty -> ty.
+type let term -> (term -> term) -> term.
 
 type pair term -> term -> term.
 type pairT ty -> ty -> ty.
@@ -21,3 +22,9 @@ of (fun F) (arr A B) :-
     pi x\ of x A => of (F x) B.
 
 of unit unitT.
+
+of (let A B) T :-
+    of (app (fun B) A) T.
+
+of (pair A B) (pairT At Bt) :-
+    of A At, of B Bt.
