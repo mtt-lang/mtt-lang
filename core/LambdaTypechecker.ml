@@ -1,40 +1,53 @@
 open Elpi
-open ParserInterface
+open Ast
 
-(* remove this code duplication *)
-let parse_from_e_linfer :
-    type a. a ast_kind -> input_kind -> (a, error) Result.t =
- fun ast_kind source ->
-  parse_from ast_kind source
-  |> Base.Result.map_error ~f:(fun parse_error ->
-         [%string "Parse error: $parse_error"])
 
-let rec prolog2str expr =
-  match API.RawData.look ~depth:0 expr with
-  (* let _ = print_int cons_code in *)
-  | API.RawData.Const cons_code -> (
-      match cons_code with -475 -> "()" | _ -> string_of_int cons_code)
-  | API.RawData.Lam lam -> "(" ^ prolog2str lam ^ ")"
-  (* now cons is only `arr` and `size t2 = 1`  *)
-  | API.RawData.App (_cons, t1, t2) ->
-      prolog2str t1 ^ " -> " ^ String.concat " " @@ List.map prolog2str t2
-  | API.RawData.UnifVar (fd, xs) ->
-      API.FlexibleData.Elpi.show fd
-      ^ String.concat " " @@ List.map prolog2str xs
-  | _ -> failwith "this situation can't happen"
+let rec type_pp fmt = function
+  | Type.Unit -> Format.fprintf fmt "unit"
+  | Type.Prod { ty1; ty2 } -> Format.fprintf fmt "Prod %a %a" type_pp ty1 type_pp ty2
+  | Type.Arr { dom; cod } -> Format.fprintf fmt "%a -> %a" type_pp dom type_pp cod
+  | _ -> Format.fprintf fmt "unsupported"
 
-let parse_type ty = parse_from_e_linfer Type (String ty)
+let type_conversion = let open API.AlgebraicData in declare {
+  ty = API.Conversion.TyName "ty";
+  doc = "MTT type";
+  pp = type_pp;
+  constructors = [
+   K("unit", "type with one element",
+     N, (* ty *)
+     B Type.Unit,
+     M (fun ~ok ~ko -> function Type.Unit -> ok | _ -> ko ()));
+   K("product", "Cartesian product of two types",
+     S(S(N)), (* ty -> ty -> ty *)
+     B (fun ty1 ty2 -> Type.Prod {ty1; ty2 }),
+     M (fun ~ok ~ko -> function Type.Prod { ty1; ty2 } -> ok ty1 ty2 | _ -> ko ()));
+   K("arr", "function type",
+     S(S(N)), (* ty -> ty -> ty *)
+     B (fun dom cod -> Type.Arr { dom; cod }),
+     M (fun ~ok ~ko -> function Type.Arr { dom; cod } -> ok dom cod | _ -> ko ()));
+   K("base", "opaque type with name tag",
+     A(API.BuiltInData.string,N), (* strings -> ty *)
+     B (fun idt -> Type.Base { idt }),
+     M (fun ~ok ~ko -> function Type.Base { idt } -> ok idt | _ -> ko ()));
+  ]
+}
+
+let builtins = API.BuiltIn.declare ~file_name:"mtt.elpi" [
+  API.BuiltIn.MLDataC type_conversion;
+]
 
 let get_outcome = function
   | API.Execute.Success
-      { API.Data.assignments; constraints = _; state = _; pp_ctx = _; _ } ->
-      API.Data.StrMap.find "T" assignments
+      { API.Data.assignments; constraints = _; state; pp_ctx = _; _ } ->
+        let term = API.Data.StrMap.find "T" assignments in
+        let (_, ty, _) = (API.ContextualConversion.(!<) type_conversion).readback ~depth:0 state term in
+        ty
   | API.Execute.Failure -> failwith "Failure@\n%!"
   | API.Execute.NoMoreSteps -> failwith "Interrupted (no more steps)@\n%!"
 
 let linfer expr =
   let elpi, _ =
-    (API.Setup.init ~builtins:[ Builtin.std_builtins ] ~basedir:"./core/elpi")
+    (API.Setup.init ~builtins:[ Builtin.std_builtins; builtins ] ~basedir:"./core/elpi")
       []
   in
   let ast =
@@ -48,8 +61,4 @@ let linfer expr =
   let query = API.Compile.query prog g in
   let exec = API.Compile.optimize query in
   let b = API.Execute.once ~delay_outside_fragment:false exec in
-  let res_term = get_outcome b in
-  (* let reststr = API.Ast.Loc.show ast in *)
-  let ty_str = prolog2str res_term in
-  (* let _ = print_string ty_str in *)
-  parse_type ty_str
+  Ok(get_outcome b)

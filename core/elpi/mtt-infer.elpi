@@ -1,10 +1,4 @@
 kind term type.
-kind ty   type.
-
-type unitT ty.
-type pairT ty -> ty -> ty.
-type arr  ty -> ty -> ty.
-
 type unit term.
 type pair term -> term -> term.
 type fun ty -> (term -> term) -> term.
@@ -13,7 +7,7 @@ type let term -> (term -> term) -> term.
 
 pred of i:term, o:ty.
 
-of unit unitT.
+of unit unit.
 
 of (app Hd Arg) B :-
     of Hd (arr A B), of Arg A.

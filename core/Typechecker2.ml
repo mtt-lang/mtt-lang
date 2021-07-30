@@ -3,8 +3,8 @@ open Ast.Expr
 let translate_type ty =
   let open Ast.Type in
   match ty with
-  | Unit -> "unitT"
-  | Base { idt } -> String.lowercase_ascii idt
+  | Unit -> "unit"
+  | Base { idt } -> "(base \"" ^ idt ^ "\")"
   (* | Prod { ty1; ty2 } -> "pair" *)
   | _ -> failwith "TODO other types"
 
@@ -14,7 +14,7 @@ let rec translate Location.{ data = expr; _ } =
   | VarR { idr } -> Id.R.to_string idr
   | Fun { idr; ty_id; body } ->
       let ty_lower = translate_type ty_id in
-      "fun " ^ ty_lower ^ " (" ^ Id.R.to_string idr ^ "\\" ^ translate body
+      "fun (" ^ ty_lower ^ ") (" ^ Id.R.to_string idr ^ "\\" ^ translate body
       ^ ")"
   | App { fe; arge } ->
       "app (" ^ translate fe ^ ") " ^ "(" ^ translate arge ^ ")"
