@@ -60,7 +60,7 @@ let type_conversion =
     }
 
 let builtins =
-  API.BuiltIn.declare ~file_name:"mtt.elpi"
+  API.BuiltIn.declare ~file_name:"./core/elpi/mtt.elpi"
     [ API.BuiltIn.MLDataC type_conversion ]
 
 let get_outcome = function

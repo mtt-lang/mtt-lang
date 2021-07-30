@@ -1,12 +1,16 @@
 open Ast.Expr
 
-let translate_type ty =
+let rec translate_type ty =
   let open Ast.Type in
   match ty with
   | Unit -> "unit"
   | Base { idt } -> "(base \"" ^ idt ^ "\")"
-  (* | Prod { ty1; ty2 } -> "pair" *)
-  | _ -> failwith "TODO other types"
+  | Prod { ty1; ty2 } ->
+      "prod " ^ "(" ^ translate_type ty1 ^ ") (" ^ translate_type ty2 ^ ")"
+  | Arr { dom; cod } ->
+      "arr " ^ "(" ^ translate_type dom ^ ") (" ^ translate_type cod ^ ")"
+  | Box _ -> failwith "Box type isn't implemented yet"
+  | Nat -> failwith "Nat type isn't supported yet"
 
 let rec translate Location.{ data = expr; _ } =
   match expr with
