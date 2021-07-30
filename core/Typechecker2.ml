@@ -11,4 +11,5 @@ let rec translate Location.{ data = expr; _ } =
   | Pair { e1; e2 } -> "pair " ^ translate e1 ^ " " ^ translate e2
   | Fst { e } -> "fst " ^ translate e
   | Snd { e } -> "snd " ^ translate e
+  | Let { idr; bound; body } -> "let " ^ translate bound ^ " " ^ "(" ^ Id.R.to_string idr ^ "\\" ^ translate body ^ ")"
   | _ -> failwith "not supported yet"

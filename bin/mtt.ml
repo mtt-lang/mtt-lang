@@ -71,14 +71,6 @@ let linfer_expr source_file source_arg =
           `Ok ()
       | Error err_msg -> `Error (false, err_msg))
 
-(* match Util.parse_and_linfer source with
-   | Ok value ->
-       let document = PrettyPrinter.Doc.of_type value in
-       PPrint.ToChannel.pretty 1.0 80 stdout document;
-       Out_channel.newline stdout;
-       `Ok ()
-   | Error err_msg -> `Error (false, err_msg)) *)
-
 (* Command line interface *)
 
 open Cmdliner

@@ -2,7 +2,7 @@ From elpi Require Import elpi.
 
 Elpi Program typechecker lp:{{
     kind term type.
-    type ap term -> term -> term.
+    type app term -> term -> term.
     type fun (term -> term) -> term.
     kind ty type.
     type arr ty -> ty -> ty.
@@ -13,6 +13,8 @@ Elpi Program typechecker lp:{{
     type pair term -> term -> term.
     type pairT ty -> ty -> ty.
 
+    type let term -> (term -> term) -> term.
+
     type unit term.
 
     pred of i:term, o:ty.
@@ -22,4 +24,7 @@ Elpi Program typechecker lp:{{
 
     of (fun F) (arr A B) :-
         pi x\ of x A => of (F x) B.
-}}
+
+    of (let A B) T :-
+        of (app (fun B) A) T.
+}}.
