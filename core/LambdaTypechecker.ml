@@ -11,15 +11,10 @@ let parse_from_e_linfer :
 
 let rec prolog2str expr =
   match API.RawData.look ~depth:0 expr with
+  (* let _ = print_int cons_code in *)
   | API.RawData.Const cons_code -> (
-      (* let _ = print_int cons_code in *)
-      match cons_code with
-      | -475 -> "()"
-      | _ -> string_of_int cons_code)
+      match cons_code with -475 -> "()" | _ -> string_of_int cons_code)
   | API.RawData.Lam lam -> "(" ^ prolog2str lam ^ ")"
-  (* now cons is only `arr` and `size t2 = 1`  *)
-  | API.RawData.App (_cons, t1, t2) ->
-      prolog2str t1 ^ " -> " ^ String.concat " " @@ List.map prolog2str t2
   | API.RawData.UnifVar (fd, xs) ->
       API.FlexibleData.Elpi.show fd
       ^ String.concat " " @@ List.map prolog2str xs
