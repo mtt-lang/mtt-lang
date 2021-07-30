@@ -28,3 +28,7 @@ of (let A B) T :-
 
 of (pair A B) (pairT At Bt) :-
     of A At, of B Bt.
+
+of (fst X) A :- of X (prod A B).
+    
+of (snd X) B :- of X (prod A B).
