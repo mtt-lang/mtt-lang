@@ -1,33 +1,48 @@
 open Elpi
+open ParserInterface
 
-let print_solution time = function
-  | API.Execute.NoMoreSteps -> Format.eprintf "Interrupted (no more steps)@\n%!"
-  | API.Execute.Failure -> Format.eprintf "Failure@\n%!"
-  | API.Execute.Success { API.Data.assignments; constraints; state; pp_ctx; _ }
-    ->
-      Format.eprintf "@\nSuccess:@\n%!";
-      API.Data.StrMap.iter
-        (fun name v ->
-          Format.eprintf "  @[<hov 1>%s = %a@]@\n%!" name (API.Pp.term pp_ctx) v)
-        assignments;
-      Format.eprintf "@\nTime: %5.3f@\n%!" time;
-      Format.eprintf "@\nConstraints:@\n%a@\n%!"
-        (API.Pp.constraints pp_ctx)
-        constraints;
-      Format.eprintf "@\nState:@\n%a@\n%!" API.Pp.state state
+(* remove this code duplication *)
+let parse_from_e_linfer :
+    type a. a ast_kind -> input_kind -> (a, error) Result.t =
+ fun ast_kind source ->
+  parse_from ast_kind source
+  |> Base.Result.map_error ~f:(fun parse_error ->
+         [%string "Parse error: $parse_error"])
 
-let linfer _expr =
-  let elpi, _ = (API.Setup.init ~builtins:[] ~basedir:".") [] in
+let rec prolog2str expr =
+  match API.RawData.look ~depth:0 expr with
+  | API.RawData.Const x -> string_of_int x
+  | API.RawData.Lam lam -> "(" ^ prolog2str lam ^ ")"
+  (* now cons is only `arr` and `size t2 = 1`  *)
+  | API.RawData.App (_cons, t1, t2) ->
+      prolog2str t1 ^ " -> " ^ String.concat " " @@ List.map prolog2str t2
+  | API.RawData.UnifVar (fd, xs) ->
+      API.FlexibleData.Elpi.show fd
+      ^ String.concat " " @@ List.map prolog2str xs
+  | _ -> failwith "this situation can't happen"
+
+let parse_type ty = parse_from_e_linfer Type (String ty)
+
+let get_outcome = function
+  | API.Execute.Success
+      { API.Data.assignments; constraints = _; state = _; pp_ctx = _; _ } ->
+      API.Data.StrMap.find "T" assignments
+  | API.Execute.Failure -> failwith "Failure@\n%!"
+  | API.Execute.NoMoreSteps -> failwith "Interrupted (no more steps)@\n%!"
+
+let linfer expr =
+  let elpi, _ =
+    (API.Setup.init ~builtins:[ Builtin.std_builtins ] ~basedir:".") []
+  in
   let ast =
     API.Parse.program ~elpi ~print_accumulated_files:false [ "tmp.elpi" ]
   in
   let prog = API.Compile.program ~elpi [ ast ] in
-  let g =
-    API.Parse.goal
-      (API.Ast.Loc.initial "(-exec)")
-      (Printf.sprintf "%s." "whd (fun (x\\x)) T")
-  in
+  let prolog_term = "(" ^ Typechecker2.translate expr ^ ")" in
+  let elpi_query = "of " ^ prolog_term ^ " T" in
+  let g = API.Parse.goal (API.Ast.Loc.initial "(-exec)") elpi_query in
   let query = API.Compile.query prog g in
   let exec = API.Compile.optimize query in
   let b = API.Execute.once ~delay_outside_fragment:false exec in
-  print_solution 1. b
+  let ty_str = prolog2str @@ get_outcome b in
+  parse_type ty_str

@@ -1,16 +1,21 @@
-kind  term  type.
+kind term type.
 
-type  app   term -> term -> term.
-type  fun   (term -> term) -> term.
+type app term -> term -> term.
+type fun (term -> term) -> term.
 
-pred whd i:term, o:term.
+kind  ty   type.
+type  arr  ty -> ty -> ty.
 
-% when the head "Hd" of an "app" (lication) is a "fun" we substitute
-% and continue
-whd (app Hd Arg) Reduct :- whd Hd (fun F), !,
-  whd (F Arg) Reduct.
+type pair term -> term -> term.
+type pairT ty -> ty -> ty.
 
-% otherwise a term X is already in normal form.
-whd X Reduct :- Reduct = X.
+type unit term.
+type unitT ty.
 
-type foo, bar term.
+pred of i:term, o:ty.
+
+of (app Hd Arg) B :-
+    of Hd (arr A B), of Arg A.
+
+of (fun F) (arr A B) :-
+    pi x\ of x A => of (F x) B.
