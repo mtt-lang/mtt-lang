@@ -1,23 +1,25 @@
 kind term type.
-
-type app term -> term -> term.
-type fun (term -> term) -> term.
-
 kind ty   type.
+
+type unitT ty.
+type pairT ty -> ty -> ty.
 type arr  ty -> ty -> ty.
 
-type pair term -> term -> term.
-type pairT ty -> ty -> ty.
-
 type unit term.
-type unitT ty.
+type pair term -> term -> term.
+type fun ty -> (term -> term) -> term.
+type app term -> term -> term.
+type let term -> (term -> term) -> term.
 
 pred of i:term, o:ty.
+
+of unit unitT.
 
 of (app Hd Arg) B :-
     of Hd (arr A B), of Arg A.
 
-of (fun F) (arr A B) :-
+of (fun A F) (arr A B) :-
     pi x\ of x A => of (F x) B.
 
-of unit unitT.
+of (let A B) T :-
+    of A At, of (app (fun At B) A) T.

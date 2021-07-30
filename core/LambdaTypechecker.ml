@@ -11,7 +11,11 @@ let parse_from_e_linfer :
 
 let rec prolog2str expr =
   match API.RawData.look ~depth:0 expr with
-  | API.RawData.Const x -> string_of_int x
+  | API.RawData.Const cons_code -> (
+      (* let _ = print_int cons_code in *)
+      match cons_code with
+      | -475 -> "()"
+      | _ -> string_of_int cons_code)
   | API.RawData.Lam lam -> "(" ^ prolog2str lam ^ ")"
   (* now cons is only `arr` and `size t2 = 1`  *)
   | API.RawData.App (_cons, t1, t2) ->
@@ -41,9 +45,13 @@ let linfer expr =
   let prog = API.Compile.program ~elpi [ ast ] in
   let prolog_term = "(" ^ Typechecker2.translate expr ^ ")" in
   let elpi_query = "of " ^ prolog_term ^ " T" in
+  (* let _ = print_string elpi_query in *)
   let g = API.Parse.goal (API.Ast.Loc.initial "(-exec)") elpi_query in
   let query = API.Compile.query prog g in
   let exec = API.Compile.optimize query in
   let b = API.Execute.once ~delay_outside_fragment:false exec in
-  let ty_str = prolog2str @@ get_outcome b in
+  let res_term = get_outcome b in
+  (* let reststr = API.Ast.Loc.show ast in *)
+  let ty_str = prolog2str res_term in
+  (* let _ = print_string ty_str in *)
   parse_type ty_str
