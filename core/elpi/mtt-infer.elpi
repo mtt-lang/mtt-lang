@@ -1,4 +1,6 @@
 kind term type.
+kind ty type.
+
 type unit term.
 type pair term -> term -> term.
 type fun ty -> (term -> term) -> term.
@@ -18,9 +20,9 @@ of (fun A F) (arr A B) :-
 of (let A B) T :-
     of (app (fun B) A) T.
 
-of (pair A B) (pairT At Bt) :-
+of (pair A B) (product At Bt) :-
     of A At, of B Bt.
 
-of (fst X) A :- of X (prod A B).
+of (fst X) A :- of X (product A B).
     
-of (snd X) B :- of X (prod A B).
+of (snd X) B :- of X (product A B).
