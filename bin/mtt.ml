@@ -63,17 +63,13 @@ let linfer_expr source_file source_arg =
   match osource source_file source_arg with
   | None -> `Error (true, "Please provide exactly one expression to linfer")
   | Some source -> (
-    let _p = Util.parse_and_linfer source in
-
-    `Ok()
-  )
-      (* match Util.parse_and_linfer source with
-      | Ok value ->
-          let document = PrettyPrinter.Doc.of_type value in
+      match Util.parse_and_linfer source with
+      | Ok typ ->
+          let document = PrettyPrinter.Doc.of_type typ in
           PPrint.ToChannel.pretty 1.0 80 stdout document;
           Out_channel.newline stdout;
           `Ok ()
-      | Error err_msg -> `Error (false, err_msg)) *)
+      | Error err_msg -> `Error (false, err_msg))
 
 (* Command line interface *)
 
@@ -218,7 +214,6 @@ let infer_cmd =
   in
   ( Term.(ret (const infer_type $ source_file $ source_arg)),
     Term.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
-
 
 (* TODO: write description *)
 let linfer_cmd =

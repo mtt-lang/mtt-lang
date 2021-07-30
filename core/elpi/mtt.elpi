@@ -1,0 +1,4 @@
+kind ty type.
+
+type unit ty.
+type arr ty -> ty -> ty.
