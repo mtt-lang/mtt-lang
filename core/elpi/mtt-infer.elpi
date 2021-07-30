@@ -21,8 +21,6 @@ of (app Hd Arg) B :-
 of (fun A F) (arr A B) :-
     pi x\ of x A => of (F x) B.
 
-of unit unitT.
-
 of (let A B) T :-
     of (app (fun B) A) T.
 
