@@ -17,8 +17,8 @@ of (app Hd Arg) B :-
 of (fun A F) (arr A B) :-
     pi x\ of x A => of (F x) B.
 
-of (let A B) T :-
-    pi a\ of A a => of (app (fun a B) A) T.
+of (let X F) B :-
+    of (app (fun A F) X) B.
 
 of (pair A B) (product At Bt) :-
     of A At, of B Bt.
