@@ -29,7 +29,7 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   (menhir (>= 20201201))
   (ocaml (>= 4.07.0))
   (ocamlformat (= 0.16.0))
-  pprint
+  (pprint (>= 20220103))
   ppx_compare
   ppx_let
   ppx_sexp_conv

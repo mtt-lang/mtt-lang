@@ -1,6 +1,5 @@
 open Base
 open PPrint
-open PPrintCombinators
 open Ast
 
 module type DOC = sig
