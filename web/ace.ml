@@ -21,7 +21,7 @@ type editor = { editor : editor ace_editor Js.t }
 let create_editor div =
   let editor =
     Js.Unsafe.new_obj
-      (Js.Unsafe.variable "ace.edit")
+      (Js.Unsafe.pure_js_expr "ace.edit")
       [| Js.Unsafe.inject (Js.string div) |]
   in
   let data = { editor } in
