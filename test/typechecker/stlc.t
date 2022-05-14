@@ -92,7 +92,7 @@ tests for location
   > EOF
   mtt: Type inference error: Unexpected regular variable type
        file name :  Not a file, lines :  1 - 1, column :  42 - 43
-  [1]
+  [124]
 
   $ mtt infer <<EOF
   > let true = λx:A. λy:B . x in
@@ -101,7 +101,7 @@ tests for location
   > EOF
   mtt: Type inference error: Unexpected regular variable type
        file name :  Not a file, lines :  3 - 3, column :  42 - 43
-  [1]
+  [124]
 
 Evaluator for Nat
   $ mtt infer <<EOF

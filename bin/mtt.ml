@@ -111,8 +111,9 @@ let help_cmd =
       `Blocks help_secs;
     ]
   in
-  ( Term.(ret (const help $ Arg.man_format $ Term.choice_names $ topic)),
-    Term.info "help" ~doc ~exits:Term.default_exits ~man )
+  let info = Cmd.info "help" ~doc ~exits:Cmd.Exit.defaults ~man in
+  Cmd.v info
+    Term.(ret (const help $ Arg.man_format $ Term.choice_names $ topic))
 
 let parse_cmd =
   let source_file =
@@ -129,7 +130,7 @@ let parse_cmd =
       & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
   in
   let doc = "parse and pretty-print an expression" in
-  let exits = Term.default_exits in
+  let exits = Cmd.Exit.defaults in
   let man =
     [
       `S Manpage.s_description;
@@ -139,8 +140,9 @@ let parse_cmd =
       `Blocks help_secs;
     ]
   in
-  ( Term.(ret (const parse_expr $ source_file $ source_arg)),
-    Term.info "parse" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+  let info = Cmd.info "parse" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
+  Cmd.v info 
+    Term.(ret (const parse_expr $ source_file $ source_arg))
 
 let check_cmd =
   let type_arg =
@@ -163,7 +165,7 @@ let check_cmd =
     Arg.(value & flag & info [ "verbose" ] ~doc)
   in
   let doc = "typecheck an expression" in
-  let exits = Term.default_exits in
+  let exits = Cmd.Exit.defaults in
   let man =
     [
       `S Manpage.s_description;
@@ -173,9 +175,9 @@ let check_cmd =
       `Blocks help_secs;
     ]
   in
-  ( Term.(
-      ret (const check_expr $ source_file $ source_arg $ type_arg $ verbose_arg)),
-    Term.info "check" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+  let info = Cmd.info "check" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
+  Cmd.v info
+    Term.(ret (const check_expr $ source_file $ source_arg $ type_arg $ verbose_arg))
 
 let infer_cmd =
   let source_file =
@@ -190,7 +192,7 @@ let infer_cmd =
       & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
   in
   let doc = "infer the type of an expression" in
-  let exits = Term.default_exits in
+  let exits = Cmd.Exit.defaults in
   let man =
     [
       `S Manpage.s_description;
@@ -200,8 +202,9 @@ let infer_cmd =
       `Blocks help_secs;
     ]
   in
-  ( Term.(ret (const infer_type $ source_file $ source_arg)),
-    Term.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+  let info = Cmd.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
+  Cmd.v info
+    Term.(ret (const infer_type $ source_file $ source_arg))
 
 let eval_cmd =
   let source_file =
@@ -216,7 +219,7 @@ let eval_cmd =
       & info [ "e"; "expression" ] ~docv:"EXPRESSION" ~doc)
   in
   let doc = "evaluate an expression" in
-  let exits = Term.default_exits in
+  let exits = Cmd.Exit.defaults in
   let man =
     [
       `S Manpage.s_description;
@@ -226,17 +229,19 @@ let eval_cmd =
       `Blocks help_secs;
     ]
   in
-  ( Term.(ret (const eval_expr $ source_file $ source_arg)),
-    Term.info "eval" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+  let info = Cmd.info "eval" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
+  Cmd.v info
+    Term.(ret (const eval_expr $ source_file $ source_arg))
+
+let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
 
 let default_cmd =
   let doc = "a modal type theory implementation" in
   let sdocs = Manpage.s_common_options in
-  let exits = Term.default_exits in
+  let exits = Cmd.Exit.defaults in
   let man = help_secs in
-  ( Term.(ret (const (`Help (`Pager, None)))),
-    Term.info "mtt" ~version:"v0.0.0" ~doc ~sdocs ~exits ~man )
+  let info = Cmd.info "mtt" ~version:"v0.0.0" ~doc ~sdocs ~exits ~man in
+  let default = Term.(ret (const (`Help (`Pager, None))))
+  in Cmd.group info ~default cmds
 
-let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
-
-let () = Term.(exit @@ eval_choice default_cmd cmds)
+let () = Caml.exit (Cmd.eval default_cmd)

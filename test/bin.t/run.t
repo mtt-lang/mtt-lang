@@ -34,26 +34,26 @@
 
 ## Missing file
   $ mtt parse MISSING_FILE.mtt
-  mtt: FILE argument: no `MISSING_FILE.mtt' file
-  Usage: mtt parse [OPTION]... [FILE]
-  Try `mtt parse --help' or `mtt --help' for more information.
+  mtt: FILE argument: no 'MISSING_FILE.mtt' file
+  Usage: mtt parse [--expression=EXPRESSION] [OPTION]… [FILE]
+  Try 'mtt parse --help' or 'mtt --help' for more information.
   [124]
 
   $ mtt check '()' MISSING_FILE.mtt
-  mtt: FILE argument: no `MISSING_FILE.mtt' file
-  Usage: mtt check [OPTION]... TYPE [FILE]
-  Try `mtt check --help' or `mtt --help' for more information.
+  mtt: FILE argument: no 'MISSING_FILE.mtt' file
+  Usage: mtt check [--expression=EXPRESSION] [--verbose] [OPTION]… TYPE [FILE]
+  Try 'mtt check --help' or 'mtt --help' for more information.
   [124]
 
   $ mtt infer MISSING_FILE.mtt
-  mtt: FILE argument: no `MISSING_FILE.mtt' file
-  Usage: mtt infer [OPTION]... [FILE]
-  Try `mtt infer --help' or `mtt --help' for more information.
+  mtt: FILE argument: no 'MISSING_FILE.mtt' file
+  Usage: mtt infer [--expression=EXPRESSION] [OPTION]… [FILE]
+  Try 'mtt infer --help' or 'mtt --help' for more information.
   [124]
 
   $ mtt eval MISSING_FILE.mtt
-  mtt: FILE argument: no `MISSING_FILE.mtt' file
-  Usage: mtt eval [OPTION]... [FILE]
-  Try `mtt eval --help' or `mtt --help' for more information.
+  mtt: FILE argument: no 'MISSING_FILE.mtt' file
+  Usage: mtt eval [--expression=EXPRESSION] [OPTION]… [FILE]
+  Try 'mtt eval --help' or 'mtt --help' for more information.
   [124]
 
