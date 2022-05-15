@@ -52,29 +52,17 @@ module Expr = struct
 
   (* Wrappers for constructors *)
   let unit = Location.locate Unit
-
   let nat n = Location.locate @@ Nat { n }
-
   let pair e1 e2 = Location.locate @@ Pair { e1; e2 }
-
   let fst e = Location.locate @@ Fst { e }
-
   let snd e = Location.locate @@ Snd { e }
-
   let binop op e1 e2 = Location.locate @@ BinOp { op; e1; e2 }
-
   let var_r idr = Location.locate @@ VarR { idr }
-
   let var_m idm = Location.locate @@ VarM { idm }
-
   let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
-
   let app fe arge = Location.locate @@ App { fe; arge }
-
   let box e = Location.locate @@ Box { e }
-
   let letc idr bound body = Location.locate @@ Let { idr; bound; body }
-
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 
   let match_with matched zbranch pred sbranch =

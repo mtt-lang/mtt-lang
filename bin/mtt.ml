@@ -140,9 +140,10 @@ let parse_cmd =
       `Blocks help_secs;
     ]
   in
-  let info = Cmd.info "parse" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
-  Cmd.v info 
-    Term.(ret (const parse_expr $ source_file $ source_arg))
+  let info =
+    Cmd.info "parse" ~doc ~sdocs:Manpage.s_common_options ~exits ~man
+  in
+  Cmd.v info Term.(ret (const parse_expr $ source_file $ source_arg))
 
 let check_cmd =
   let type_arg =
@@ -175,9 +176,12 @@ let check_cmd =
       `Blocks help_secs;
     ]
   in
-  let info = Cmd.info "check" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
+  let info =
+    Cmd.info "check" ~doc ~sdocs:Manpage.s_common_options ~exits ~man
+  in
   Cmd.v info
-    Term.(ret (const check_expr $ source_file $ source_arg $ type_arg $ verbose_arg))
+    Term.(
+      ret (const check_expr $ source_file $ source_arg $ type_arg $ verbose_arg))
 
 let infer_cmd =
   let source_file =
@@ -202,9 +206,10 @@ let infer_cmd =
       `Blocks help_secs;
     ]
   in
-  let info = Cmd.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
-  Cmd.v info
-    Term.(ret (const infer_type $ source_file $ source_arg))
+  let info =
+    Cmd.info "infer" ~doc ~sdocs:Manpage.s_common_options ~exits ~man
+  in
+  Cmd.v info Term.(ret (const infer_type $ source_file $ source_arg))
 
 let eval_cmd =
   let source_file =
@@ -230,8 +235,7 @@ let eval_cmd =
     ]
   in
   let info = Cmd.info "eval" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
-  Cmd.v info
-    Term.(ret (const eval_expr $ source_file $ source_arg))
+  Cmd.v info Term.(ret (const eval_expr $ source_file $ source_arg))
 
 let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
 
@@ -241,7 +245,7 @@ let default_cmd =
   let exits = Cmd.Exit.defaults in
   let man = help_secs in
   let info = Cmd.info "mtt" ~version:"v0.0.0" ~doc ~sdocs ~exits ~man in
-  let default = Term.(ret (const (`Help (`Pager, None))))
-  in Cmd.group info ~default cmds
+  let default = Term.(ret (const (`Help (`Pager, None)))) in
+  Cmd.group info ~default cmds
 
 let () = Caml.exit (Cmd.eval default_cmd)

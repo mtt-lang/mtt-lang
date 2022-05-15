@@ -7,29 +7,17 @@ open Parser
 exception LexError of Lexing.position * string
 
 let blank = [%sedlex.regexp? ' ' | '\t']
-
 let newline = [%sedlex.regexp? '\r' | '\n' | "\r\n"]
-
 let any_blank = [%sedlex.regexp? blank | newline]
-
 let digit = [%sedlex.regexp? '0' .. '9']
-
 let unsigned_integer = [%sedlex.regexp? digit, Star digit]
-
 let lower_case_letter = [%sedlex.regexp? 'a' .. 'z']
-
 let upper_case_letter = [%sedlex.regexp? 'A' .. 'Z']
-
 let letter = [%sedlex.regexp? lower_case_letter | upper_case_letter]
-
 let alphanum = [%sedlex.regexp? lower_case_letter | digit | '_']
-
 let regular_ident = [%sedlex.regexp? lower_case_letter, Star alphanum]
-
 let modal_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'']
-
 let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum | '_']
-
 let rec nom buf = match%sedlex buf with Plus any_blank -> nom buf | _ -> ()
 
 let token buf =

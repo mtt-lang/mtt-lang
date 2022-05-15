@@ -4,15 +4,10 @@ module Html = Dom_html
 class type ['a] ace_editor =
   object
     method clearSelection : unit Js.meth
-
     method getValue : Js.js_string Js.t Js.meth
-
     method setMode : Js.js_string Js.t -> unit Js.meth
-
     method setOptions : Js.json Js.t -> unit Js.meth
-
     method setTheme : Js.js_string Js.t -> unit Js.meth
-
     method setValue : Js.js_string Js.t -> unit Js.meth
   end
 
@@ -28,7 +23,6 @@ let create_editor div =
   data
 
 let clear_selection { editor } = editor##clearSelection
-
 let get_value { editor } = Js.to_string editor##getValue
 
 let set_mode { editor } mode =
@@ -36,7 +30,6 @@ let set_mode { editor } mode =
   session ## (setMode (Js.string mode))
 
 let set_theme { editor } theme = editor ## (setTheme (Js.string theme))
-
 let set_value { editor } value = editor ## (setValue (Js.string value))
 
 let set_options { editor } options =
