@@ -8,10 +8,12 @@ type error =
 module Make (Key : sig
   type t [@@deriving_inline sexp]
 
-  
-include
-  sig [@@@ocaml.warning "-32"] include Sexplib0.Sexpable.S with type  t :=  t
-  end[@@ocaml.doc "@inline"]
+  include sig
+    [@@@ocaml.warning "-32"]
+
+    include Ppx_sexp_conv_lib.Sexpable.S with type t := t
+  end
+  [@@ocaml.doc "@inline"]
 
   [@@@end]
 

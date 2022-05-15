@@ -19,8 +19,8 @@ depends: [
   "js_of_ocaml-tyxml"
   "js_of_ocaml-ppx"
   "menhir" {>= "20201201"}
-  "ocaml" {>= "4.11.0"}
-  "ocamlformat" {with-test & = "0.16.0"}
+  "ocaml" {>= "4.08.1"}
+  "ocamlformat" {with-test & = "0.21.0"}
   "pprint" {>= "20220103"}
   "ppx_compare"
   "ppx_let"
