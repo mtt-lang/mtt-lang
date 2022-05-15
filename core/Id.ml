@@ -5,9 +5,7 @@ module type ID = sig
   (** Interface for identifiers *)
 
   val mk : string -> t
-
   val to_string : t -> string
-
   val context_kind : string
 
   include Comparable.S with type t := t
@@ -19,9 +17,7 @@ module R : ID = struct
     type t = string [@@deriving equal, compare, sexp]
 
     let mk = Fn.id
-
     let to_string = Fn.id
-
     let context_kind = "regular"
   end
 
@@ -35,9 +31,7 @@ module M : ID = struct
     type t = string [@@deriving equal, compare, sexp]
 
     let mk = Fn.id
-
     let to_string = Fn.id
-
     let context_kind = "modal"
   end
 

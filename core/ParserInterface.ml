@@ -5,11 +5,8 @@ module MG = MenhirLib.General
 open Ast
 
 type error = string
-
 type filename = string
-
 type _ ast_kind = Type : Type.t ast_kind | Term : Expr.t ast_kind
-
 type input_kind = Stdin | String of string | File of filename
 
 let parser_driver : type a. a ast_kind -> Lexing.position -> a MI.checkpoint =

@@ -1,4 +1,4 @@
-(lang dune 2.7)
+(lang dune 3.1)
 (cram enable)
 (using menhir 2.0)
 (name mtt)
@@ -27,9 +27,9 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   js_of_ocaml-tyxml
   js_of_ocaml-ppx
   (menhir (>= 20201201))
-  (ocaml (>= 4.07.0))
-  (ocamlformat (= 0.16.0))
-  pprint
+  (ocaml (>= 4.08.1))
+  (ocamlformat (and :with-test (= 0.21.0)))
+  (pprint (>= 20220103))
   ppx_compare
   ppx_let
   ppx_sexp_conv

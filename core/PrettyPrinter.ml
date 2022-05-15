@@ -1,13 +1,10 @@
 open Base
 open PPrint
-open PPrintCombinators
 open Ast
 
 module type DOC = sig
   val of_type : Type.t -> PPrint.document
-
   val of_expr : Expr.t -> PPrint.document
-
   val of_val : Val.t -> PPrint.document
 end
 
@@ -17,44 +14,26 @@ module Doc : DOC = struct
   let ( ^^^ ) left right = left ^^ space ^^ right
 
   let cross = !^"×"
-
   let unit_type = !^"()"
-
   let unit_term = !^"()"
-
   let arrow = !^"→"
-
   let darrow = !^"=>"
-
   let box_type = !^"□"
-
   let nat_type = !^"ℕ"
 
   (* keywords *)
   let fst_kwd = !^"π₁"
-
   let snd_kwd = !^"π₂"
-
   let box_kwd = !^"box"
-
   let fun_kwd = !^"λ"
-
   let let_kwd = !^"let"
-
   let letbox_kwd = !^"letbox"
-
   let in_kwd = !^"in"
-
   let match_kwd = !^"match"
-
   let with_kwd = !^"with"
-
   let end_kwd = !^"end"
-
   let zero_kwd = !^"zero" (* A temporary token for pattern matching on Nat *)
-
   let succ_kwd = !^"succ" (* A temporary token for pattern matching on Nat *)
-
   let parens_if b = if b then parens else fun x -> x
 
   let of_type =
@@ -152,9 +131,7 @@ end
 
 module type STR = sig
   val of_type : Type.t -> string
-
   val of_expr : Expr.t -> string
-
   val of_val : Val.t -> string
 end
 
@@ -167,8 +144,6 @@ module Str : STR = struct
     Buffer.contents buffer
 
   let of_type t = doc2str @@ Doc.of_type t
-
   let of_expr e = doc2str @@ Doc.of_expr e
-
   let of_val v = doc2str @@ Doc.of_val v
 end

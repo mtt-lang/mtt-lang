@@ -30,7 +30,6 @@ let locate_start_end data s_pos e_pos =
   { data; loc }
 
 let locate ?(loc = NoSource) data = { data; loc }
-
 let empty pos = match pos with NoSource -> true | Source _ -> false
 
 let pp_column_range pos =

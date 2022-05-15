@@ -200,5 +200,4 @@ and infer_open delta gamma Location.{ data = expr; loc } =
       return ty_zero
 
 let check expr typ = check_open Env.M.emp Env.R.emp expr typ
-
 let infer expr = infer_open Env.M.emp Env.R.emp expr

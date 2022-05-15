@@ -7,3 +7,4 @@ _build/
 _opam/
 _esy/
 esy.lock/
+/mtt-lang.code-workspace

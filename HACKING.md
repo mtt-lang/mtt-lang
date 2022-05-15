@@ -17,7 +17,7 @@ dependencies. By default, local switch will be available *only* inside this
 project.
 
 ```shell
-opam switch create ./ --deps-only --with-test ocaml-base-compiler.4.07.1
+opam switch create ./ --deps-only --with-test ocaml-base-compiler.4.08.1
 ```
 
 Note that this will create `_opam` directory at the project root with all the

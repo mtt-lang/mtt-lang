@@ -20,7 +20,6 @@ module Make (Key : sig
   include Equal.S with type t := t
 
   val context_kind : string
-
   val to_string : t -> string
 end) (Error : sig
   val makeError : Key.t * string -> [> error ]
