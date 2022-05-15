@@ -1,4 +1,4 @@
-(lang dune 2.7)
+(lang dune 3.1)
 (cram enable)
 (using menhir 2.0)
 (name mtt)
