@@ -32,7 +32,7 @@ let locate_start_end data s_pos e_pos =
 let locate ?(loc = NoSource) data = { data; loc }
 let empty pos = match pos with NoSource -> true | Source _ -> false
 
-let pp_column_range pos =
+let pprint_column_range pos =
   match pos with
   | Source pos ->
       [%string
@@ -60,4 +60,4 @@ let show_pos pos' =
       [%string "$(file), $(line), $(column)"]
   | NoSource -> "No position"
 
-let pp ?(msg = "") loc = [%string "$(msg)\n$(show_pos loc)"]
+let pprint ?(msg = "") loc = [%string "$(msg)\n$(show_pos loc)"]

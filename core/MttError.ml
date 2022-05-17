@@ -2,11 +2,11 @@
 
 let located_to_string Location.{ data = error; loc } =
   match error with
-  | `TypeMismatchError msg -> Location.pp ~msg loc
-  | `EvaluationError msg -> Location.pp ~msg loc
-  | `EnvUnboundRegularVarError (_, msg) -> Location.pp ~msg loc
-  | `EnvUnboundModalVarError (_, msg) -> Location.pp ~msg loc
-  | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pp ~msg loc
+  | `TypeMismatchError msg -> Location.pprint ~msg loc
+  | `EvaluationError msg -> Location.pprint ~msg loc
+  | `EnvUnboundRegularVarError (_, msg) -> Location.pprint ~msg loc
+  | `EnvUnboundModalVarError (_, msg) -> Location.pprint ~msg loc
+  | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pprint ~msg loc
 
 let to_string error =
   match error with

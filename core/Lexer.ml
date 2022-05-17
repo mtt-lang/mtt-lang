@@ -18,10 +18,12 @@ let alphanum = [%sedlex.regexp? lower_case_letter | digit | '_']
 let regular_ident = [%sedlex.regexp? lower_case_letter, Star alphanum]
 let modal_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'']
 let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum | '_']
-let rec nom buf = match%sedlex buf with Plus any_blank -> nom buf | _ -> ()
+
+let rec skip_blank buf =
+  match%sedlex buf with Plus any_blank -> skip_blank buf | _ -> ()
 
 let token buf =
-  nom buf;
+  skip_blank buf;
   match%sedlex buf with
   | eof -> EOF
   | "" -> EOF

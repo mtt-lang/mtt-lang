@@ -26,8 +26,8 @@ let mk_unbound_regular_var_inside_box_error box_expr_loc var_loc var =
   let msg =
     [%string
       "regular variable \"$(var_name)\" is accessed in box expression \
-       ($(Location.pp_column_range box_expr_loc)) at \
-       $(Location.pp_column_range var_loc)"]
+       ($(Location.pprint_column_range box_expr_loc)) at \
+       $(Location.pprint_column_range var_loc)"]
   in
   fail_in var_loc @@ `UnboundRegularVarInsideBoxError (var_loc, msg)
 
