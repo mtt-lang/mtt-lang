@@ -194,11 +194,11 @@ arith:
   | e1 = expr; SLASH; e2 = expr
     { Location.locate_start_end (BinOp {op = Div; e1; e2}) $symbolstartpos $endpos }
 
-(* Program is a sequence of top-level declarations which must end with an expression.
-   Type and value of a program is determined by the expression. *)
 prog:
   | e = expr
     { Location.locate_start_end (Program.Last (e)) $symbolstartpos $endpos }
+    
+    (* let idr = expr; prog *)
   | LET; idr = IDR; EQ; bound = expr; SEMICOLON; p = prog
     { Location.locate_start_end (Program.Let {idr = Id.R.mk idr; bound; next = p}) $symbolstartpos $endpos }
 

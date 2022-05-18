@@ -69,7 +69,8 @@ module Expr = struct
     Location.locate @@ Match { matched; zbranch; pred; sbranch }
 end
 
-(* Computation *)
+(* Program is a sequence of top-level declarations which must end with an expression.
+   Type and value of a program is determined by the expression. *)
 module Program = struct
   type t = t' Location.located
 
