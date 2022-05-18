@@ -31,6 +31,9 @@
 %token EQ
 %token UNIT (* Both term-level and type-level *)
 
+(* Computations *)
+%token SEMICOLON
+
 (* Keywords *)
 %token FST
 %token SND
@@ -53,10 +56,13 @@
 %{
   open Ast
   open Ast.Expr
+
+  module Mtt = struct end (* to avoid cicular dependency build error *)
 %}
 
 %start <Ast.Expr.t> expr_eof
 %start <Ast.Type.t> type_eof
+%start <Ast.Program.t> prog_eof
 
 %%
 
@@ -188,8 +194,19 @@ arith:
   | e1 = expr; SLASH; e2 = expr
     { Location.locate_start_end (BinOp {op = Div; e1; e2}) $symbolstartpos $endpos }
 
+(* Program is a sequence of top-level declarations which must end with an expression.
+   Type and value of a program is determined by the expression. *)
+prog:
+  | e = expr
+    { Location.locate_start_end (Program.Last (e)) $symbolstartpos $endpos }
+  | LET; idr = IDR; EQ; bound = expr; SEMICOLON; p = prog
+    { Location.locate_start_end (Program.Let {idr = Id.R.mk idr; bound; next = p}) $symbolstartpos $endpos }
+
 expr_eof:
   | e = expr; EOF { e }
 
 type_eof:
   | t = typ; EOF { t }
+
+prog_eof:
+  | p = prog; EOF { p }

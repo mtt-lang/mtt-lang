@@ -69,6 +69,14 @@ module Expr = struct
     Location.locate @@ Match { matched; zbranch; pred; sbranch }
 end
 
+(* Computation *)
+module Program = struct
+  type t = t' Location.located
+
+  and t' = Let of { idr : Id.R.t; bound : Expr.t; next : t } | Last of Expr.t
+  [@@deriving equal, sexp]
+end
+
 (** Values *)
 module Val = struct
   type t =

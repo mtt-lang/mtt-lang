@@ -38,6 +38,7 @@ let token buf =
   | '<' -> LANGLE
   | '>' -> RANGLE
   | ':' -> COLON
+  | ';' -> SEMICOLON
   | ',' -> COMMA
   | '*' | 0x00D7 -> CROSS
   | '+' -> PLUS

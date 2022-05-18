@@ -3,6 +3,7 @@ open PPrint
 open Ast
 
 module type DOC = sig
+  (* val of_prog : Program.t -> PPrint.document *)
   val of_type : Type.t -> PPrint.document
   val of_expr : Expr.t -> PPrint.document
   val of_val : Val.t -> PPrint.document
@@ -127,6 +128,16 @@ module Doc : DOC = struct
                the corresponding values from the closures' regular environment *)
         of_expr_with_free_vars env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
+  (*
+     let of_prog (p : Program.t) =
+       let open Program in
+       let rec walk (Location.{data = p; _}) =
+         match p with
+         | Let { idr; bound; next } -> group
+         (let_kwd
+         ^^^ !^(Id.R.to_string idr)
+         ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body)
+       in walk p *)
 end
 
 module type STR = sig

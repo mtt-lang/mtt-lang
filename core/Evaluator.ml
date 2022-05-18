@@ -83,27 +83,27 @@ let rec subst_m term identm Location.{ data = body; _ } =
         pred
         (subst_m term identm sbranch)
 
-let rec eval_open gamma Location.{ data = expr; _ } =
+let rec eval_expr_open gamma Location.{ data = expr; _ } =
   let open Expr in
   match expr with
   | Unit -> return Val.Unit
   | Pair { e1; e2 } ->
-      let%map v1 = eval_open gamma e1 and v2 = eval_open gamma e2 in
+      let%map v1 = eval_expr_open gamma e1 and v2 = eval_expr_open gamma e2 in
       Val.Pair { v1; v2 }
   | Fst { e } -> (
-      let%bind pv = eval_open gamma e in
+      let%bind pv = eval_expr_open gamma e in
       match pv with
       | Val.Pair { v1; v2 = _ } -> return v1
       | _ -> Result.fail @@ `EvaluationError "fst is stuck")
   | Snd { e } -> (
-      let%bind pv = eval_open gamma e in
+      let%bind pv = eval_expr_open gamma e in
       match pv with
       | Val.Pair { v1 = _; v2 } -> return v2
       | _ -> Result.fail @@ `EvaluationError "snd is stuck")
   | Nat { n } -> return @@ Val.Nat { n }
   | BinOp { op; e1; e2 } -> (
-      let%bind lhs = eval_open gamma e1 in
-      let%bind rhs = eval_open gamma e2 in
+      let%bind lhs = eval_expr_open gamma e1 in
+      let%bind rhs = eval_expr_open gamma e2 in
       match (lhs, rhs) with
       | Val.Nat { n = n1 }, Val.Nat { n = n2 } -> (
           match op with
@@ -125,34 +125,42 @@ let rec eval_open gamma Location.{ data = expr; _ } =
   | Fun { idr; ty_id = _; body } ->
       return @@ Val.Clos { idr; body; env = gamma }
   | App { fe; arge } -> (
-      let%bind fv = eval_open gamma fe in
-      let%bind argv = eval_open gamma arge in
+      let%bind fv = eval_expr_open gamma fe in
+      let%bind argv = eval_expr_open gamma arge in
       match fv with
       | Val.Clos { idr; body; env } ->
-          eval_open (Env.R.extend env idr argv) body
+          eval_expr_open (Env.R.extend env idr argv) body
       | _ ->
           Result.fail
           @@ `EvaluationError "Trying to apply an argument to a non-function")
   | Box { e } -> return @@ Val.Box { e }
   | Let { idr; bound; body } ->
-      let%bind bound_v = eval_open gamma bound in
-      eval_open (Env.R.extend gamma idr bound_v) body
+      let%bind bound_v = eval_expr_open gamma bound in
+      eval_expr_open (Env.R.extend gamma idr bound_v) body
   | Letbox { idm; boxed; body } -> (
-      let%bind boxed_v = eval_open gamma boxed in
+      let%bind boxed_v = eval_expr_open gamma boxed in
       match boxed_v with
-      | Val.Box { e } -> eval_open gamma (subst_m e idm body)
+      | Val.Box { e } -> eval_expr_open gamma (subst_m e idm body)
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
   | Match { matched; zbranch; pred; sbranch } -> (
-      let%bind v = eval_open gamma matched in
+      let%bind v = eval_expr_open gamma matched in
       match v with
       | Nat { n } ->
           let predn = Val.Nat { n = Nat.pred n } in
-          if Nat.equal n Nat.zero then eval_open gamma zbranch
-          else eval_open (Env.R.extend gamma pred predn) sbranch
+          if Nat.equal n Nat.zero then eval_expr_open gamma zbranch
+          else eval_expr_open (Env.R.extend gamma pred predn) sbranch
       | _ ->
           Result.fail
           @@ `EvaluationError "Pattern matching is supported for Nat now")
 
-let eval expr = eval_open Env.R.emp expr
+let rec eval_prog_open gamma Location.{ data = prog; _ } =
+  match prog with
+  | Program.Let { idr; bound; next } ->
+      let%bind bv = eval_expr_open gamma bound in
+      let gamma_ext = Env.R.extend gamma idr bv in
+      eval_prog_open gamma_ext next
+  | Program.Last expr -> eval_expr_open gamma expr
+
+let eval prog = eval_prog_open Env.R.emp prog

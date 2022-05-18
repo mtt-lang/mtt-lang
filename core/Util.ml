@@ -11,7 +11,7 @@ let parse_from_e : type a. a ast_kind -> input_kind -> (a, error) Result.t =
 
 (* Parsing and typechecking with error handling utilities *)
 let parse_and_typecheck source typ_str =
-  let%bind ast = parse_from_e Term source in
+  let%bind ast = parse_from_e Prog source in
   let%bind typ = parse_from_e Type (String typ_str) in
   Typechecker.check ast typ
   |> Result.map_error ~f:(fun infer_err ->
@@ -19,7 +19,7 @@ let parse_and_typecheck source typ_str =
 
 (* Parsing and type inference with error handling utilities *)
 let parse_and_typeinfer source =
-  let%bind ast = parse_from_e Term source in
+  let%bind ast = parse_from_e Prog source in
   Typechecker.infer ast
   |> Result.map_error ~f:(fun infer_err ->
          [%string
@@ -27,7 +27,7 @@ let parse_and_typeinfer source =
 
 (* Parsing and evaluation with error handling utilities *)
 let parse_and_eval source =
-  let%bind ast = parse_from_e Term source in
+  let%bind ast = parse_from_e Prog source in
   Evaluator.eval ast
   |> Result.map_error ~f:(fun eval_err ->
          [%string "Evaluation error: $(MttError.to_string eval_err)"])
