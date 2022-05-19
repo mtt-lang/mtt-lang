@@ -3,7 +3,6 @@ open PPrint
 open Ast
 
 module type DOC = sig
-  (* val of_prog : Program.t -> PPrint.document *)
   val of_type : Type.t -> PPrint.document
   val of_expr : Expr.t -> PPrint.document
   val of_val : Val.t -> PPrint.document
@@ -42,7 +41,7 @@ module Doc : DOC = struct
     let rec walk p = function
       | Unit -> unit_type
       | Nat -> nat_type
-      | Base { idt } -> !^idt
+      | Base { idt } -> !^(Id.T.to_string idt)
       | Prod { ty1; ty2 } ->
           parens_if (p > 1) (walk 1 ty1 ^^ cross ^^ walk 2 ty2)
       | Arr { dom; cod } ->
@@ -75,6 +74,7 @@ module Doc : DOC = struct
           | Ok v -> parens (of_val v)
           | Error _ -> !^(Id.R.to_string idr))
       | VarM { idm } -> !^(Id.M.to_string idm)
+      | VarD { idd } -> !^(Id.D.to_string idd)
       | Fun { idr; ty_id; body } ->
           (parens_if (p > 1))
             (fun_kwd
@@ -128,16 +128,10 @@ module Doc : DOC = struct
                the corresponding values from the closures' regular environment *)
         of_expr_with_free_vars env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
-  (*
-     let of_prog (p : Program.t) =
-       let open Program in
-       let rec walk (Location.{data = p; _}) =
-         match p with
-         | Let { idr; bound; next } -> group
-         (let_kwd
-         ^^^ !^(Id.R.to_string idr)
-         ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body)
-       in walk p *)
+    | Val.DCtor { idd; args } ->
+        let f doc arg = doc ^/^ of_val arg in
+        let init = !^(Id.D.to_string idd) in
+        List.fold_left ~init ~f args
 end
 
 module type STR = sig

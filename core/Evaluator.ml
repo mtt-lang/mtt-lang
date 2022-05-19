@@ -14,6 +14,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | BinOp { op = _; e1; e2 } -> Set.union (free_vars_m e1) (free_vars_m e2)
   | VarR _ -> Set.empty (module Id.M)
   | VarM { idm } -> Set.singleton (module Id.M) idm
+  | VarD _ -> Set.empty (module Id.M)
   | Fun { idr = _; ty_id = _; body } -> free_vars_m body
   | App { fe; arge } -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box { e } -> free_vars_m e
@@ -45,6 +46,7 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | BinOp { op; e1; e2 } ->
       binop op (subst_m term identm e1) (subst_m term identm e2)
   | VarR _i -> Location.locate body
+  | VarD _i -> Location.locate body
   | VarM { idm } ->
       if [%equal: Id.M.t] identm idm then term else Location.locate body
   | Fun { idr; ty_id; body } -> func idr ty_id (subst_m term identm body)
@@ -122,6 +124,7 @@ let rec eval_expr_open gamma Location.{ data = expr; _ } =
       Result.fail
       @@ `EvaluationError
            "Modal variable access is not possible in a well-typed term"
+  | VarD { idd } -> return @@ Val.DCtor { idd; args = [] }
   | Fun { idr; ty_id = _; body } ->
       return @@ Val.Clos { idr; body; env = gamma }
   | App { fe; arge } -> (
@@ -130,6 +133,8 @@ let rec eval_expr_open gamma Location.{ data = expr; _ } =
       match fv with
       | Val.Clos { idr; body; env } ->
           eval_expr_open (Env.R.extend env idr argv) body
+      | Val.DCtor { idd; args } ->
+          return @@ Val.DCtor { idd; args = args @ [ argv ] }
       | _ ->
           Result.fail
           @@ `EvaluationError "Trying to apply an argument to a non-function")
@@ -161,6 +166,7 @@ let rec eval_prog_open gamma Location.{ data = prog; _ } =
       let%bind bv = eval_expr_open gamma bound in
       let gamma_ext = Env.R.extend gamma idr bv in
       eval_prog_open gamma_ext next
+  | Program.Type { idt = _; decl = _; next } -> eval_prog_open gamma next
   | Program.Last expr -> eval_expr_open gamma expr
 
 let eval prog = eval_prog_open Env.R.emp prog

@@ -6,6 +6,8 @@ let located_to_string Location.{ data = error; loc } =
   | `EvaluationError msg -> Location.pprint ~msg loc
   | `EnvUnboundRegularVarError (_, msg) -> Location.pprint ~msg loc
   | `EnvUnboundModalVarError (_, msg) -> Location.pprint ~msg loc
+  | `EnvUnboundTypeVarError (_, msg) -> Location.pprint ~msg loc
+  | `EnvUnboundDCtorVarError (_, msg) -> Location.pprint ~msg loc
   | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pprint ~msg loc
 
 let to_string error =
@@ -13,4 +15,6 @@ let to_string error =
   | `EvaluationError msg -> msg
   | `EnvUnboundRegularVarError (_, msg) -> msg
   | `EnvUnboundModalVarError (_, msg) -> msg
+  | `EnvUnboundTypeVarError (_, msg) -> msg
+  | `EnvUnboundDCtorVarError (_, msg) -> msg
   | `TypeMismatchError msg -> msg

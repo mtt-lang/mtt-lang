@@ -14,10 +14,10 @@ let unsigned_integer = [%sedlex.regexp? digit, Star digit]
 let lower_case_letter = [%sedlex.regexp? 'a' .. 'z']
 let upper_case_letter = [%sedlex.regexp? 'A' .. 'Z']
 let letter = [%sedlex.regexp? lower_case_letter | upper_case_letter]
-let alphanum = [%sedlex.regexp? lower_case_letter | digit | '_']
+let alphanum = [%sedlex.regexp? letter | digit | '_']
 let regular_ident = [%sedlex.regexp? lower_case_letter, Star alphanum]
 let modal_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'']
-let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum | '_']
+let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum]
 
 let rec skip_blank buf =
   match%sedlex buf with Plus any_blank -> skip_blank buf | _ -> ()
@@ -50,6 +50,8 @@ let token buf =
   | "in" -> IN
   | "fun" | 0x03BB -> FUN
   | "let" -> LET
+  | "type" -> TYPE
+  | "of" -> OF
   | "box" -> BOX
   | "letbox" -> LETBOX
   | "match" -> MATCH

@@ -3,7 +3,9 @@ open Result.Let_syntax
 
 type error =
   [ `EnvUnboundRegularVarError of Id.R.t * string  (** variable id, message *)
-  | `EnvUnboundModalVarError of Id.M.t * string  (** variable id, message *) ]
+  | `EnvUnboundModalVarError of Id.M.t * string  (** variable id, message *)
+  | `EnvUnboundTypeVarError of Id.T.t * string  (** variable id, message *)
+  | `EnvUnboundDCtorVarError of Id.D.t * string  (** variable id, message *) ]
 
 module Make (Key : sig
   type t [@@deriving_inline sexp]
@@ -67,4 +69,20 @@ module M =
     (Id.M)
     (struct
       let makeError p = `EnvUnboundModalVarError p
+    end)
+
+(** Data constructors environment *)
+module D =
+  Make
+    (Id.D)
+    (struct
+      let makeError p = `EnvUnboundDCtorVarError p
+    end)
+
+(** Types environment *)
+module T =
+  Make
+    (Id.T)
+    (struct
+      let makeError p = `EnvUnboundTypeVarError p
     end)

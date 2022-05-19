@@ -1,18 +1,26 @@
 open Base
 
-type idT = string [@@deriving equal, sexp]
-
 (** Types *)
 module Type = struct
   type t =
     | Unit  (** Unit type *)
     | Nat  (** Type for numbers *)
-    | Base of { idt : idT }
+    | Base of { idt : Id.T.t }
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
     | Prod of { ty1 : t; ty2 : t }  (** Type of pairs *)
     | Arr of { dom : t; cod : t }  (** Type of functions *)
     | Box of { ty : t }  (** Type-level box *)
   [@@deriving equal, sexp]
+end
+
+(* Data constructor *)
+module DataCtor = struct
+  type t = { idd : Id.D.t; fields : Type.t list } [@@deriving sexp]
+end
+
+(* Type declaration *)
+module TypeDecl = struct
+  type t = DataCtor.t list [@@deriving sexp]
 end
 
 (** Expressions *)
@@ -34,6 +42,8 @@ module Expr = struct
     | VarM of { idm : Id.M.t }
         (** variables of the modal context (or "valid variables"),
         these are syntactically distinct from the regular (ordinary) variables *)
+    | VarD of { idd : Id.D.t }
+        (** using type identifier (starting with a capital letter) means calling data constructor **)
     | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
@@ -74,8 +84,11 @@ end
 module Program = struct
   type t = t' Location.located
 
-  and t' = Let of { idr : Id.R.t; bound : Expr.t; next : t } | Last of Expr.t
-  [@@deriving equal, sexp]
+  and t' =
+    | Let of { idr : Id.R.t; bound : Expr.t; next : t }
+    | Type of { idt : Id.T.t; decl : TypeDecl.t; next : t }
+    | Last of Expr.t
+  [@@deriving sexp]
 end
 
 (** Values *)
@@ -89,5 +102,6 @@ module Val = struct
         (** Deeply embedded closures *)
     | Box of { e : Expr.t }
         (** [box] value, basically it's an unevaluated expression *)
+    | DCtor of { idd : Id.D.t; args : t list }  (** data constructor **)
   [@@deriving sexp]
 end

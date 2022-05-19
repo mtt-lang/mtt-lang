@@ -76,7 +76,7 @@ let arbitrary_ast =
     in
     fun Mtt.Location.{ data = expr; _ } ->
       match expr with
-      | Expr.Unit | Expr.VarR _ | Expr.VarM _ -> empty
+      | Expr.Unit | Expr.VarR _ | Expr.VarM _ | Expr.VarD _ -> empty
       | Expr.Fst { e } -> shrink_unary Expr.fst e
       | Expr.Snd { e } -> shrink_unary Expr.snd e
       | Expr.Pair { e1; e2 } -> shrink_binary Expr.pair e1 e2

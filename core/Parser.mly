@@ -43,6 +43,8 @@
 %token LETBOX
 %token IN
 %token MATCH WITH PIPE END
+%token TYPE
+%token OF
 
 %right DARROW
 %right IN
@@ -77,7 +79,7 @@ typ:
 
     (* Uninterpreted base types *)
   | idt = IDT
-    { Type.Base {idt} }
+    { Type.Base {idt = Id.T.mk idt} }
 
     (* Type of pairs *)
   | ty1 = typ; CROSS; ty2 = typ
@@ -103,6 +105,10 @@ ident:
     (* Modal (i.e. valid) variables *)
   | name = IDM
     { Location.locate_start_end (VarM {idm = Id.M.mk name}) $symbolstartpos $endpos }
+
+    (* Data constructor *)
+  | name = IDT
+    { Location.locate_start_end (VarD {idd = Id.D.mk name}) $symbolstartpos $endpos }
 
 expr:
     (* value, or expression in brackes *)
@@ -194,13 +200,31 @@ arith:
   | e1 = expr; SLASH; e2 = expr
     { Location.locate_start_end (BinOp {op = Div; e1; e2}) $symbolstartpos $endpos }
 
+data_ctor:
+  | idd = IDT; OF; LPAREN; fields = separated_nonempty_list(COMMA, typ); RPAREN;
+    { DataCtor.{ idd = Id.D.mk idd; fields } }
+  | idd = IDT;
+    { DataCtor.{ idd = Id.D.mk idd; fields = [] } }
+  // | PIPE; idd = IDT;
+  //   { DataCtor.{ idd = Id.D.mk idd; fields = [] } }
+
 prog:
   | e = expr
     { Location.locate_start_end (Program.Last (e)) $symbolstartpos $endpos }
-    
+
     (* let idr = expr; prog *)
   | LET; idr = IDR; EQ; bound = expr; SEMICOLON; p = prog
     { Location.locate_start_end (Program.Let {idr = Id.R.mk idr; bound; next = p}) $symbolstartpos $endpos }
+
+  | TYPE; idt = IDT; EQ; option(PIPE); decl = separated_nonempty_list(PIPE, data_ctor); SEMICOLON; p = prog
+    { 
+      Location.locate_start_end (Program.Type {idt = Id.T.mk idt; decl; next = p}) $symbolstartpos $endpos
+    }
+
+  | TYPE; idt = IDT; SEMICOLON; p = prog
+    { 
+      Location.locate_start_end (Program.Type {idt = Id.T.mk idt; decl = []; next = p}) $symbolstartpos $endpos
+    }
 
 expr_eof:
   | e = expr; EOF { e }

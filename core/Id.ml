@@ -38,3 +38,31 @@ module M : ID = struct
   include T
   include Comparable.Make (T)
 end
+
+(** Type identifiers *)
+module T : ID = struct
+  module T' = struct
+    type t = string [@@deriving equal, compare, sexp]
+
+    let mk = Fn.id
+    let to_string = Fn.id
+    let context_kind = "type"
+  end
+
+  include T'
+  include Comparable.Make (T')
+end
+
+(** Data ctors identifiers *)
+module D : ID = struct
+  module T = struct
+    type t = string [@@deriving equal, compare, sexp]
+
+    let mk = Fn.id
+    let to_string = Fn.id
+    let context_kind = "data constructors"
+  end
+
+  include T
+  include Comparable.Make (T)
+end
