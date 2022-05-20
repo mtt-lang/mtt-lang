@@ -2,7 +2,9 @@ open Base
 
 (** Types *)
 module Type = struct
-  type t =
+  type t = t' Location.located
+
+  and t' =
     | Unit  (** Unit type *)
     | Nat  (** Type for numbers *)
     | Base of { idt : Id.T.t }
@@ -11,6 +13,13 @@ module Type = struct
     | Arr of { dom : t; cod : t }  (** Type of functions *)
     | Box of { ty : t }  (** Type-level box *)
   [@@deriving equal, sexp]
+
+  let unit = Location.locate Unit
+  let nat = Location.locate Nat
+  let base idt = Location.locate @@ Base { idt }
+  let prod ty1 ty2 = Location.locate @@ Prod { ty1; ty2 }
+  let arr dom cod = Location.locate @@ Arr { dom; cod }
+  let box ty = Location.locate @@ Box { ty }
 end
 
 (* Data constructor *)

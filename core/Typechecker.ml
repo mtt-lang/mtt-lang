@@ -45,11 +45,17 @@ module Envs = struct
   let extend_modal envs idm ty =
     { envs with modal = Env.M.extend envs.modal idm ty }
 
-  let extend_d_ctors envs idm ty =
-    { envs with d_ctors = Env.D.extend envs.d_ctors idm ty }
+  let extend_d_ctors envs idd ty =
+    { envs with d_ctors = Env.D.extend envs.d_ctors idd ty }
 
   let extend_types envs idt decl =
     { envs with types = Env.T.extend envs.types idt decl }
+
+  let rec extend_d_ctors_many envs pairs =
+    match pairs with
+    | (idd, ty) :: other ->
+        extend_d_ctors (extend_d_ctors_many envs other) idd ty
+    | [] -> envs
 
   let emp =
     {
@@ -60,16 +66,31 @@ module Envs = struct
     }
 end
 
+let rec check_type types Location.{ data = ty; loc } =
+  match ty with
+  | Type.Unit -> return @@ ()
+  | Type.Nat -> return @@ ()
+  | Type.Base { idt } ->
+      let%map _ = with_error_location loc @@ Env.T.lookup types idt in
+      ()
+  | Type.Arr { dom; cod } ->
+      let%map () = check_type types dom and () = check_type types cod in
+      ()
+  | Type.Box { ty } -> check_type types ty
+  | Type.Prod { ty1; ty2 } ->
+      let%map () = check_type types ty1 and () = check_type types ty2 in
+      ()
+
 let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
-    Location.{ data = expr; loc } typ =
+    Location.{ data = expr; loc } (Location.{ data = typ'; _ } as typ) =
   match expr with
   | Unit ->
       let exp_ty = PrettyPrinter.Str.of_type typ in
       with_error_location loc
-      @@ check_equal typ Type.Unit
+      @@ check_equal typ Type.unit
            [%string "Expected $exp_ty, but found Unit type"]
   | Pair { e1; e2 } -> (
-      match typ with
+      match typ' with
       | Type.Prod { ty1; ty2 } ->
           let%map () = check_expr_open envs e1 ty1
           and () = check_expr_open envs e2 ty2 in
@@ -80,7 +101,7 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
           @@ `TypeMismatchError
                [%string "Expected $exp_ty, but found product type"])
   | Fst { e } -> (
-      let%bind ty = infer_expr_open envs e in
+      let%bind Location.{ data = ty; _ } = infer_expr_open envs e in
       match ty with
       | Type.Prod { ty1; ty2 = _ } ->
           with_error_location loc
@@ -90,7 +111,7 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
           fail_in loc
           @@ `TypeMismatchError "fst is applied to a non-product type")
   | Snd { e } -> (
-      let%bind ty = infer_expr_open envs e in
+      let%bind Location.{ data = ty; _ } = infer_expr_open envs e in
       match ty with
       | Type.Prod { ty1 = _; ty2 } ->
           with_error_location loc
@@ -102,11 +123,11 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
   | Nat _ ->
       let exp_ty = PrettyPrinter.Str.of_type typ in
       with_error_location loc
-      @@ check_equal typ Type.Nat
+      @@ check_equal typ Type.nat
            [%string "Expected $exp_ty, but found Nat type"]
   | BinOp { op = _; e1; e2 } ->
-      let%map () = check_expr_open envs e1 Type.Nat
-      and () = check_expr_open envs e2 Type.Nat in
+      let%map () = check_expr_open envs e1 Type.nat
+      and () = check_expr_open envs e2 Type.nat in
       ()
   | VarR { idr } ->
       let%bind ty = with_error_location loc @@ Env.R.lookup regular idr in
@@ -121,7 +142,7 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
       with_error_location loc
       @@ check_equal typ ty "Unexpected data constructor type"
   | Fun { idr; ty_id; body } -> (
-      match typ with
+      match typ' with
       | Type.Arr { dom; cod } ->
           let%bind () =
             with_error_location loc
@@ -133,7 +154,7 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
           check_expr_open envs_ext body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
-      let%bind ty = infer_expr_open envs fe in
+      let%bind Location.{ data = ty; _ } = infer_expr_open envs fe in
       match ty with
       | Type.Arr { dom; cod } ->
           let%bind () = check_expr_open envs arge dom in
@@ -143,7 +164,7 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
           fail_in loc @@ `TypeMismatchError "Inferred type is not an arrow type"
       )
   | Box { e } -> (
-      match typ with
+      match typ' with
       | Type.Box { ty } -> (
           match check_expr_open { envs with Envs.regular = Env.R.emp } e ty with
           | Error { data = `EnvUnboundRegularVarError (var, _); loc = var_loc }
@@ -156,55 +177,56 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
       let envs_ext = Envs.extend_regular envs idr ty in
       check_expr_open envs_ext body typ
   | Letbox { idm; boxed; body } -> (
-      let%bind ty = infer_expr_open envs boxed in
+      let%bind Location.{ data = ty; _ } = infer_expr_open envs boxed in
       match ty with
       | Type.Box { ty } ->
           let envs_ext = Envs.extend_modal envs idm ty in
           check_expr_open envs_ext body typ
       | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
   | Match { matched; zbranch; pred; sbranch } ->
-      let%bind _ = check_expr_open envs matched Type.Nat in
+      let%bind _ = check_expr_open envs matched Type.nat in
       let%bind ty_empty = infer_expr_open envs zbranch in
-      let envs_ext = Envs.extend_regular envs pred Type.Nat in
+      let envs_ext = Envs.extend_regular envs pred Type.nat in
       check_expr_open envs_ext sbranch ty_empty
 
-and infer_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
-    Location.{ data = expr; loc } =
+and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
+    Location.{ data = expr; loc } : (Type.t, 'e lerror) Result.t =
   match expr with
-  | Unit -> return Type.Unit
+  | Unit -> return Type.unit
   | Pair { e1; e2 } ->
       let%map ty1 = infer_expr_open envs e1 and ty2 = infer_expr_open envs e2 in
-      Type.Prod { ty1; ty2 }
+      Type.prod ty1 ty2
   | Fst { e } -> (
-      let%bind ty = infer_expr_open envs e in
+      let%bind Location.{ data = ty; _ } = infer_expr_open envs e in
       match ty with
       | Type.Prod { ty1; ty2 = _ } -> return ty1
       | _ ->
           fail_in loc
           @@ `TypeMismatchError "fst is applied to a non-product type")
   | Snd { e } -> (
-      let%bind ty = infer_expr_open envs e in
+      let%bind Location.{ data = ty; _ } = infer_expr_open envs e in
       match ty with
       | Type.Prod { ty1 = _; ty2 } -> return ty2
       | _ ->
           fail_in loc
           @@ `TypeMismatchError "snd is applied to a non-product type")
-  | Nat _ -> return Type.Nat
+  | Nat _ -> return Type.nat
   | BinOp { op = _; e1; e2 } ->
-      let%map () = check_expr_open envs e1 Type.Nat
-      and () = check_expr_open envs e2 Type.Nat in
-      Type.Nat
+      let%map () = check_expr_open envs e1 Type.nat
+      and () = check_expr_open envs e2 Type.nat in
+      Type.nat
   | VarR { idr } -> with_error_location loc @@ Env.R.lookup regular idr
   | VarM { idm } -> with_error_location loc @@ Env.M.lookup modal idm
   | VarD { idd } -> with_error_location loc @@ Env.D.lookup d_ctors idd
   | Fun { idr; ty_id; body } ->
+      let%bind () = check_type types ty_id in
       let%map ty_body =
         let envs_ext = Envs.extend_regular envs idr ty_id in
         infer_expr_open envs_ext body
       in
-      Type.Arr { dom = ty_id; cod = ty_body }
+      Type.arr ty_id ty_body
   | App { fe; arge } -> (
-      let%bind ty = infer_expr_open envs fe in
+      let%bind Location.{ data = ty; _ } = infer_expr_open envs fe in
       match ty with
       | Type.Arr { dom; cod } ->
           let%bind () = check_expr_open envs arge dom in
@@ -220,23 +242,23 @@ and infer_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
             mk_unbound_regular_var_inside_box_error loc var_loc var
         | x -> x
       in
-      Type.Box { ty }
+      Type.box ty
   | Let { idr; bound; body } ->
       let%bind ty = infer_expr_open envs bound in
       let envs_ext = Envs.extend_regular envs idr ty in
       infer_expr_open envs_ext body
   | Letbox { idm; boxed; body } -> (
-      let%bind tyb = infer_expr_open envs boxed in
+      let%bind Location.{ data = tyb; _ } = infer_expr_open envs boxed in
       match tyb with
       | Type.Box { ty } ->
           let envs_ext = Envs.extend_modal envs idm ty in
           infer_expr_open envs_ext body
       | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
   | Match { matched; zbranch; pred; sbranch } ->
-      let%bind _ = check_expr_open envs matched Type.Nat in
+      let%bind _ = check_expr_open envs matched Type.nat in
       let%bind ty_zero = infer_expr_open envs zbranch in
       let%bind ty_succ =
-        let envs_ext = Envs.extend_regular envs pred Type.Nat in
+        let envs_ext = Envs.extend_regular envs pred Type.nat in
         infer_expr_open envs_ext sbranch
       in
       let%bind () =
@@ -246,19 +268,24 @@ and infer_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
       in
       return ty_zero
 
-let data_ctor_type idt d_ctor =
-  let f field_ty ty = Type.Arr { dom = field_ty; cod = ty } in
-  let init = Type.Base { idt } in
-  List.fold_right ~f ~init DataCtor.(d_ctor.fields)
+let data_ctor_type envs idt DataCtor.{ idd = _; fields } :
+    (Type.t, 'e lerror) Result.t =
+  let%bind () =
+    Result.all_unit @@ List.map fields ~f:(check_type Envs.(envs.types))
+  in
+  let f field_ty ty = Type.arr field_ty ty in
+  let init = Type.base idt in
+  return @@ List.fold_right ~f ~init fields
 
 let decl_type idt decl envs =
-  let types_ext = Env.T.extend Envs.(envs.types) idt decl in
-  let f d_ctor d_ctors =
-    Env.D.extend d_ctors DataCtor.(d_ctor.idd) (data_ctor_type idt d_ctor)
+  let envs_ext = Envs.extend_types envs idt decl in
+  let%bind d_ctor_types =
+    Result.all @@ List.map decl ~f:(data_ctor_type envs idt)
   in
-  let init = Envs.(envs.d_ctors) in
-  let d_ctors_ext = List.fold_right ~f ~init decl in
-  { envs with Envs.types = types_ext; Envs.d_ctors = d_ctors_ext }
+  let idds = List.map decl ~f:(fun d_ctor -> DataCtor.(d_ctor.idd)) in
+  return
+  @@ Envs.extend_d_ctors_many envs_ext
+  @@ Stdlib.List.combine idds d_ctor_types
 
 let rec check_prog_open envs Location.{ data = prog; _ } typ =
   match prog with
@@ -268,7 +295,8 @@ let rec check_prog_open envs Location.{ data = prog; _ } typ =
       check_prog_open envs_ext next typ
   | Program.Last expr -> check_expr_open envs expr typ
   | Program.Type { idt; decl; next } ->
-      check_prog_open (decl_type idt decl envs) next typ
+      let%bind envs_ext = decl_type idt decl envs in
+      check_prog_open envs_ext next typ
 
 let rec infer_prog_open envs Location.{ data = prog; _ } =
   match prog with
@@ -278,7 +306,8 @@ let rec infer_prog_open envs Location.{ data = prog; _ } =
       infer_prog_open envs_ext next
   | Program.Last expr -> infer_expr_open envs expr
   | Program.Type { idt; decl; next } ->
-      infer_prog_open (decl_type idt decl envs) next
+      let%bind envs_ext = decl_type idt decl envs in
+      infer_prog_open envs_ext next
 
 let check prog typ = check_prog_open Envs.emp prog typ
 let infer prog = infer_prog_open Envs.emp prog

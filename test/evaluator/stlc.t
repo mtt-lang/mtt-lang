@@ -3,6 +3,7 @@ a function like (λa: A. a) you can apply it to the unit value ().
 
 K I = K*
   $ mtt eval <<EOF
+  > type A; type B;
   > <((λa: (A -> A). λb: B. a) (λa: A. a)) (),
   >  (λa: A. λb: B. b) ()>
   > EOF
@@ -10,21 +11,25 @@ K I = K*
 
 'Let .. in' expression
   $ mtt eval <<EOF
+  > type A;
   > let y = () in (fun x: A. x) y
   > EOF
   ()
 
   $ mtt eval <<EOF
+  > type A;
   > let f = fun x: A. < x, x > in f ()
   > EOF
   <(), ()>
 
   $ mtt eval <<EOF
+  > type A; type B;
   > let f = fun p: A * B. < snd p, fst p > in f < (), () >
   > EOF
   <(), ()>
 
   $ mtt eval <<EOF
+  > type A; type B;
   > (fun p: A * B. 
   > let f = fst p in
   > let s = snd p in
@@ -34,54 +39,58 @@ K I = K*
 
 Shadowing x
   $ mtt eval <<EOF
+  > type A;
   > (let x = () in let x = fun a: A. a in x x)
   > EOF
   λa. a
 
 Church numerals
   $ mtt eval <<EOF
-  > let n0 = λf:F. λx:X . x in
-  > let n1 = λf:F. λx:X . f x in
-  > let n2 = λf:F. λx:X . f (f x) in
-  > let n3 = λf:F. λx:X . f (f (f x)) in
-  > let n4 = λf:F. λx:X . f (f (f (f x))) in
+  > type A; type B; type F; type X; type V;
   > 
-  > let true = λx:A. λy:B . x in
-  > let false = λx:A . λy:B . y in
-  > let if = λp:P. λt:A. λe:B. (p t) e in
+  > let n0 = λf:F. λx:X . x;
+  > let n1 = λf:F. λx:X . f x;
+  > let n2 = λf:F. λx:X . f (f x);
+  > let n3 = λf:F. λx:X . f (f (f x));
+  > let n4 = λf:F. λx:X . f (f (f (f x)));
   > 
-  > let pair = λa:A . λb:B . λt:A -> B -> C . (t a) b in
-  > let fstt = λp:A -> B -> C. p (λx:A. λy:B . x) in
-  > let sndd = λp:A -> B -> C. p (λx:A . λy:B . y) in
+  > let true = λx:A. λy:B . x;
+  > let false = λx:A . λy:B . y;
+  > let if = λp:P. λt:A. λe:B. (p t) e;
   > 
-  > let succc = λn:N. λf:F. λx:X. f ((n f) x) in
-  > let pred = λn:N. λf:F. λx:X. sndd ( ( n (λp:P . ( pair (f (fstt p)) ) (fstt p) ) ) ( (pair x) x ) ) in
-  > let minus = λn:N. λm:N. (m pred) n in 
+  > let pair = λa:A . λb:B . λt:A -> B -> C . (t a) b;
+  > let fstt = λp:A -> B -> C. p (λx:A. λy:B . x);
+  > let sndd = λp:A -> B -> C. p (λx:A . λy:B . y);
   > 
-  > let not = λb:B . ((if b) false) true in
-  > let iszero = λn:N. (n (λx:N. false)) true in
-  > let and = λn:N. λm:N. ((if n) m) false in
-  > let eq = λn:N. λm:N. ( and (iszero ( (minus n) m)) ) (iszero ( (minus m) n)) in
+  > let succc = λn:N. λf:F. λx:X. f ((n f) x);
+  > let pred = λn:N. λf:F. λx:X. sndd ( ( n (λp:P . ( pair (f (fstt p)) ) (fstt p) ) ) ( (pair x) x ) );
+  > let minus = λn:N. λm:N. (m pred) n; 
   > 
-  > let plus = λn:N. λm:N. λf:F. λx:X. (n f) ((m f) x) in
-  > let mult = λn:N. λm:N. λf:F. λx:X. (n (m f)) x in
+  > let not = λb:B . ((if b) false) true;
+  > let iszero = λn:N. (n (λx:N. false)) true;
+  > let and = λn:N. λm:N. ((if n) m) false;
+  > let eq = λn:N. λm:N. ( and (iszero ( (minus n) m)) ) (iszero ( (minus m) n));
   > 
-  > let fix = λf:F. (λx:X. f (λv:V. (x x) v)) (λx:X. f (λv:V. (x x) v)) in
-  > let fact = λfact:F. λn:N. (((if (iszero n)) (λu:(). n1)) (λu:(). (mult n) (fact (pred n)))) () in
-  > let factorial = fix fact in
+  > let plus = λn:N. λm:N. λf:F. λx:X. (n f) ((m f) x);
+  > let mult = λn:N. λm:N. λf:F. λx:X. (n (m f)) x;
   > 
-  > let test1 = (eq n3) n2 in
-  > let test2 = (eq n2) n3 in
-  > let test3 = (eq n2) n2 in
-  > let eqtests = (and ((and (not test1)) (not test2))) test3 in
-  > let test4 = (eq n3) ((plus n2) n1) in
-  > let test5 = (eq n3) ((plus n2) n2) in
-  > let plustest = (and test4) (not test5) in
-  > let test6 = (eq n2) ((mult n2) n1) in
-  > let test7 = (eq n4) ((mult n2) n2) in
-  > let multest = (and test6) test7 in
-  > let factest = (eq ((mult n2) n3)) (factorial n3) in
-  > let runtest = (and ((and ((and eqtests) plustest)) multest)) factest in runtest
+  > let fix = λf:F. (λx:X. f (λv:V. (x x) v)) (λx:X. f (λv:V. (x x) v));
+  > let fact = λfact:F. λn:N. (((if (iszero n)) (λu:(). n1)) (λu:(). (mult n) (fact (pred n)))) ();
+  > let factorial = fix fact;
+  > 
+  > let test1 = (eq n3) n2;
+  > let test2 = (eq n2) n3;
+  > let test3 = (eq n2) n2;
+  > let eqtests = (and ((and (not test1)) (not test2))) test3;
+  > let test4 = (eq n3) ((plus n2) n1);
+  > let test5 = (eq n3) ((plus n2) n2);
+  > let plustest = (and test4) (not test5);
+  > let test6 = (eq n2) ((mult n2) n1);
+  > let test7 = (eq n4) ((mult n2) n2);
+  > let multest = (and test6) test7;
+  > let factest = (eq ((mult n2) n3)) (factorial n3);
+  > let runtest = (and ((and ((and eqtests) plustest)) multest)) factest; 
+  > runtest
   > EOF
   λx. λy : B. x
 
@@ -152,6 +161,8 @@ test for Nat
   <41, 42>
 
   $ mtt eval <<EOF
+  > type A; type B;
+  > 
   > let mkpair = fun a: A. fun b: B. <a, b> in
   > let next = fun n: Nat. n + 1 in
   > let f = fun n: Nat.
@@ -164,6 +175,8 @@ test for Nat
   <100, 101>
 
   $ mtt eval <<EOF
+  > type A;
+  > 
   > let f = fun x: A. 10 in
   > match f () with
   > | zero => 1

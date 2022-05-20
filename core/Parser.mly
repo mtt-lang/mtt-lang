@@ -71,27 +71,27 @@
 typ:
     (* Unit type *)
   | UNIT
-    { Type.Unit }
+    { Location.locate_start_end Type.Unit $symbolstartpos $endpos }
 
     (* Type of Nat (UIntZ now) *)
   | TNAT
-    { Type.Nat }
+    { Location.locate_start_end Type.Nat $symbolstartpos $endpos }
 
     (* Uninterpreted base types *)
   | idt = IDT
-    { Type.Base {idt = Id.T.mk idt} }
+    { Location.locate_start_end (Type.Base {idt = Id.T.mk idt}) $symbolstartpos $endpos }
 
     (* Type of pairs *)
   | ty1 = typ; CROSS; ty2 = typ
-    { Type.Prod {ty1; ty2} }
+    { Location.locate_start_end (Type.Prod {ty1; ty2}) $symbolstartpos $endpos }
 
     (* Type of functions *)
   | dom = typ; ARROW; cod = typ
-    { Type.Arr {dom; cod} }
+    { Location.locate_start_end (Type.Arr {dom; cod}) $symbolstartpos $endpos }
 
     (* Type-level box *)
   | TBOX; ty = typ
-    { Type.Box {ty} }
+    { Location.locate_start_end (Type.Box {ty}) $symbolstartpos $endpos }
 
     (* Parenthesized type expressions *)
   | LPAREN; ty = typ; RPAREN

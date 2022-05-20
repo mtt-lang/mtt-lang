@@ -38,7 +38,8 @@ module Doc : DOC = struct
 
   let of_type =
     let open Type in
-    let rec walk p = function
+    let rec walk p Location.{ data = ty; _ } =
+      match ty with
       | Unit -> unit_type
       | Nat -> nat_type
       | Base { idt } -> !^(Id.T.to_string idt)
