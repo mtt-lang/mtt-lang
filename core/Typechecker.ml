@@ -268,6 +268,7 @@ and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
       in
       return ty_zero
 
+(* TODO: Check for data constructor redefinition *)
 let data_ctor_type envs idt DataCtor.{ idd = _; fields } :
     (Type.t, 'e lerror) Result.t =
   let%bind () =
@@ -277,6 +278,7 @@ let data_ctor_type envs idt DataCtor.{ idd = _; fields } :
   let init = Type.base idt in
   return @@ List.fold_right ~f ~init fields
 
+(* TODO: Check for type redefinition *)
 let decl_type idt decl envs =
   let envs_ext = Envs.extend_types envs idt decl in
   let%bind d_ctor_types =
