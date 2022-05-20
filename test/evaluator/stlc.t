@@ -44,6 +44,12 @@ Shadowing x
   > EOF
   λa. a
 
+  $ mtt eval <<EOF
+  > type A;
+  > (let x = 5 in fun x: (). x)
+  > EOF
+  λx. x
+
 Church numerals
   $ mtt eval <<EOF
   > type A; type B; type F; type X; type V;
