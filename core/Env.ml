@@ -36,6 +36,8 @@ struct
   (** Extend environment with a key and the corresponding value *)
   let extend env k v = (k, v) :: env
 
+  let narrow env k = List.Assoc.remove env ~equal:Key.equal k
+
   (** Find the value corresponding to a key identifier
       NOTE: effectively type of error (EnvUnboundRegularVarError or
             EnvUnboundModalVariableError) depends on type of ID, but ocaml can't check it.

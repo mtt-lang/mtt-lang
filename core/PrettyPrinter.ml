@@ -117,17 +117,19 @@ module Doc : DOC = struct
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
   and of_expr e = of_expr_with_free_vars Env.R.emp e
 
+  (* TODO: improve DCtor printing *)
   and of_val = function
     | Val.Unit -> unit_term
     | Val.Nat { n } -> !^(Nat.to_string n)
     | Val.Pair { v1; v2 } -> group (angles (of_val v1 ^^ comma ^/^ of_val v2))
     | Val.Clos { idr; body; env } ->
+        let narrowed_env = Env.R.narrow env idr in
         fun_kwd
         ^^ !^(Id.R.to_string idr)
         ^^ dot
         ^^^ (* when print out closures, substitute the free vars in its body with
                the corresponding values from the closures' regular environment *)
-        of_expr_with_free_vars env body
+        of_expr_with_free_vars narrowed_env body
     | Val.Box { e } -> box_kwd ^^^ of_expr e
     | Val.DCtor { idd; args } ->
         let f doc arg = doc ^/^ of_val arg in
