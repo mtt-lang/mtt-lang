@@ -95,6 +95,10 @@ let rec extend_envs_with_pattern envs Location.{ data = pattern; loc } ty =
   let open Pattern in
   let given_ty = PrettyPrinter.Str.of_type ty in
   let Location.{ data = ty'; _ } = ty in
+  let fail_cause_type_mismatch expected =
+    fail_in loc
+    @@ `TypeMismatchError [%string "Expected $expected, but found $given_ty"]
+  in
 
   match pattern with
   | Ignore -> return envs
@@ -104,10 +108,15 @@ let rec extend_envs_with_pattern envs Location.{ data = pattern; loc } ty =
       | Type.Prod { ty1; ty2 } ->
           let%bind envs_ext = extend_envs_with_pattern envs sub1 ty1 in
           extend_envs_with_pattern envs_ext sub2 ty2
-      | _ ->
-          fail_in loc
-          @@ `TypeMismatchError
-               [%string "Expected product type, but found $given_ty"])
+      | _ -> fail_cause_type_mismatch "product type")
+  | Nat { n = _ } -> (
+      match ty' with
+      | Type.Nat -> return envs
+      | _ -> fail_cause_type_mismatch "Nat")
+  | Unit -> (
+      match ty' with
+      | Type.Unit -> return envs
+      | _ -> fail_cause_type_mismatch "Unit")
   | DCtor { idd; subs } -> (
       match ty' with
       | Type.Base { idt } ->
@@ -133,10 +142,7 @@ let rec extend_envs_with_pattern envs Location.{ data = pattern; loc } ty =
           in
           let init = return envs in
           List.fold_right field_sub_pairs ~f ~init
-      | _ ->
-          fail_in loc
-          @@ `TypeMismatchError
-               [%string "Expected base type, but found $given_ty"])
+      | _ -> fail_cause_type_mismatch "base type")
 
 let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
     Location.{ data = expr; loc } (Location.{ data = typ'; _ } as typ) =

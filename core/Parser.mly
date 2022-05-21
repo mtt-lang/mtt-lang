@@ -214,6 +214,12 @@ atom_pattern:
   | UNDERSCORE
     { Location.locate_start_end (Pattern.Ignore) $symbolstartpos $endpos }
 
+  | UNIT
+    { Location.locate_start_end (Pattern.Unit) $symbolstartpos $endpos }
+
+  | n = UINTZ
+    { Location.locate_start_end (Pattern.Nat {n}) $symbolstartpos $endpos }
+
   | idr = IDR
     { Location.locate_start_end (Pattern.VarR {idr = Id.R.mk idr}) $symbolstartpos $endpos }
 

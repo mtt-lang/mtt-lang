@@ -36,6 +36,8 @@ module Pattern = struct
     | VarR of { idr : Id.R.t }
     | DCtor of { idd : Id.D.t; subs : t list }
     | Pair of { sub1 : t; sub2 : t }
+    | Nat of { n : Nat.t }
+    | Unit
   [@@deriving equal, sexp]
 
   let ignore = Location.locate Ignore

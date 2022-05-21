@@ -68,6 +68,8 @@ module Doc : DOC = struct
           let init = !^(Id.D.to_string idd) in
           List.fold_left ~init ~f:( ^/^ ) subs
       | VarR { idr } -> !^(Id.R.to_string idr)
+      | Unit -> unit_term
+      | Nat { n } -> !^(Nat.to_string n)
     in
     walk 0 pttrn
 

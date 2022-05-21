@@ -112,6 +112,14 @@ let rec match_pattern gamma Location.{ data = pattern; _ } (v : Val.t) =
           else return None
       | _ -> Result.fail @@ `EvaluationError "Pattern expected data constructor"
       )
+  | Nat { n } -> (
+      match v with
+      | Nat { n = n' } -> return @@ Option.some_if (Nat.equal n n') []
+      | _ -> Result.fail @@ `EvaluationError "Pattern expected Nat type")
+  | Unit -> (
+      match v with
+      | Unit -> return @@ Some []
+      | _ -> Result.fail @@ `EvaluationError "Pattern expected IUnit type")
 
 module List = struct
   include List
