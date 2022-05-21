@@ -5,6 +5,8 @@ type error =
   [ `TypeMismatchError of string
   | `UnboundRegularVarInsideBoxError of Location.t * string
     (** var location, message *)
+  | `DataCtorArgsQuantityMismatch of string
+  | `TypeOfEmptyMatchCannotBeInferred
   | Env.error ]
 
 type 'e lerror = ([> error ] as 'e) Location.located

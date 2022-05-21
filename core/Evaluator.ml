@@ -23,9 +23,9 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
         (Set.diff (free_vars_m body) (Set.singleton (module Id.M) idm))
-  | Match { matched; zbranch; pred = _; sbranch } ->
-      Set.union (free_vars_m matched)
-      @@ Set.union (free_vars_m zbranch) (free_vars_m sbranch)
+  | Match { matched; branches } ->
+      List.fold_right ~init:(free_vars_m matched) ~f:Set.union
+      @@ List.map ~f:(fun (_, body) -> free_vars_m body) branches
 
 let refresh_m idm fvs =
   let rec loop (idm : Id.M.t) =
@@ -78,12 +78,56 @@ let rec subst_m term identm Location.{ data = body; _ } =
                   boxed = subst_m term identm boxed;
                   body = subst_m term identm body;
                 })
-  | Match { matched; zbranch; pred; sbranch } ->
-      match_with
-        (subst_m term identm matched)
-        (subst_m term identm zbranch)
-        pred
-        (subst_m term identm sbranch)
+  | Match { matched; branches } ->
+      match_with (subst_m term identm matched)
+      @@ List.map
+           ~f:(fun (pattern, body) -> (pattern, subst_m term identm body))
+           branches
+
+let rec match_pattern gamma Location.{ data = pattern; _ } (v : Val.t) =
+  let open Pattern in
+  match pattern with
+  | Ignore -> return @@ Some []
+  | VarR { idr } -> return @@ Some [ (idr, v) ]
+  | Pair { sub1; sub2 } -> (
+      match v with
+      | Pair { v1; v2 } ->
+          let%bind match1 = match_pattern gamma sub1 v1 in
+          let%bind match2 = match_pattern gamma sub2 v2 in
+          return @@ Option.map ~f:List.concat @@ Option.all [ match1; match2 ]
+      | _ -> Result.fail @@ `EvaluationError "Pattern expected pair")
+  | DCtor { idd; subs } -> (
+      match v with
+      | DCtor { idd = idd'; args } ->
+          if Id.D.equal idd idd' then
+            let%bind _ =
+              Result.ok_if_true
+                (List.length subs = List.length args)
+                ~error:(`EvaluationError "Pattern arguments number mismatch")
+            in
+            let combined = Caml.List.combine subs args in
+            let f (sub, v) = match_pattern gamma sub v in
+            let%bind matches = Result.all @@ List.map ~f combined in
+            return @@ Option.map ~f:List.concat @@ Option.all matches
+          else return None
+      | _ -> Result.fail @@ `EvaluationError "Pattern expected data constructor"
+      )
+
+module List = struct
+  include List
+
+  let rec find_result xs ~f =
+    match xs with
+    | [] -> Result.return None
+    | x :: xs' -> (
+        let res = f x in
+        match res with
+        | Ok opt -> (
+            match opt with
+            | Some _ -> Result.return opt
+            | None -> find_result xs' ~f)
+        | Error _ -> res)
+end
 
 let rec eval_expr_open gamma Location.{ data = expr; _ } =
   let open Expr in
@@ -149,16 +193,20 @@ let rec eval_expr_open gamma Location.{ data = expr; _ } =
       | _ ->
           Result.fail @@ `EvaluationError "Trying to unbox a non-box expression"
       )
-  | Match { matched; zbranch; pred; sbranch } -> (
+  | Match { matched; branches } ->
       let%bind v = eval_expr_open gamma matched in
-      match v with
-      | Nat { n } ->
-          let predn = Val.Nat { n = Nat.pred n } in
-          if Nat.equal n Nat.zero then eval_expr_open gamma zbranch
-          else eval_expr_open (Env.R.extend gamma pred predn) sbranch
-      | _ ->
-          Result.fail
-          @@ `EvaluationError "Pattern matching is supported for Nat now")
+      let try_branch (pattern, body) =
+        let%bind new_vars_opt = match_pattern gamma pattern v in
+        match new_vars_opt with
+        | Some new_vars ->
+            let gamma_ext = Env.R.extend_many gamma new_vars in
+            let%bind res_v = eval_expr_open gamma_ext body in
+            return @@ Some res_v
+        | None -> return None
+      in
+      let%bind res_v = List.find_result ~f:try_branch branches in
+      Result.of_option res_v
+        ~error:(`EvaluationError "Match expression is not exhaustive")
 
 let rec eval_prog_open gamma Location.{ data = prog; _ } =
   match prog with

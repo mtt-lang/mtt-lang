@@ -30,6 +30,7 @@ let token buf =
   | "[]" | 0x25A1 -> TBOX
   | "->" | 0x2192 -> ARROW
   | "=>" | 0x21D2 | '.' -> DARROW
+  | "_" -> UNDERSCORE
   | "=" -> EQ
   | "()" -> UNIT
   | "Nat" | 0x2115 -> TNAT
@@ -57,8 +58,6 @@ let token buf =
   | "match" -> MATCH
   | "with" -> WITH
   | "end" -> END
-  | "zero" -> ZERO
-  | "succ" -> SUCC
   | unsigned_integer -> UINTZ (Nat.of_string (Utf8.lexeme buf))
   | regular_ident -> IDR (Utf8.lexeme buf)
   | modal_ident -> IDM (Utf8.lexeme buf)

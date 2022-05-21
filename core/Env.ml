@@ -36,7 +36,16 @@ struct
   (** Extend environment with a key and the corresponding value *)
   let extend env k v = (k, v) :: env
 
+  let extend_many env k_v_pairs = k_v_pairs @ env
   let narrow env k = List.Assoc.remove env ~equal:Key.equal k
+
+  let make_error_of_abscence k =
+    let var_name = Key.to_string k in
+    let message =
+      [%string
+        "\"$(var_name)\" is not found in the $(Key.context_kind) environment!"]
+    in
+    Error.makeError (k, message)
 
   (** Find the value corresponding to a key identifier
       NOTE: effectively type of error (EnvUnboundRegularVarError or
@@ -46,15 +55,7 @@ struct
     let typ_o = List.Assoc.find env k ~equal:Key.equal in
     match typ_o with
     | Some t -> return t
-    | None ->
-        let var_name = Key.to_string k in
-        let message =
-          [%string
-            "\"$(var_name)\" is not found in the $(Key.context_kind) \
-             environment!"]
-        in
-        let error = Error.makeError (k, message) in
-        Result.fail error
+    | None -> Result.fail @@ make_error_of_abscence k
 end
 
 (** Regular environment *)

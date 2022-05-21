@@ -32,8 +32,6 @@ module Doc : DOC = struct
   let match_kwd = !^"match"
   let with_kwd = !^"with"
   let end_kwd = !^"end"
-  let zero_kwd = !^"zero" (* A temporary token for pattern matching on Nat *)
-  let succ_kwd = !^"succ" (* A temporary token for pattern matching on Nat *)
   let parens_if b = if b then parens else fun x -> x
 
   let of_type =
@@ -54,6 +52,24 @@ module Doc : DOC = struct
   let of_binop op =
     let open Expr in
     match op with Add -> plus | Sub -> minus | Mul -> star | Div -> slash
+
+  let of_pattern pttrn =
+    let rec walk p Location.{ data = pattern; loc = _ } =
+      let open Pattern in
+      match pattern with
+      | Ignore -> !^"_"
+      | Pair { sub1; sub2 } ->
+          group @@ angles @@ walk 0 sub1 ^^ comma ^/^ walk 0 sub2
+      | DCtor { idd; subs } ->
+          group
+          @@ parens_if (p > 0)
+          @@
+          let subs = List.map subs ~f:(walk 1) in
+          let init = !^(Id.D.to_string idd) in
+          List.fold_left ~init ~f:( ^/^ ) subs
+      | VarR { idr } -> !^(Id.R.to_string idr)
+    in
+    walk 0 pttrn
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
@@ -96,20 +112,14 @@ module Doc : DOC = struct
                (letbox_kwd
                ^^^ !^(Id.M.to_string idm)
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body))
-      | Match { matched; zbranch; pred; sbranch } ->
-          let indentz = String.length (String.concat [ "| zero "; "=> " ]) in
-          let indents =
-            String.length
-              (String.concat [ "| succ "; Id.R.to_string pred; " => " ])
+      | Match { matched; branches } ->
+          let of_branch (pattern, body) =
+            let doc_case = bar ^^^ of_pattern pattern ^^^ darrow in
+            break 1 ^^ doc_case ^^^ align (walk 1 body)
           in
           (parens_if (p > 1))
-            (match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
-           ^^^ darrow
-            ^^^ nest indentz (walk 1 zbranch)
-            ^/^ bar ^^^ succ_kwd
-            ^^^ !^(Id.R.to_string pred)
-            ^^^ darrow
-            ^^^ nest indents (walk 1 sbranch)
+            (match_kwd ^^^ walk 1 matched ^^^ with_kwd
+            ^^^ concat_map of_branch branches
             ^/^ end_kwd)
     in
     walk 0 expr

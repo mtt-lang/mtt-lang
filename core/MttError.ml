@@ -9,6 +9,8 @@ let located_to_string Location.{ data = error; loc } =
   | `EnvUnboundTypeVarError (_, msg) -> Location.pprint ~msg loc
   | `EnvUnboundDCtorVarError (_, msg) -> Location.pprint ~msg loc
   | `UnboundRegularVarInsideBoxError (_, msg) -> Location.pprint ~msg loc
+  | `DataCtorArgsQuantityMismatch msg -> Location.pprint ~msg loc
+  | `TypeOfEmptyMatchCannotBeInferred -> Location.pprint ~msg:"" loc
 
 let to_string error =
   match error with

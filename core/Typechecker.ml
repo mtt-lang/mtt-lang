@@ -6,6 +6,8 @@ open Ast.Expr
 type error =
   [ `TypeMismatchError of string
   | `UnboundRegularVarInsideBoxError of Location.t * string
+  | `DataCtorArgsQuantityMismatch of string
+  | `TypeOfEmptyMatchCannotBeInferred
   | Env.error ]
 
 type 'e lerror = ([> error ] as 'e) Location.located
@@ -51,11 +53,8 @@ module Envs = struct
   let extend_types envs idt decl =
     { envs with types = Env.T.extend envs.types idt decl }
 
-  let rec extend_d_ctors_many envs pairs =
-    match pairs with
-    | (idd, ty) :: other ->
-        extend_d_ctors (extend_d_ctors_many envs other) idd ty
-    | [] -> envs
+  let extend_d_ctors_many envs idd_ty_pairs =
+    { envs with d_ctors = Env.D.extend_many envs.d_ctors idd_ty_pairs }
 
   let emp =
     {
@@ -80,6 +79,64 @@ let rec check_type types Location.{ data = ty; loc } =
   | Type.Prod { ty1; ty2 } ->
       let%map () = check_type types ty1 and () = check_type types ty2 in
       ()
+
+let rec lookup_d_ctor_in_decl decl idd =
+  match decl with
+  | DataCtor.{ idd = idd'; fields } :: other ->
+      if Id.D.equal idd idd' then return fields
+      else lookup_d_ctor_in_decl other idd
+  | [] -> Result.fail @@ Env.D.make_error_of_abscence idd
+
+let lookup_d_ctor_in_type envs idt idd =
+  let%bind decl = Env.T.lookup Envs.(envs.types) idt in
+  lookup_d_ctor_in_decl decl idd
+
+let rec extend_envs_with_pattern envs Location.{ data = pattern; loc } ty =
+  let open Pattern in
+  let given_ty = PrettyPrinter.Str.of_type ty in
+  let Location.{ data = ty'; _ } = ty in
+
+  match pattern with
+  | Ignore -> return envs
+  | VarR { idr } -> return @@ Envs.extend_regular envs idr ty
+  | Pair { sub1; sub2 } -> (
+      match ty' with
+      | Type.Prod { ty1; ty2 } ->
+          let%bind envs_ext = extend_envs_with_pattern envs sub1 ty1 in
+          extend_envs_with_pattern envs_ext sub2 ty2
+      | _ ->
+          fail_in loc
+          @@ `TypeMismatchError
+               [%string "Expected product type, but found $given_ty"])
+  | DCtor { idd; subs } -> (
+      match ty' with
+      | Type.Base { idt } ->
+          let%bind fields =
+            with_error_location loc @@ lookup_d_ctor_in_type envs idt idd
+          in
+          let%bind () =
+            Result.ok_if_true
+              (List.length subs = List.length fields)
+              ~error:
+                (let subs_len_str = Int.to_string @@ List.length subs in
+                 let fields_len_str = Int.to_string @@ List.length fields in
+                 Location.locate ~loc
+                 @@ `DataCtorArgsQuantityMismatch
+                      [%string
+                        "Expected $fields_len_str patterns but found \
+                         $subs_len_str"])
+          in
+          let field_sub_pairs = Caml.List.combine fields subs in
+          let f (field_ty, sub) envs_res =
+            envs_res >>= fun envs' ->
+            extend_envs_with_pattern envs' sub field_ty
+          in
+          let init = return envs in
+          List.fold_right field_sub_pairs ~f ~init
+      | _ ->
+          fail_in loc
+          @@ `TypeMismatchError
+               [%string "Expected base type, but found $given_ty"])
 
 let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
     Location.{ data = expr; loc } (Location.{ data = typ'; _ } as typ) =
@@ -183,11 +240,13 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
           let envs_ext = Envs.extend_modal envs idm ty in
           check_expr_open envs_ext body typ
       | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
-  | Match { matched; zbranch; pred; sbranch } ->
-      let%bind _ = check_expr_open envs matched Type.nat in
-      let%bind ty_empty = infer_expr_open envs zbranch in
-      let envs_ext = Envs.extend_regular envs pred Type.nat in
-      check_expr_open envs_ext sbranch ty_empty
+  | Match { matched; branches } ->
+      let%bind m_ty = infer_expr_open envs matched in
+      let check_branch (pattern, body) =
+        let%bind envs_ext = extend_envs_with_pattern envs pattern m_ty in
+        check_expr_open envs_ext body typ
+      in
+      Result.all_unit @@ List.map ~f:check_branch branches
 
 and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
     Location.{ data = expr; loc } : (Type.t, 'e lerror) Result.t =
@@ -254,19 +313,22 @@ and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
           let envs_ext = Envs.extend_modal envs idm ty in
           infer_expr_open envs_ext body
       | _ -> fail_in loc @@ `TypeMismatchError "Inferred type is not a box")
-  | Match { matched; zbranch; pred; sbranch } ->
-      let%bind _ = check_expr_open envs matched Type.nat in
-      let%bind ty_zero = infer_expr_open envs zbranch in
-      let%bind ty_succ =
-        let envs_ext = Envs.extend_regular envs pred Type.nat in
-        infer_expr_open envs_ext sbranch
-      in
-      let%bind () =
-        with_error_location loc
-        @@ check_equal ty_zero ty_succ
-             "All branches of pattern matching must have the same type"
-      in
-      return ty_zero
+  | Match { matched; branches } -> (
+      let%bind m_ty = infer_expr_open envs matched in
+      match branches with
+      | first :: other ->
+          let infer_branch (pattern, body) =
+            let%bind envs_ext = extend_envs_with_pattern envs pattern m_ty in
+            infer_expr_open envs_ext body
+          in
+          let%bind first_typ = infer_branch first in
+          let check_branch (pattern, body) =
+            let%bind envs_ext = extend_envs_with_pattern envs pattern m_ty in
+            check_expr_open envs_ext body first_typ
+          in
+          let%bind () = Result.all_unit @@ List.map ~f:check_branch other in
+          return first_typ
+      | [] -> fail_in loc `TypeOfEmptyMatchCannotBeInferred)
 
 (* TODO: Check for data constructor redefinition *)
 let data_ctor_type envs idt DataCtor.{ idd = _; fields } :

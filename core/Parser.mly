@@ -9,7 +9,6 @@
 %token <Nat.t> UINTZ
 
 (* Arithmetic *)
-%token ZERO SUCC (* for pattern-matching *)
 %token PLUS
 %token MINUS
 (* multiplication is `CROSS` token *)
@@ -26,6 +25,7 @@
 %token COLON
 %token ARROW
 
+%token UNDERSCORE
 %token COMMA
 %token DARROW
 %token EQ
@@ -140,8 +140,12 @@ expr:
     { Location.locate_start_end (Letbox {idm = Id.M.mk idm; boxed; body}) $symbolstartpos $endpos }
 
     (* match expr with ... end *)
-  | MATCH; matched = expr; WITH; PIPE; ZERO; DARROW; zbranch = expr; PIPE; SUCC; pred = IDR; DARROW; sbranch = expr; END
-    { Location.locate_start_end (Match {matched; zbranch; pred = Id.R.mk pred; sbranch}) $symbolstartpos $endpos }
+  | MATCH; matched = expr; WITH; branches = list(match_branch); END
+    { Location.locate_start_end (Match {matched; branches}) $symbolstartpos $endpos }
+
+match_branch:
+  | PIPE; p = pattern; DARROW; body = expr
+    { (p, body) }
 
 app:
   | fe = app; arge = parceled_expr
@@ -205,8 +209,26 @@ data_ctor:
     { DataCtor.{ idd = Id.D.mk idd; fields } }
   | idd = IDT;
     { DataCtor.{ idd = Id.D.mk idd; fields = [] } }
-  // | PIPE; idd = IDT;
-  //   { DataCtor.{ idd = Id.D.mk idd; fields = [] } }
+
+atom_pattern:
+  | UNDERSCORE
+    { Location.locate_start_end (Pattern.Ignore) $symbolstartpos $endpos }
+
+  | idr = IDR
+    { Location.locate_start_end (Pattern.VarR {idr = Id.R.mk idr}) $symbolstartpos $endpos }
+
+  | LPAREN; sub1 = pattern; COMMA; sub2 = pattern; RPAREN
+    { Location.locate_start_end (Pattern.Pair {sub1; sub2}) $symbolstartpos $endpos }
+
+  | LPAREN; p = pattern; RPAREN
+    { p }
+
+pattern:
+  | p = atom_pattern
+    { p }
+
+  | idd = IDT; subs = list(atom_pattern); 
+    { Location.locate_start_end (Pattern.DCtor {idd = Id.D.mk idd; subs}) $symbolstartpos $endpos }
 
 prog:
   | e = expr

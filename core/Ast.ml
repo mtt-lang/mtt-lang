@@ -27,6 +27,23 @@ module DataCtor = struct
   type t = { idd : Id.D.t; fields : Type.t list } [@@deriving sexp]
 end
 
+(* Pattern for pattern-matching *)
+module Pattern = struct
+  type t = t' Location.located
+
+  and t' =
+    | Ignore
+    | VarR of { idr : Id.R.t }
+    | DCtor of { idd : Id.D.t; subs : t list }
+    | Pair of { sub1 : t; sub2 : t }
+  [@@deriving equal, sexp]
+
+  let ignore = Location.locate Ignore
+  let var_r idr = Location.locate @@ VarR { idr }
+  let d_ctor idd subs = Location.locate @@ DCtor { idd; subs }
+  let pair sub1 sub2 = Location.locate @@ Pair { sub1; sub2 }
+end
+
 (* Type declaration *)
 module TypeDecl = struct
   type t = DataCtor.t list [@@deriving sexp]
@@ -61,11 +78,11 @@ module Expr = struct
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
-    | Match of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
-        (** FOR NAT ONLY
-          [match matched with 
-              | zero => <zbranch>
-              | succ pred => <sbranch>
+    | Match of { matched : t; branches : (Pattern.t * t) list }
+        (** Pattern-matching of general form:
+            [match matched with 
+              | pattern => branch_body
+              | ...
             end] *)
   [@@deriving equal, sexp]
 
@@ -78,14 +95,15 @@ module Expr = struct
   let binop op e1 e2 = Location.locate @@ BinOp { op; e1; e2 }
   let var_r idr = Location.locate @@ VarR { idr }
   let var_m idm = Location.locate @@ VarM { idm }
+  let var_d idd = Location.locate @@ VarD { idd }
   let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
   let app fe arge = Location.locate @@ App { fe; arge }
   let box e = Location.locate @@ Box { e }
   let letc idr bound body = Location.locate @@ Let { idr; bound; body }
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 
-  let match_with matched zbranch pred sbranch =
-    Location.locate @@ Match { matched; zbranch; pred; sbranch }
+  let match_with matched branches =
+    Location.locate @@ Match { matched; branches }
 end
 
 (* Program is a sequence of top-level declarations which must end with an expression.
