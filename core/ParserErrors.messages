@@ -573,7 +573,7 @@ prog_eof: TYPE IDT EQ IDT OF LPAREN IDT RPAREN WITH
 ## data_ctor
 ##
 
-<YOUR SYNTAX ERROR MESSGE HERE>
+Unexpected "with" keyword
 
 prog_eof: LET IDR EQ IDM WITH
 ##
@@ -596,7 +596,7 @@ prog_eof: LET IDR EQ IDM WITH
 ## In state 40, spurious reduction of production expr -> parceled_expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 prog_eof: IDM WITH
 ##
@@ -618,7 +618,7 @@ prog_eof: IDM WITH
 ## In state 40, spurious reduction of production expr -> parceled_expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT EOF
 ##
@@ -633,7 +633,7 @@ prog_eof: TYPE IDT EQ IDT OF LPAREN IDT EOF
 ## typ
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing ")"
 
 expr_eof: MATCH WITH
 ##
@@ -645,7 +645,7 @@ expr_eof: MATCH WITH
 ## MATCH
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing matched expression body
 
 expr_eof: FUN LPAREN IDR COLON IDT RPAREN DARROW MATCH IDM WITH END UNIT
 ##
@@ -661,7 +661,7 @@ expr_eof: FUN LPAREN IDR COLON IDT RPAREN DARROW MATCH IDM WITH END UNIT
 ## FUN LPAREN IDR COLON typ RPAREN DARROW expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected token
 
 expr_eof: IDM SLASH WITH
 ##
@@ -673,7 +673,7 @@ expr_eof: IDM SLASH WITH
 ## expr SLASH
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 expr_eof: SND IDM UNDERSCORE
 ##
@@ -686,7 +686,7 @@ expr_eof: SND IDM UNDERSCORE
 ## app
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Patterns can't be used here
 
 expr_eof: IDM PLUS WITH
 ##
@@ -698,7 +698,7 @@ expr_eof: IDM PLUS WITH
 ## expr PLUS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 expr_eof: IDM PLUS MATCH IDM WITH END UNIT
 ##
@@ -714,7 +714,7 @@ expr_eof: IDM PLUS MATCH IDM WITH END UNIT
 ## expr PLUS expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected token
 
 expr_eof: IDM CROSS WITH
 ##
@@ -726,7 +726,7 @@ expr_eof: IDM CROSS WITH
 ## expr CROSS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 expr_eof: IDM MINUS WITH
 ##
@@ -738,7 +738,7 @@ expr_eof: IDM MINUS WITH
 ## expr MINUS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 expr_eof: IDM MINUS MATCH IDM WITH END UNIT
 ##
@@ -754,7 +754,7 @@ expr_eof: IDM MINUS MATCH IDM WITH END UNIT
 ## expr MINUS expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected token
 
 expr_eof: FUN IDR COLON IDT DARROW MATCH IDM WITH END UNIT
 ##
@@ -770,7 +770,7 @@ expr_eof: FUN IDR COLON IDT DARROW MATCH IDM WITH END UNIT
 ## FUN IDR COLON typ DARROW expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected token
 
 expr_eof: LET IDR EQ IDM IN MATCH IDM WITH END UNIT
 ##
@@ -786,7 +786,7 @@ expr_eof: LET IDR EQ IDM IN MATCH IDM WITH END UNIT
 ## LET IDR EQ expr IN expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected token
 
 expr_eof: LETBOX IDM EQ IDM IN MATCH IDM WITH END UNIT
 ##
@@ -802,7 +802,7 @@ expr_eof: LETBOX IDM EQ IDM IN MATCH IDM WITH END UNIT
 ## LETBOX IDM EQ expr IN expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected token
 
 expr_eof: MATCH IDM SEMICOLON
 ##
@@ -824,7 +824,7 @@ expr_eof: MATCH IDM SEMICOLON
 ## In state 40, spurious reduction of production expr -> parceled_expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected "with" keyword
 
 expr_eof: MATCH IDM WITH WITH
 ##
@@ -836,7 +836,7 @@ expr_eof: MATCH IDM WITH WITH
 ## MATCH expr WITH
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected "end" keyword
 
 expr_eof: MATCH IDM WITH PIPE WITH
 ##
@@ -848,7 +848,7 @@ expr_eof: MATCH IDM WITH PIPE WITH
 ## PIPE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected pattern
 
 expr_eof: MATCH IDM WITH PIPE LPAREN WITH
 ##
@@ -861,7 +861,7 @@ expr_eof: MATCH IDM WITH PIPE LPAREN WITH
 ## LPAREN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ")"
 
 expr_eof: MATCH IDM WITH PIPE IDT WITH
 ##
@@ -873,7 +873,7 @@ expr_eof: MATCH IDM WITH PIPE IDT WITH
 ## IDT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected "=>"
 
 expr_eof: MATCH IDM WITH PIPE IDT IDR WITH
 ##
@@ -885,7 +885,7 @@ expr_eof: MATCH IDM WITH PIPE IDT IDR WITH
 ## atom_pattern
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected "=>"
 
 expr_eof: MATCH IDM WITH PIPE LPAREN IDR WITH
 ##
@@ -898,7 +898,7 @@ expr_eof: MATCH IDM WITH PIPE LPAREN IDR WITH
 ## LPAREN pattern
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ")"
 
 expr_eof: MATCH IDM WITH PIPE LPAREN IDR COMMA WITH
 ##
@@ -910,7 +910,7 @@ expr_eof: MATCH IDM WITH PIPE LPAREN IDR COMMA WITH
 ## LPAREN pattern COMMA
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected pattern
 
 expr_eof: MATCH IDM WITH PIPE LPAREN IDR COMMA IDR WITH
 ##
@@ -922,7 +922,7 @@ expr_eof: MATCH IDM WITH PIPE LPAREN IDR COMMA IDR WITH
 ## LPAREN pattern COMMA pattern
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ")"
 
 expr_eof: MATCH IDM WITH PIPE IDR WITH
 ##
@@ -934,7 +934,7 @@ expr_eof: MATCH IDM WITH PIPE IDR WITH
 ## PIPE pattern
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected "=>"
 
 expr_eof: MATCH IDM WITH PIPE IDR DARROW WITH
 ##
@@ -946,7 +946,7 @@ expr_eof: MATCH IDM WITH PIPE IDR DARROW WITH
 ## PIPE pattern DARROW
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected expression
 
 expr_eof: MATCH IDM WITH PIPE IDR DARROW IDM WITH
 ##
@@ -968,7 +968,7 @@ expr_eof: MATCH IDM WITH PIPE IDR DARROW IDM WITH
 ## In state 40, spurious reduction of production expr -> parceled_expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected "end" keyword
 
 prog_eof: WITH
 ##
@@ -980,7 +980,7 @@ prog_eof: WITH
 ##
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 prog_eof: TYPE WITH
 ##
@@ -993,7 +993,7 @@ prog_eof: TYPE WITH
 ## TYPE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected type name
 
 prog_eof: TYPE IDT WITH
 ##
@@ -1006,7 +1006,7 @@ prog_eof: TYPE IDT WITH
 ## TYPE IDT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ";"
 
 prog_eof: TYPE IDT SEMICOLON WITH
 ##
@@ -1018,7 +1018,7 @@ prog_eof: TYPE IDT SEMICOLON WITH
 ## TYPE IDT SEMICOLON
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 prog_eof: LET WITH
 ##
@@ -1031,7 +1031,7 @@ prog_eof: LET WITH
 ## LET
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected regular variable name
 
 prog_eof: LET IDR WITH
 ##
@@ -1044,7 +1044,7 @@ prog_eof: LET IDR WITH
 ## LET IDR
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected "="
 
 prog_eof: LET IDR EQ WITH
 ##
@@ -1057,7 +1057,7 @@ prog_eof: LET IDR EQ WITH
 ## LET IDR EQ
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected expression
 
 prog_eof: LET IDR EQ IDM SEMICOLON WITH
 ##
@@ -1069,7 +1069,7 @@ prog_eof: LET IDR EQ IDM SEMICOLON WITH
 ## LET IDR EQ expr SEMICOLON
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Invalid name for data constructor
 
 prog_eof: TYPE IDT EQ WITH
 ##
@@ -1081,7 +1081,7 @@ prog_eof: TYPE IDT EQ WITH
 ## TYPE IDT EQ
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ";"
 
 prog_eof: TYPE IDT EQ PIPE WITH
 ##
@@ -1093,7 +1093,7 @@ prog_eof: TYPE IDT EQ PIPE WITH
 ## TYPE IDT EQ option(PIPE)
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected data constructor name
 
 prog_eof: TYPE IDT EQ IDT WITH
 ##
@@ -1106,7 +1106,7 @@ prog_eof: TYPE IDT EQ IDT WITH
 ## IDT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ";"
 
 prog_eof: TYPE IDT EQ IDT OF WITH
 ##
@@ -1118,7 +1118,7 @@ prog_eof: TYPE IDT EQ IDT OF WITH
 ## IDT OF
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected types
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN WITH
 ##
@@ -1130,7 +1130,7 @@ prog_eof: TYPE IDT EQ IDT OF LPAREN WITH
 ## IDT OF LPAREN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ")"
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT COMMA WITH
 ##
@@ -1142,7 +1142,7 @@ prog_eof: TYPE IDT EQ IDT OF LPAREN IDT COMMA WITH
 ## typ COMMA
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ")"
 
 prog_eof: TYPE IDT EQ IDT SEMICOLON WITH
 ##
@@ -1154,7 +1154,7 @@ prog_eof: TYPE IDT EQ IDT SEMICOLON WITH
 ## TYPE IDT EQ option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Unexpected "with" keyword
 
 prog_eof: TYPE IDT EQ IDT PIPE WITH
 ##
@@ -1166,4 +1166,4 @@ prog_eof: TYPE IDT EQ IDT PIPE WITH
 ## data_ctor PIPE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected data constructor
