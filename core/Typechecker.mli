@@ -6,7 +6,8 @@ type error =
   | `UnboundRegularVarInsideBoxError of Location.t * string
     (** var location, message *)
   | `DataCtorArgsQuantityMismatch of string
-  | `TypeOfEmptyMatchCannotBeInferred
+  | `TypeOfEmptyMatchCannotBeInferred of string
+  | `IrrefutablePatternExpected of string
   | Env.error ]
 
 type 'e lerror = ([> error ] as 'e) Location.located

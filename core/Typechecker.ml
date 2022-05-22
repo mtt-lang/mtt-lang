@@ -7,7 +7,8 @@ type error =
   [ `TypeMismatchError of string
   | `UnboundRegularVarInsideBoxError of Location.t * string
   | `DataCtorArgsQuantityMismatch of string
-  | `TypeOfEmptyMatchCannotBeInferred
+  | `TypeOfEmptyMatchCannotBeInferred of string
+  | `IrrefutablePatternExpected of string
   | Env.error ]
 
 type 'e lerror = ([> error ] as 'e) Location.located
@@ -87,62 +88,142 @@ let rec lookup_d_ctor_in_decl decl idd =
       else lookup_d_ctor_in_decl other idd
   | [] -> Result.fail @@ Env.D.make_error_of_abscence idd
 
-let lookup_d_ctor_in_type envs idt idd =
-  let%bind decl = Env.T.lookup Envs.(envs.types) idt in
-  lookup_d_ctor_in_decl decl idd
+module PatternVisitor = struct
+  type ('a, 'e) t = {
+    visit_ignore : Location.t -> ('a, 'e lerror) Result.t;
+    visit_var_r : Location.t -> Id.R.t -> ('a, 'e lerror) Result.t;
+    visit_nat : Location.t -> Nat.t -> ('a, 'e lerror) Result.t;
+    visit_unit : Location.t -> ('a, 'e lerror) Result.t;
+    visit_pair :
+      Location.t ->
+      Pattern.t * Type.t ->
+      Pattern.t * Type.t ->
+      ('a, 'e lerror) Result.t;
+    visit_d_ctor :
+      Location.t ->
+      TypeDecl.t ->
+      Id.T.t ->
+      Id.D.t ->
+      (Pattern.t * Type.t) list ->
+      ('a, 'e lerror) Result.t;
+  }
 
-let rec extend_envs_with_pattern envs Location.{ data = pattern; loc } ty =
-  let open Pattern in
-  let given_ty = PrettyPrinter.Str.of_type ty in
-  let Location.{ data = ty'; _ } = ty in
-  let fail_cause_type_mismatch expected =
+  let visit_pattern envs Location.{ data = pattern; loc } ty visitor =
+    let open Pattern in
+    let given_ty = PrettyPrinter.Str.of_type ty in
+    let Location.{ data = ty'; _ } = ty in
+    let fail_cause_type_mismatch expected =
+      fail_in loc
+      @@ `TypeMismatchError [%string "Expected $expected, but found $given_ty"]
+    in
+
+    match pattern with
+    | Ignore -> visitor.visit_ignore loc
+    | VarR { idr } -> visitor.visit_var_r loc idr
+    | Pair { sub1; sub2 } -> (
+        match ty' with
+        | Type.Prod { ty1; ty2 } ->
+            visitor.visit_pair loc (sub1, ty1) (sub2, ty2)
+        | _ -> fail_cause_type_mismatch "product type")
+    | Nat { n } -> (
+        match ty' with
+        | Type.Nat -> visitor.visit_nat loc n
+        | _ -> fail_cause_type_mismatch "Nat")
+    | Unit -> (
+        match ty' with
+        | Type.Unit -> visitor.visit_unit loc
+        | _ -> fail_cause_type_mismatch "Unit")
+    | DCtor { idd; subs } -> (
+        match ty' with
+        | Type.Base { idt } ->
+            let%bind decl =
+              with_error_location loc @@ Env.T.lookup Envs.(envs.types) idt
+            in
+            let%bind fields =
+              with_error_location loc @@ lookup_d_ctor_in_decl decl idd
+            in
+            let%bind () =
+              Result.ok_if_true
+                (List.length subs = List.length fields)
+                ~error:
+                  (let subs_len_str = Int.to_string @@ List.length subs in
+                   let fields_len_str = Int.to_string @@ List.length fields in
+                   Location.locate ~loc
+                   @@ `DataCtorArgsQuantityMismatch
+                        [%string
+                          "Expected $fields_len_str patterns but found \
+                           $subs_len_str"])
+            in
+            let sub_ty_pairs = Caml.List.combine subs fields in
+            visitor.visit_d_ctor loc decl idt idd sub_ty_pairs
+        | _ -> fail_cause_type_mismatch "base type")
+end
+
+let rec _ensure_pattern_irrefutable envs pattern ty =
+  let visit_ignore _ = return () in
+  let visit_var_r _ _ = return () in
+  let visit_nat loc n =
+    let n_str = Nat.to_string n in
     fail_in loc
-    @@ `TypeMismatchError [%string "Expected $expected, but found $given_ty"]
+    @@ `IrrefutablePatternExpected
+         [%string
+           "Concrete value of $n_str is not an irrefutable pattern for Nat"]
   in
+  let visit_unit _ = return () in
+  let visit_pair _ sub_ty_1 sub_ty_2 =
+    _ensure_patterns_irrefutable envs [ sub_ty_1; sub_ty_2 ]
+  in
+  let visit_d_ctor loc decl idt _ sub_ty_pairs =
+    if List.length decl > 1 then
+      let idt_str = Id.T.to_string idt in
+      fail_in loc
+      @@ `IrrefutablePatternExpected
+           [%string
+             "Type $idt_str has more than one branch. Thus, the pattern is not \
+              irrefutable"]
+    else _ensure_patterns_irrefutable envs sub_ty_pairs
+  in
+  PatternVisitor.visit_pattern envs pattern ty
+    PatternVisitor.
+      {
+        visit_ignore;
+        visit_var_r;
+        visit_nat;
+        visit_unit;
+        visit_pair;
+        visit_d_ctor;
+      }
 
-  match pattern with
-  | Ignore -> return envs
-  | VarR { idr } -> return @@ Envs.extend_regular envs idr ty
-  | Pair { sub1; sub2 } -> (
-      match ty' with
-      | Type.Prod { ty1; ty2 } ->
-          let%bind envs_ext = extend_envs_with_pattern envs sub1 ty1 in
-          extend_envs_with_pattern envs_ext sub2 ty2
-      | _ -> fail_cause_type_mismatch "product type")
-  | Nat { n = _ } -> (
-      match ty' with
-      | Type.Nat -> return envs
-      | _ -> fail_cause_type_mismatch "Nat")
-  | Unit -> (
-      match ty' with
-      | Type.Unit -> return envs
-      | _ -> fail_cause_type_mismatch "Unit")
-  | DCtor { idd; subs } -> (
-      match ty' with
-      | Type.Base { idt } ->
-          let%bind fields =
-            with_error_location loc @@ lookup_d_ctor_in_type envs idt idd
-          in
-          let%bind () =
-            Result.ok_if_true
-              (List.length subs = List.length fields)
-              ~error:
-                (let subs_len_str = Int.to_string @@ List.length subs in
-                 let fields_len_str = Int.to_string @@ List.length fields in
-                 Location.locate ~loc
-                 @@ `DataCtorArgsQuantityMismatch
-                      [%string
-                        "Expected $fields_len_str patterns but found \
-                         $subs_len_str"])
-          in
-          let field_sub_pairs = Caml.List.combine fields subs in
-          let f (field_ty, sub) envs_res =
-            envs_res >>= fun envs' ->
-            extend_envs_with_pattern envs' sub field_ty
-          in
-          let init = return envs in
-          List.fold_right field_sub_pairs ~f ~init
-      | _ -> fail_cause_type_mismatch "base type")
+and _ensure_patterns_irrefutable envs p_ty_pairs =
+  let f (pattern, ty) = _ensure_pattern_irrefutable envs pattern ty in
+  Result.all_unit @@ List.map p_ty_pairs ~f
+
+let rec extend_envs_with_pattern envs pattern ty =
+  let visit_ignore _ = return envs in
+  let visit_var_r _ idr = return @@ Envs.extend_regular envs idr ty in
+  let visit_nat _ _ = return envs in
+  let visit_unit _ = return envs in
+  let visit_pair _ (sub1, ty1) (sub2, ty2) =
+    let%bind envs_ext = extend_envs_with_pattern envs sub1 ty1 in
+    extend_envs_with_pattern envs_ext sub2 ty2
+  in
+  let visit_d_ctor _ _ _ _ sub_ty_pairs =
+    let f (sub, field_ty) envs_res =
+      envs_res >>= fun envs' -> extend_envs_with_pattern envs' sub field_ty
+    in
+    let init = return envs in
+    List.fold_right sub_ty_pairs ~f ~init
+  in
+  PatternVisitor.visit_pattern envs pattern ty
+    PatternVisitor.
+      {
+        visit_ignore;
+        visit_var_r;
+        visit_nat;
+        visit_unit;
+        visit_pair;
+        visit_d_ctor;
+      }
 
 let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
     Location.{ data = expr; loc } (Location.{ data = typ'; _ } as typ) =
@@ -352,7 +433,10 @@ and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
           in
           let%bind () = Result.all_unit @@ List.map ~f:check_branch other in
           return first_typ
-      | [] -> fail_in loc `TypeOfEmptyMatchCannotBeInferred)
+      | [] ->
+          fail_in loc
+          @@ `TypeOfEmptyMatchCannotBeInferred
+               "Type of match-expression with no branches cannot be inferred")
 
 (* TODO: Check for data constructor redefinition *)
 let data_ctor_type envs idt DataCtor.{ idd = _; fields } :
