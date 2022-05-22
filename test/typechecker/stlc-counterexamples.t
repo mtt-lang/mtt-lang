@@ -55,3 +55,10 @@ Pattern matching for Nat
   mtt: Type inference error: Expected ℕ×ℕ, but found Unit type
        file name :  Not a file, lines :  4 - 4, column :  9 - 11
   [124]
+
+Unbound type
+
+  $ mtt infer -e "fun x : A. x"
+  mtt: Type inference error: "A" is not found in the type environment!
+       file name :  Not a file, lines :  0 - 0, column :  8 - 9
+  [124]
