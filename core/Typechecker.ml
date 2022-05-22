@@ -350,7 +350,7 @@ let data_ctor_type envs idt DataCtor.{ idd = _; fields } :
 let decl_type idt decl envs =
   let envs_ext = Envs.extend_types envs idt decl in
   let%bind d_ctor_types =
-    Result.all @@ List.map decl ~f:(data_ctor_type envs idt)
+    Result.all @@ List.map decl ~f:(data_ctor_type envs_ext idt)
   in
   let idds = List.map decl ~f:(fun d_ctor -> DataCtor.(d_ctor.idd)) in
   return
