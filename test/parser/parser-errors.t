@@ -172,3 +172,13 @@ mtt: Parse error: Boxed expression is expected
   $ mtt parse -e "() + _"
   mtt: Parse error: Expected expression
   [124]
+
+  $ mtt parse <<EOF
+  > type List = Nil | Cons of (Nat * Nat, List);
+  > match Cons <5, 5> Nil with
+  > | Cons (_, 4) _ => 1
+  > | _ => 0
+  > end
+  > EOF
+  mtt: Parse error: An expression is expected. This may result from a missing or unexpected lexeme or an attempt to parse a type-level expression
+  [124]

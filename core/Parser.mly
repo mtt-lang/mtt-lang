@@ -223,17 +223,20 @@ atom_pattern:
   | idr = IDR
     { Location.locate_start_end (Pattern.VarR {idr = Id.R.mk idr}) $symbolstartpos $endpos }
 
-  | LPAREN; sub1 = pattern; COMMA; sub2 = pattern; RPAREN
+  | LANGLE; sub1 = pattern; COMMA; sub2 = pattern; RANGLE
     { Location.locate_start_end (Pattern.Pair {sub1; sub2}) $symbolstartpos $endpos }
 
   | LPAREN; p = pattern; RPAREN
     { p }
 
+  | idd = IDT
+    { Location.locate_start_end (Pattern.DCtor {idd = Id.D.mk idd; subs = []}) $symbolstartpos $endpos }
+
 pattern:
   | p = atom_pattern
     { p }
 
-  | idd = IDT; subs = list(atom_pattern); 
+  | idd = IDT; subs = nonempty_list(atom_pattern); 
     { Location.locate_start_end (Pattern.DCtor {idd = Id.D.mk idd; subs}) $symbolstartpos $endpos }
 
 prog:

@@ -26,7 +26,7 @@ Missing closing parenthesis at type level. Or unexpected lexeme, like => is used
 
 type_eof: SND
 ##
-## Ends in an error in state: 132.
+## Ends in an error in state: 135.
 ##
 ## type_eof' -> . type_eof [ # ]
 ##
@@ -88,7 +88,7 @@ type_eof: UNIT CROSS SND
 
 type_eof: UNIT UNIT
 ##
-## Ends in an error in state: 134.
+## Ends in an error in state: 137.
 ##
 ## typ -> typ . CROSS typ [ EOF CROSS ARROW ]
 ## typ -> typ . ARROW typ [ EOF CROSS ARROW ]
@@ -483,7 +483,7 @@ Missing or unexpected lexeme in parenthesized expression
 
 expr_eof: LPAREN UNIT RANGLE
 ##
-## Ends in an error in state: 94.
+## Ends in an error in state: 97.
 ##
 ## arith -> expr . PLUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
 ## arith -> expr . MINUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
@@ -529,7 +529,7 @@ An expression is expected. This may result from a missing or unexpected lexeme o
 
 expr_eof: UNIT RPAREN
 ##
-## Ends in an error in state: 98.
+## Ends in an error in state: 101.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS EOF CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS EOF CROSS ]
@@ -564,7 +564,7 @@ Sometimes this happens when you say "let box" instead of "letbox" or try to appl
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT RPAREN WITH
 ##
-## Ends in an error in state: 126.
+## Ends in an error in state: 129.
 ##
 ## separated_nonempty_list(PIPE,data_ctor) -> data_ctor . [ SEMICOLON ]
 ## separated_nonempty_list(PIPE,data_ctor) -> data_ctor . PIPE separated_nonempty_list(PIPE,data_ctor) [ SEMICOLON ]
@@ -577,7 +577,7 @@ Unexpected "with" keyword
 
 prog_eof: LET IDR EQ IDM WITH
 ##
-## Ends in an error in state: 107.
+## Ends in an error in state: 110.
 ##
 ## arith -> expr . PLUS expr [ SLASH SEMICOLON PLUS MINUS IN CROSS ]
 ## arith -> expr . MINUS expr [ SLASH SEMICOLON PLUS MINUS IN CROSS ]
@@ -600,7 +600,7 @@ Unexpected "with" keyword
 
 prog_eof: IDM WITH
 ##
-## Ends in an error in state: 110.
+## Ends in an error in state: 113.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS EOF CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS EOF CROSS ]
@@ -622,7 +622,7 @@ Unexpected "with" keyword
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT EOF
 ##
-## Ends in an error in state: 118.
+## Ends in an error in state: 121.
 ##
 ## separated_nonempty_list(COMMA,typ) -> typ . [ RPAREN ]
 ## separated_nonempty_list(COMMA,typ) -> typ . COMMA separated_nonempty_list(COMMA,typ) [ RPAREN ]
@@ -854,79 +854,55 @@ expr_eof: MATCH IDM WITH PIPE LPAREN WITH
 ##
 ## Ends in an error in state: 75.
 ##
-## atom_pattern -> LPAREN . pattern COMMA pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN IDR DARROW COMMA ]
-## atom_pattern -> LPAREN . pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN IDR DARROW COMMA ]
+## atom_pattern -> LPAREN . pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
 ##
 
-Expected ")"
+Expected pattern
 
 expr_eof: MATCH IDM WITH PIPE IDT WITH
 ##
-## Ends in an error in state: 76.
+## Ends in an error in state: 77.
 ##
-## pattern -> IDT . list(atom_pattern) [ RPAREN DARROW COMMA ]
+## atom_pattern -> IDT . [ RPAREN RANGLE DARROW COMMA ]
+## pattern -> IDT . nonempty_list(atom_pattern) [ RPAREN RANGLE DARROW COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## IDT
 ##
 
-Expected "=>"
+Expected "=>" or subpattern
 
 expr_eof: MATCH IDM WITH PIPE IDT IDR WITH
 ##
-## Ends in an error in state: 79.
+## Ends in an error in state: 81.
 ##
-## list(atom_pattern) -> atom_pattern . list(atom_pattern) [ RPAREN DARROW COMMA ]
+## nonempty_list(atom_pattern) -> atom_pattern . [ RPAREN RANGLE DARROW COMMA ]
+## nonempty_list(atom_pattern) -> atom_pattern . nonempty_list(atom_pattern) [ RPAREN RANGLE DARROW COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## atom_pattern
 ##
 
-Expected "=>"
+Expected "=>" or subpattern
 
 expr_eof: MATCH IDM WITH PIPE LPAREN IDR WITH
 ##
-## Ends in an error in state: 81.
+## Ends in an error in state: 88.
 ##
-## atom_pattern -> LPAREN pattern . COMMA pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN IDR DARROW COMMA ]
-## atom_pattern -> LPAREN pattern . RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN IDR DARROW COMMA ]
+## atom_pattern -> LPAREN pattern . RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN pattern
 ##
 
-Expected ")"
-
-expr_eof: MATCH IDM WITH PIPE LPAREN IDR COMMA WITH
-##
-## Ends in an error in state: 83.
-##
-## atom_pattern -> LPAREN pattern COMMA . pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN IDR DARROW COMMA ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN pattern COMMA
-##
-
-Expected pattern
-
-expr_eof: MATCH IDM WITH PIPE LPAREN IDR COMMA IDR WITH
-##
-## Ends in an error in state: 84.
-##
-## atom_pattern -> LPAREN pattern COMMA pattern . RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN IDR DARROW COMMA ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN pattern COMMA pattern
-##
-
-Expected ")"
+Unexpected token after subpattern
 
 expr_eof: MATCH IDM WITH PIPE IDR WITH
 ##
-## Ends in an error in state: 87.
+## Ends in an error in state: 90.
 ##
 ## match_branch -> PIPE pattern . DARROW expr [ PIPE END ]
 ##
@@ -938,7 +914,7 @@ Expected "=>"
 
 expr_eof: MATCH IDM WITH PIPE IDR DARROW WITH
 ##
-## Ends in an error in state: 88.
+## Ends in an error in state: 91.
 ##
 ## match_branch -> PIPE pattern DARROW . expr [ PIPE END ]
 ##
@@ -950,7 +926,7 @@ Expected expression
 
 expr_eof: MATCH IDM WITH PIPE IDR DARROW IDM WITH
 ##
-## Ends in an error in state: 89.
+## Ends in an error in state: 92.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS PIPE MINUS END CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS PIPE MINUS END CROSS ]
@@ -972,7 +948,7 @@ Expected "end" keyword
 
 prog_eof: WITH
 ##
-## Ends in an error in state: 100.
+## Ends in an error in state: 103.
 ##
 ## prog_eof' -> . prog_eof [ # ]
 ##
@@ -984,7 +960,7 @@ Unexpected "with" keyword
 
 prog_eof: TYPE WITH
 ##
-## Ends in an error in state: 101.
+## Ends in an error in state: 104.
 ##
 ## prog -> TYPE . IDT EQ option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ## prog -> TYPE . IDT SEMICOLON prog [ EOF ]
@@ -997,7 +973,7 @@ Expected type name
 
 prog_eof: TYPE IDT WITH
 ##
-## Ends in an error in state: 102.
+## Ends in an error in state: 105.
 ##
 ## prog -> TYPE IDT . EQ option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ## prog -> TYPE IDT . SEMICOLON prog [ EOF ]
@@ -1010,7 +986,7 @@ Expected ";"
 
 prog_eof: TYPE IDT SEMICOLON WITH
 ##
-## Ends in an error in state: 103.
+## Ends in an error in state: 106.
 ##
 ## prog -> TYPE IDT SEMICOLON . prog [ EOF ]
 ##
@@ -1022,7 +998,7 @@ Unexpected "with" keyword
 
 prog_eof: LET WITH
 ##
-## Ends in an error in state: 104.
+## Ends in an error in state: 107.
 ##
 ## expr -> LET . IDR EQ expr IN expr [ SLASH PLUS MINUS EOF CROSS ]
 ## prog -> LET . IDR EQ expr SEMICOLON prog [ EOF ]
@@ -1035,7 +1011,7 @@ Expected regular variable name
 
 prog_eof: LET IDR WITH
 ##
-## Ends in an error in state: 105.
+## Ends in an error in state: 108.
 ##
 ## expr -> LET IDR . EQ expr IN expr [ SLASH PLUS MINUS EOF CROSS ]
 ## prog -> LET IDR . EQ expr SEMICOLON prog [ EOF ]
@@ -1048,7 +1024,7 @@ Expected "="
 
 prog_eof: LET IDR EQ WITH
 ##
-## Ends in an error in state: 106.
+## Ends in an error in state: 109.
 ##
 ## expr -> LET IDR EQ . expr IN expr [ SLASH PLUS MINUS EOF CROSS ]
 ## prog -> LET IDR EQ . expr SEMICOLON prog [ EOF ]
@@ -1061,7 +1037,7 @@ Expected expression
 
 prog_eof: LET IDR EQ IDM SEMICOLON WITH
 ##
-## Ends in an error in state: 108.
+## Ends in an error in state: 111.
 ##
 ## prog -> LET IDR EQ expr SEMICOLON . prog [ EOF ]
 ##
@@ -1073,7 +1049,7 @@ Invalid name for data constructor
 
 prog_eof: TYPE IDT EQ WITH
 ##
-## Ends in an error in state: 112.
+## Ends in an error in state: 115.
 ##
 ## prog -> TYPE IDT EQ . option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ##
@@ -1085,7 +1061,7 @@ Expected ";"
 
 prog_eof: TYPE IDT EQ PIPE WITH
 ##
-## Ends in an error in state: 114.
+## Ends in an error in state: 117.
 ##
 ## prog -> TYPE IDT EQ option(PIPE) . separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ##
@@ -1097,7 +1073,7 @@ Expected data constructor name
 
 prog_eof: TYPE IDT EQ IDT WITH
 ##
-## Ends in an error in state: 115.
+## Ends in an error in state: 118.
 ##
 ## data_ctor -> IDT . OF LPAREN separated_nonempty_list(COMMA,typ) RPAREN [ SEMICOLON PIPE ]
 ## data_ctor -> IDT . [ SEMICOLON PIPE ]
@@ -1110,7 +1086,7 @@ Expected ";"
 
 prog_eof: TYPE IDT EQ IDT OF WITH
 ##
-## Ends in an error in state: 116.
+## Ends in an error in state: 119.
 ##
 ## data_ctor -> IDT OF . LPAREN separated_nonempty_list(COMMA,typ) RPAREN [ SEMICOLON PIPE ]
 ##
@@ -1122,7 +1098,7 @@ Expected types
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN WITH
 ##
-## Ends in an error in state: 117.
+## Ends in an error in state: 120.
 ##
 ## data_ctor -> IDT OF LPAREN . separated_nonempty_list(COMMA,typ) RPAREN [ SEMICOLON PIPE ]
 ##
@@ -1130,11 +1106,11 @@ prog_eof: TYPE IDT EQ IDT OF LPAREN WITH
 ## IDT OF LPAREN
 ##
 
-Expected ")"
+Expected ")" or types
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT COMMA WITH
 ##
-## Ends in an error in state: 119.
+## Ends in an error in state: 122.
 ##
 ## separated_nonempty_list(COMMA,typ) -> typ COMMA . separated_nonempty_list(COMMA,typ) [ RPAREN ]
 ##
@@ -1142,11 +1118,11 @@ prog_eof: TYPE IDT EQ IDT OF LPAREN IDT COMMA WITH
 ## typ COMMA
 ##
 
-Expected ")"
+Expected type
 
 prog_eof: TYPE IDT EQ IDT SEMICOLON WITH
 ##
-## Ends in an error in state: 124.
+## Ends in an error in state: 127.
 ##
 ## prog -> TYPE IDT EQ option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON . prog [ EOF ]
 ##
@@ -1158,7 +1134,7 @@ Unexpected "with" keyword
 
 prog_eof: TYPE IDT EQ IDT PIPE WITH
 ##
-## Ends in an error in state: 127.
+## Ends in an error in state: 130.
 ##
 ## separated_nonempty_list(PIPE,data_ctor) -> data_ctor PIPE . separated_nonempty_list(PIPE,data_ctor) [ SEMICOLON ]
 ##
@@ -1167,3 +1143,51 @@ prog_eof: TYPE IDT EQ IDT PIPE WITH
 ##
 
 Expected data constructor
+
+expr_eof: MATCH IDM WITH PIPE LANGLE WITH
+##
+## Ends in an error in state: 76.
+##
+## atom_pattern -> LANGLE . pattern COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: MATCH IDM WITH PIPE LANGLE IDR WITH
+##
+## Ends in an error in state: 83.
+##
+## atom_pattern -> LANGLE pattern . COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE pattern
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA WITH
+##
+## Ends in an error in state: 84.
+##
+## atom_pattern -> LANGLE pattern COMMA . pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE pattern COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA IDR WITH
+##
+## Ends in an error in state: 85.
+##
+## atom_pattern -> LANGLE pattern COMMA pattern . RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LANGLE pattern COMMA pattern
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
