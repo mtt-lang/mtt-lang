@@ -132,12 +132,15 @@ expr:
   | FUN; LPAREN; idr = IDR; COLON; ty_id = typ; RPAREN; DARROW; body = expr
     { Location.locate_start_end (Fun {idr = Id.R.mk idr; ty_id; body}) $symbolstartpos $endpos }
 
+    (* fix idr : typ idr : typ => expr *)
   | FIX; self = IDR; COLON; ty_id = typ; idr = IDR; COLON; idr_ty = typ; DARROW; body = expr;
     { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; idr_ty; body}) $symbolstartpos $endpos }
 
+    (* fix (idr : typ) idr : typ => expr *)
   | FIX; LPAREN; self = IDR; COLON; ty_id = typ; RPAREN; idr = IDR; COLON; idr_ty = typ; DARROW; body = expr;
     { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; idr_ty; body}) $symbolstartpos $endpos }
 
+    (* fix (idr : typ) (idr : typ) => expr *)
   | FIX; LPAREN; self = IDR; COLON; ty_id = typ; RPAREN; LPAREN; idr = IDR; COLON; idr_ty = typ;RPAREN; DARROW; body = expr;
     { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; idr_ty; body}) $symbolstartpos $endpos }
     
