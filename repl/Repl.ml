@@ -177,4 +177,4 @@ let main () =
     (function
       | LTerm_read_line.Interrupt -> Lwt.return () | exn -> Lwt.fail exn)
 
-let () = Lwt_main.run (main ())
+let run () = Lwt_main.run (main ())

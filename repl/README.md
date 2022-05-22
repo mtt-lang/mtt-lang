@@ -1,6 +1,6 @@
 # REPL
 
-Enter `dune exec -- repl` to start MTT REPL. To interact with the terminal the [lambda-term](https://github.com/ocaml-community/lambda-term) library is used.
+Enter `mtt repl` to start MTT REPL. To interact with the terminal the [lambda-term](https://github.com/ocaml-community/lambda-term) library is used.
 
 ## Available commands:
 
