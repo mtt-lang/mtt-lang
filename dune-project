@@ -26,6 +26,7 @@ Based on Modal Type Theory as given by F. Pfenning et al.")
   js_of_ocaml-lwt
   js_of_ocaml-tyxml
   js_of_ocaml-ppx
+  lambda-term
   (menhir (>= 20201201))
   (ocaml (>= 4.08.1))
   (ocamlformat (and :with-test (= 0.21.0)))

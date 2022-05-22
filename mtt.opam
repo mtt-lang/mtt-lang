@@ -18,6 +18,7 @@ depends: [
   "js_of_ocaml-lwt"
   "js_of_ocaml-tyxml"
   "js_of_ocaml-ppx"
+  "lambda-term"
   "menhir" {>= "20201201"}
   "ocaml" {>= "4.08.1"}
   "ocamlformat" {with-test & = "0.21.0"}
