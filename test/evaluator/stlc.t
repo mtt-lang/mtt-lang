@@ -80,9 +80,7 @@ Church numerals
   > let plus = λn:N. λm:N. λf:F. λx:X. (n f) ((m f) x);
   > let mult = λn:N. λm:N. λf:F. λx:X. (n (m f)) x;
   > 
-  > let fix = λf:F. (λx:X. f (λv:V. (x x) v)) (λx:X. f (λv:V. (x x) v));
-  > let fact = λfact:F. λn:N. (((if (iszero n)) (λu:(). n1)) (λu:(). (mult n) (fact (pred n)))) ();
-  > let factorial = fix fact;
+  > let factorial = fix (f : A -> A) n : A . (((if (iszero n)) (λu:(). n1)) (λu:(). (mult n) (f (pred n)))) ();
   > 
   > let test1 = (eq n3) n2;
   > let test2 = (eq n2) n3;
@@ -298,25 +296,71 @@ Priority tests
   > EOF
   40
 
+Recursion Tests
+
+  $ mtt eval <<EOF
+  > let fact = fix (f: Nat -> Nat) n : Nat. 
+  > match n with
+  > | 0 => 1
+  > | x => n * f (x - 1)
+  > end
+  > in fact 5
+  > EOF
+  120
+
+  $ mtt eval <<EOF
+  > let power = fix (f : Nat -> Nat -> Nat) a : Nat .
+  > λb : Nat.
+  >  match b with
+  >  | 0 => 1
+  >  | b => (f a (b - 1)) * a
+  >  end
+  > in (power 3) 4
+  > EOF
+  81
+
+  $ mtt eval <<EOF
+  > let fib = fix (f : Nat -> Nat ) n : Nat .
+  > match n with 
+  > | 0 => 0
+  > | n => 
+  >   match n - 1 with
+  >   | 0 => 1
+  >   | pn => (f pn) + (f (pn - 1))
+  >   end
+  > end
+  > in fib 12
+  > EOF
+  144
+
+  $ mtt eval <<EOF
+  > let pow_n = fix (f: (Nat -> [](Nat -> Nat))) n : Nat.
+  > match n with
+  > | 0 => box (λb : Nat. 1)
+  > | n => letbox pred_pow' = f (n - 1) in box (λb : Nat . b * (pred_pow' b))
+  > end
+  > in 
+  > letbox pow' = pow_n 5 in pow' 3
+  > EOF
+  243
+
 Bad examples
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => <0, 0>
-  >   | succ m => ()
+  >   | 0 => <0, 0>
+  >   | _ => ()
   >   end
   > in f 0
   > EOF
-  mtt: Parse error: Expected "=>"
-  [124]
+  <0, 0>
 
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => <0, 0>
-  >   | succ m => ()
+  >   | 0 => <0, 0>
+  >   | _ => ()
   >   end
   > in f 42
   > EOF
-  mtt: Parse error: Expected "=>"
-  [124]
+  ()

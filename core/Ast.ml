@@ -74,6 +74,13 @@ module Expr = struct
         (** using type identifier (starting with a capital letter) means calling data constructor **)
     | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
+    | Fix of {
+        self : Id.R.t;
+        ty_id : Type.t;
+        idr : Id.R.t;
+        idr_ty : Type.t;
+        body : t;
+      }  (** Fix combinator: fix f x = f (fix x) f *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
     | Box of { e : t }  (** term-level box: [box expr1] *)
     | Let of { idr : Id.R.t; bound : t; body : t }
@@ -99,6 +106,10 @@ module Expr = struct
   let var_m idm = Location.locate @@ VarM { idm }
   let var_d idd = Location.locate @@ VarD { idd }
   let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
+
+  let fix self ty_id idr idr_ty body =
+    Location.locate @@ Fix { self; ty_id; idr; idr_ty; body }
+
   let app fe arge = Location.locate @@ App { fe; arge }
   let box e = Location.locate @@ Box { e }
   let letc idr bound body = Location.locate @@ Let { idr; bound; body }
@@ -127,8 +138,8 @@ module Val = struct
     | Nat of { n : Nat.t }  (** nat *)
     | Pair of { v1 : t; v2 : t }
         (** [(lit1, lit2)] -- a pair of values is a value *)
-    | Clos of { idr : Id.R.t; body : Expr.t; env : t Env.R.t }
-        (** Deeply embedded closures *)
+    | RecClos of { self : Id.R.t; idr : Id.R.t; body : Expr.t; env : t Env.R.t }
+        (** Recursion closures *)
     | Box of { e : Expr.t }
         (** [box] value, basically it's an unevaluated expression *)
     | DCtor of { idd : Id.D.t; args : t list }  (** data constructor **)

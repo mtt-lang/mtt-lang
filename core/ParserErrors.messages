@@ -2,7 +2,7 @@ type_eof: LPAREN SND
 ##
 ## Ends in an error in state: 23.
 ##
-## typ -> LPAREN . typ RPAREN [ RPAREN EOF DARROW CROSS COMMA ARROW ]
+## typ -> LPAREN . typ RPAREN [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -16,7 +16,7 @@ type_eof: LPAREN UNIT UNIT
 ##
 ## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
 ## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
-## typ -> LPAREN typ . RPAREN [ RPAREN EOF DARROW CROSS COMMA ARROW ]
+## typ -> LPAREN typ . RPAREN [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN typ
@@ -26,7 +26,7 @@ Missing closing parenthesis at type level. Or unexpected lexeme, like => is used
 
 type_eof: SND
 ##
-## Ends in an error in state: 135.
+## Ends in an error in state: 161.
 ##
 ## type_eof' -> . type_eof [ # ]
 ##
@@ -40,7 +40,7 @@ type_eof: TBOX SND
 ##
 ## Ends in an error in state: 22.
 ##
-## typ -> TBOX . typ [ RPAREN EOF DARROW CROSS COMMA ARROW ]
+## typ -> TBOX . typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## TBOX
@@ -52,7 +52,7 @@ type_eof: UNIT ARROW SND
 ##
 ## Ends in an error in state: 29.
 ##
-## typ -> typ ARROW . typ [ RPAREN EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ ARROW . typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## typ ARROW
@@ -64,9 +64,9 @@ type_eof: UNIT ARROW UNIT UNIT
 ##
 ## Ends in an error in state: 30.
 ##
-## typ -> typ . CROSS typ [ RPAREN EOF DARROW CROSS COMMA ARROW ]
-## typ -> typ . ARROW typ [ RPAREN EOF DARROW CROSS COMMA ARROW ]
-## typ -> typ ARROW typ . [ RPAREN EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ . CROSS typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ . ARROW typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ ARROW typ . [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## typ ARROW typ
@@ -78,7 +78,7 @@ type_eof: UNIT CROSS SND
 ##
 ## Ends in an error in state: 27.
 ##
-## typ -> typ CROSS . typ [ RPAREN EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ CROSS . typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## typ CROSS
@@ -88,7 +88,7 @@ type_eof: UNIT CROSS SND
 
 type_eof: UNIT UNIT
 ##
-## Ends in an error in state: 137.
+## Ends in an error in state: 163.
 ##
 ## typ -> typ . CROSS typ [ EOF CROSS ARROW ]
 ## typ -> typ . ARROW typ [ EOF CROSS ARROW ]
@@ -102,7 +102,7 @@ Please report your example, producing this parsing error
 
 expr_eof: BOX TBOX
 ##
-## Ends in an error in state: 38.
+## Ends in an error in state: 50.
 ##
 ## app -> BOX . parceled_expr [ WITH UNIT UINTZ SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDT IDR IDM EOF END CROSS COMMA ]
 ##
@@ -126,7 +126,7 @@ An expression after fst is expected. This primitive can be only used fully appli
 
 expr_eof: FUN IDR COLON SND
 ##
-## Ends in an error in state: 55.
+## Ends in an error in state: 81.
 ##
 ## expr -> FUN IDR COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -138,7 +138,7 @@ Valid type expected. Make sure uninterpreted type identifiers are capitalized an
 
 expr_eof: FUN IDR COLON UNIT DARROW TBOX
 ##
-## Ends in an error in state: 57.
+## Ends in an error in state: 83.
 ##
 ## expr -> FUN IDR COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -150,7 +150,7 @@ Error when parsing lambda function body: missing body or unexpected lexeme
 
 expr_eof: FUN IDR COLON UNIT UNIT
 ##
-## Ends in an error in state: 56.
+## Ends in an error in state: 82.
 ##
 ## expr -> FUN IDR COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
@@ -164,7 +164,7 @@ Separator between bound variable and lambda body is missing. Use e.g. => or . Al
 
 expr_eof: FUN IDR UNIT
 ##
-## Ends in an error in state: 54.
+## Ends in an error in state: 80.
 ##
 ## expr -> FUN IDR . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -275,7 +275,7 @@ First component of pair expression is expected
 
 expr_eof: LANGLE UNIT COMMA TBOX
 ##
-## Ends in an error in state: 60.
+## Ends in an error in state: 86.
 ##
 ## parceled_expr -> LANGLE expr COMMA . expr RANGLE [ WITH UNIT UINTZ SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDT IDR IDM EOF END CROSS COMMA ]
 ##
@@ -287,7 +287,7 @@ Second component of pair expression is expected
 
 expr_eof: LANGLE UNIT COMMA UNIT RPAREN
 ##
-## Ends in an error in state: 61.
+## Ends in an error in state: 87.
 ##
 ## arith -> expr . PLUS expr [ SLASH RANGLE PLUS MINUS CROSS ]
 ## arith -> expr . MINUS expr [ SLASH RANGLE PLUS MINUS CROSS ]
@@ -302,14 +302,14 @@ expr_eof: LANGLE UNIT COMMA UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Right angle bracket is expected
 
 expr_eof: LANGLE UNIT RPAREN
 ##
-## Ends in an error in state: 59.
+## Ends in an error in state: 85.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS CROSS COMMA ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS CROSS COMMA ]
@@ -324,7 +324,7 @@ expr_eof: LANGLE UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Missing comma which separates components of pair expression
@@ -343,7 +343,7 @@ Variable in "let" expression must be term, not type
 
 expr_eof: LET IDR EQ UNIT IN TBOX
 ##
-## Ends in an error in state: 64.
+## Ends in an error in state: 90.
 ##
 ## expr -> LET IDR EQ expr IN . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -355,7 +355,7 @@ Expected term after "in"-keyword, not type
 
 expr_eof: LET IDR EQ UNIT RPAREN
 ##
-## Ends in an error in state: 63.
+## Ends in an error in state: 89.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS IN CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS IN CROSS ]
@@ -370,7 +370,7 @@ expr_eof: LET IDR EQ UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Missing or unexpected lexeme in parenthesized expression
@@ -413,7 +413,7 @@ Right-hand side of lexbox expression is expected
 
 expr_eof: LETBOX IDM EQ UNIT IN TBOX
 ##
-## Ends in an error in state: 67.
+## Ends in an error in state: 93.
 ##
 ## expr -> LETBOX IDM EQ expr IN . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -425,7 +425,7 @@ Body of letbox expression is expected
 
 expr_eof: LETBOX IDM EQ UNIT RPAREN
 ##
-## Ends in an error in state: 66.
+## Ends in an error in state: 92.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS IN CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS IN CROSS ]
@@ -440,7 +440,7 @@ expr_eof: LETBOX IDM EQ UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Missing "in" keyword in letbox expression
@@ -483,7 +483,7 @@ Missing or unexpected lexeme in parenthesized expression
 
 expr_eof: LPAREN UNIT RANGLE
 ##
-## Ends in an error in state: 97.
+## Ends in an error in state: 123.
 ##
 ## arith -> expr . PLUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
 ## arith -> expr . MINUS expr [ SLASH RPAREN PLUS MINUS CROSS ]
@@ -498,7 +498,7 @@ expr_eof: LPAREN UNIT RANGLE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Missing closing parenthesis or missing obligatory parentheses for multi-arg function application: (f x) y or maybe using parentheses instead of angle brackets for pairs
@@ -529,7 +529,7 @@ An expression is expected. This may result from a missing or unexpected lexeme o
 
 expr_eof: UNIT RPAREN
 ##
-## Ends in an error in state: 101.
+## Ends in an error in state: 127.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS EOF CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS EOF CROSS ]
@@ -544,14 +544,14 @@ expr_eof: UNIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Binary application must be parenthesized like so: (f x) y
 
 expr_eof: UNIT TBOX
 ##
-## Ends in an error in state: 40.
+## Ends in an error in state: 52.
 ##
 ## app -> parceled_expr . parceled_expr [ WITH UNIT UINTZ SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDT IDR IDM EOF END CROSS COMMA ]
 ## expr -> parceled_expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -564,7 +564,7 @@ Sometimes this happens when you say "let box" instead of "letbox" or try to appl
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT RPAREN WITH
 ##
-## Ends in an error in state: 129.
+## Ends in an error in state: 155.
 ##
 ## separated_nonempty_list(PIPE,data_ctor) -> data_ctor . [ SEMICOLON ]
 ## separated_nonempty_list(PIPE,data_ctor) -> data_ctor . PIPE separated_nonempty_list(PIPE,data_ctor) [ SEMICOLON ]
@@ -577,7 +577,7 @@ Unexpected "with" keyword
 
 prog_eof: LET IDR EQ IDM WITH
 ##
-## Ends in an error in state: 110.
+## Ends in an error in state: 136.
 ##
 ## arith -> expr . PLUS expr [ SLASH SEMICOLON PLUS MINUS IN CROSS ]
 ## arith -> expr . MINUS expr [ SLASH SEMICOLON PLUS MINUS IN CROSS ]
@@ -593,14 +593,14 @@ prog_eof: LET IDR EQ IDM WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Unexpected "with" keyword
 
 prog_eof: IDM WITH
 ##
-## Ends in an error in state: 113.
+## Ends in an error in state: 139.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS MINUS EOF CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS MINUS EOF CROSS ]
@@ -615,14 +615,14 @@ prog_eof: IDM WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Unexpected "with" keyword
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT EOF
 ##
-## Ends in an error in state: 121.
+## Ends in an error in state: 147.
 ##
 ## separated_nonempty_list(COMMA,typ) -> typ . [ RPAREN ]
 ## separated_nonempty_list(COMMA,typ) -> typ . COMMA separated_nonempty_list(COMMA,typ) [ RPAREN ]
@@ -649,7 +649,7 @@ Missing matched expression body
 
 expr_eof: FUN LPAREN IDR COLON IDT RPAREN DARROW MATCH IDM WITH END UNIT
 ##
-## Ends in an error in state: 42.
+## Ends in an error in state: 79.
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -665,7 +665,7 @@ Unexpected token
 
 expr_eof: IDM SLASH WITH
 ##
-## Ends in an error in state: 43.
+## Ends in an error in state: 55.
 ##
 ## arith -> expr SLASH . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -677,7 +677,7 @@ Unexpected "with" keyword
 
 expr_eof: SND IDM UNDERSCORE
 ##
-## Ends in an error in state: 46.
+## Ends in an error in state: 58.
 ##
 ## app -> app . parceled_expr [ WITH UNIT UINTZ SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS LPAREN LANGLE IN IDT IDR IDM EOF END CROSS COMMA ]
 ## expr -> app . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -690,7 +690,7 @@ Missing or unexpected lexeme
 
 expr_eof: IDM PLUS WITH
 ##
-## Ends in an error in state: 48.
+## Ends in an error in state: 60.
 ##
 ## arith -> expr PLUS . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -702,7 +702,7 @@ Expected expression
 
 expr_eof: IDM PLUS MATCH IDM WITH END UNIT
 ##
-## Ends in an error in state: 49.
+## Ends in an error in state: 61.
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr PLUS expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -718,7 +718,7 @@ Unexpected token
 
 expr_eof: IDM CROSS WITH
 ##
-## Ends in an error in state: 50.
+## Ends in an error in state: 62.
 ##
 ## arith -> expr CROSS . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -730,7 +730,7 @@ Unexpected "with" keyword
 
 expr_eof: IDM MINUS WITH
 ##
-## Ends in an error in state: 52.
+## Ends in an error in state: 64.
 ##
 ## arith -> expr MINUS . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -742,7 +742,7 @@ Unexpected "with" keyword
 
 expr_eof: IDM MINUS MATCH IDM WITH END UNIT
 ##
-## Ends in an error in state: 53.
+## Ends in an error in state: 65.
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -758,7 +758,7 @@ Unexpected token
 
 expr_eof: FUN IDR COLON IDT DARROW MATCH IDM WITH END UNIT
 ##
-## Ends in an error in state: 58.
+## Ends in an error in state: 84.
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -774,7 +774,7 @@ Unexpected token
 
 expr_eof: LET IDR EQ IDM IN MATCH IDM WITH END UNIT
 ##
-## Ends in an error in state: 65.
+## Ends in an error in state: 91.
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -790,7 +790,7 @@ Unexpected token
 
 expr_eof: LETBOX IDM EQ IDM IN MATCH IDM WITH END UNIT
 ##
-## Ends in an error in state: 68.
+## Ends in an error in state: 94.
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
@@ -806,7 +806,7 @@ Unexpected token
 
 expr_eof: MATCH IDM SEMICOLON
 ##
-## Ends in an error in state: 69.
+## Ends in an error in state: 95.
 ##
 ## arith -> expr . PLUS expr [ WITH SLASH PLUS MINUS CROSS ]
 ## arith -> expr . MINUS expr [ WITH SLASH PLUS MINUS CROSS ]
@@ -821,14 +821,14 @@ expr_eof: MATCH IDM SEMICOLON
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Expected "with" keyword
 
 expr_eof: MATCH IDM WITH WITH
 ##
-## Ends in an error in state: 70.
+## Ends in an error in state: 96.
 ##
 ## expr -> MATCH expr WITH . list(match_branch) END [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
@@ -840,7 +840,7 @@ Expected "end" keyword
 
 expr_eof: MATCH IDM WITH PIPE WITH
 ##
-## Ends in an error in state: 71.
+## Ends in an error in state: 97.
 ##
 ## match_branch -> PIPE . pattern DARROW expr [ PIPE END ]
 ##
@@ -852,7 +852,7 @@ Expected pattern
 
 expr_eof: MATCH IDM WITH PIPE LPAREN WITH
 ##
-## Ends in an error in state: 75.
+## Ends in an error in state: 101.
 ##
 ## atom_pattern -> LPAREN . pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
@@ -864,7 +864,7 @@ Expected pattern
 
 expr_eof: MATCH IDM WITH PIPE IDT WITH
 ##
-## Ends in an error in state: 77.
+## Ends in an error in state: 103.
 ##
 ## atom_pattern -> IDT . [ RPAREN RANGLE DARROW COMMA ]
 ## pattern -> IDT . nonempty_list(atom_pattern) [ RPAREN RANGLE DARROW COMMA ]
@@ -877,7 +877,7 @@ Expected "=>" or subpattern
 
 expr_eof: MATCH IDM WITH PIPE IDT IDR WITH
 ##
-## Ends in an error in state: 81.
+## Ends in an error in state: 107.
 ##
 ## nonempty_list(atom_pattern) -> atom_pattern . [ RPAREN RANGLE DARROW COMMA ]
 ## nonempty_list(atom_pattern) -> atom_pattern . nonempty_list(atom_pattern) [ RPAREN RANGLE DARROW COMMA ]
@@ -890,7 +890,7 @@ Expected "=>" or subpattern
 
 expr_eof: MATCH IDM WITH PIPE LPAREN IDR WITH
 ##
-## Ends in an error in state: 88.
+## Ends in an error in state: 114.
 ##
 ## atom_pattern -> LPAREN pattern . RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
@@ -902,7 +902,7 @@ Unexpected token after subpattern
 
 expr_eof: MATCH IDM WITH PIPE IDR WITH
 ##
-## Ends in an error in state: 90.
+## Ends in an error in state: 116.
 ##
 ## match_branch -> PIPE pattern . DARROW expr [ PIPE END ]
 ##
@@ -914,7 +914,7 @@ Expected "=>"
 
 expr_eof: MATCH IDM WITH PIPE IDR DARROW WITH
 ##
-## Ends in an error in state: 91.
+## Ends in an error in state: 117.
 ##
 ## match_branch -> PIPE pattern DARROW . expr [ PIPE END ]
 ##
@@ -926,7 +926,7 @@ Expected expression
 
 expr_eof: MATCH IDM WITH PIPE IDR DARROW IDM WITH
 ##
-## Ends in an error in state: 92.
+## Ends in an error in state: 118.
 ##
 ## arith -> expr . PLUS expr [ SLASH PLUS PIPE MINUS END CROSS ]
 ## arith -> expr . MINUS expr [ SLASH PLUS PIPE MINUS END CROSS ]
@@ -941,14 +941,14 @@ expr_eof: MATCH IDM WITH PIPE IDR DARROW IDM WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 40, spurious reduction of production expr -> parceled_expr
+## In state 52, spurious reduction of production expr -> parceled_expr
 ##
 
 Expected "end" keyword
 
 prog_eof: WITH
 ##
-## Ends in an error in state: 103.
+## Ends in an error in state: 129.
 ##
 ## prog_eof' -> . prog_eof [ # ]
 ##
@@ -960,7 +960,7 @@ Unexpected "with" keyword
 
 prog_eof: TYPE WITH
 ##
-## Ends in an error in state: 104.
+## Ends in an error in state: 130.
 ##
 ## prog -> TYPE . IDT EQ option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ## prog -> TYPE . IDT SEMICOLON prog [ EOF ]
@@ -973,7 +973,7 @@ Expected type name
 
 prog_eof: TYPE IDT WITH
 ##
-## Ends in an error in state: 105.
+## Ends in an error in state: 131.
 ##
 ## prog -> TYPE IDT . EQ option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ## prog -> TYPE IDT . SEMICOLON prog [ EOF ]
@@ -986,7 +986,7 @@ Expected ";"
 
 prog_eof: TYPE IDT SEMICOLON WITH
 ##
-## Ends in an error in state: 106.
+## Ends in an error in state: 132.
 ##
 ## prog -> TYPE IDT SEMICOLON . prog [ EOF ]
 ##
@@ -998,7 +998,7 @@ Unexpected "with" keyword
 
 prog_eof: LET WITH
 ##
-## Ends in an error in state: 107.
+## Ends in an error in state: 133.
 ##
 ## expr -> LET . IDR EQ expr IN expr [ SLASH PLUS MINUS EOF CROSS ]
 ## prog -> LET . IDR EQ expr SEMICOLON prog [ EOF ]
@@ -1011,7 +1011,7 @@ Expected regular variable name
 
 prog_eof: LET IDR WITH
 ##
-## Ends in an error in state: 108.
+## Ends in an error in state: 134.
 ##
 ## expr -> LET IDR . EQ expr IN expr [ SLASH PLUS MINUS EOF CROSS ]
 ## prog -> LET IDR . EQ expr SEMICOLON prog [ EOF ]
@@ -1024,7 +1024,7 @@ Expected "="
 
 prog_eof: LET IDR EQ WITH
 ##
-## Ends in an error in state: 109.
+## Ends in an error in state: 135.
 ##
 ## expr -> LET IDR EQ . expr IN expr [ SLASH PLUS MINUS EOF CROSS ]
 ## prog -> LET IDR EQ . expr SEMICOLON prog [ EOF ]
@@ -1037,7 +1037,7 @@ Expected expression
 
 prog_eof: LET IDR EQ IDM SEMICOLON WITH
 ##
-## Ends in an error in state: 111.
+## Ends in an error in state: 137.
 ##
 ## prog -> LET IDR EQ expr SEMICOLON . prog [ EOF ]
 ##
@@ -1049,7 +1049,7 @@ Invalid name for data constructor
 
 prog_eof: TYPE IDT EQ WITH
 ##
-## Ends in an error in state: 115.
+## Ends in an error in state: 141.
 ##
 ## prog -> TYPE IDT EQ . option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ##
@@ -1061,7 +1061,7 @@ Expected ";"
 
 prog_eof: TYPE IDT EQ PIPE WITH
 ##
-## Ends in an error in state: 117.
+## Ends in an error in state: 143.
 ##
 ## prog -> TYPE IDT EQ option(PIPE) . separated_nonempty_list(PIPE,data_ctor) SEMICOLON prog [ EOF ]
 ##
@@ -1073,7 +1073,7 @@ Expected data constructor name
 
 prog_eof: TYPE IDT EQ IDT WITH
 ##
-## Ends in an error in state: 118.
+## Ends in an error in state: 144.
 ##
 ## data_ctor -> IDT . OF LPAREN separated_nonempty_list(COMMA,typ) RPAREN [ SEMICOLON PIPE ]
 ## data_ctor -> IDT . [ SEMICOLON PIPE ]
@@ -1086,7 +1086,7 @@ Expected ";"
 
 prog_eof: TYPE IDT EQ IDT OF WITH
 ##
-## Ends in an error in state: 119.
+## Ends in an error in state: 145.
 ##
 ## data_ctor -> IDT OF . LPAREN separated_nonempty_list(COMMA,typ) RPAREN [ SEMICOLON PIPE ]
 ##
@@ -1098,7 +1098,7 @@ Expected types
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN WITH
 ##
-## Ends in an error in state: 120.
+## Ends in an error in state: 146.
 ##
 ## data_ctor -> IDT OF LPAREN . separated_nonempty_list(COMMA,typ) RPAREN [ SEMICOLON PIPE ]
 ##
@@ -1110,7 +1110,7 @@ Expected ")" or types
 
 prog_eof: TYPE IDT EQ IDT OF LPAREN IDT COMMA WITH
 ##
-## Ends in an error in state: 122.
+## Ends in an error in state: 148.
 ##
 ## separated_nonempty_list(COMMA,typ) -> typ COMMA . separated_nonempty_list(COMMA,typ) [ RPAREN ]
 ##
@@ -1122,7 +1122,7 @@ Expected type
 
 prog_eof: TYPE IDT EQ IDT SEMICOLON WITH
 ##
-## Ends in an error in state: 127.
+## Ends in an error in state: 153.
 ##
 ## prog -> TYPE IDT EQ option(PIPE) separated_nonempty_list(PIPE,data_ctor) SEMICOLON . prog [ EOF ]
 ##
@@ -1134,7 +1134,7 @@ Unexpected "with" keyword
 
 prog_eof: TYPE IDT EQ IDT PIPE WITH
 ##
-## Ends in an error in state: 130.
+## Ends in an error in state: 156.
 ##
 ## separated_nonempty_list(PIPE,data_ctor) -> data_ctor PIPE . separated_nonempty_list(PIPE,data_ctor) [ SEMICOLON ]
 ##
@@ -1146,7 +1146,7 @@ Expected data constructor
 
 expr_eof: MATCH IDM WITH PIPE LANGLE WITH
 ##
-## Ends in an error in state: 76.
+## Ends in an error in state: 102.
 ##
 ## atom_pattern -> LANGLE . pattern COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
@@ -1154,11 +1154,11 @@ expr_eof: MATCH IDM WITH PIPE LANGLE WITH
 ## LANGLE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected subpatterns
 
 expr_eof: MATCH IDM WITH PIPE LANGLE IDR WITH
 ##
-## Ends in an error in state: 83.
+## Ends in an error in state: 109.
 ##
 ## atom_pattern -> LANGLE pattern . COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
@@ -1166,11 +1166,11 @@ expr_eof: MATCH IDM WITH PIPE LANGLE IDR WITH
 ## LANGLE pattern
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected comma or ">"
 
 expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA WITH
 ##
-## Ends in an error in state: 84.
+## Ends in an error in state: 110.
 ##
 ## atom_pattern -> LANGLE pattern COMMA . pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
@@ -1178,11 +1178,11 @@ expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA WITH
 ## LANGLE pattern COMMA
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected subpattern
 
 expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA IDR WITH
 ##
-## Ends in an error in state: 85.
+## Ends in an error in state: 111.
 ##
 ## atom_pattern -> LANGLE pattern COMMA pattern . RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR DARROW COMMA ]
 ##
@@ -1190,4 +1190,345 @@ expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA IDR WITH
 ## LANGLE pattern COMMA pattern
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ">" or comma
+
+expr_eof: FIX WITH
+##
+## Ends in an error in state: 38.
+##
+## expr -> FIX . IDR COLON typ IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX . LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX . LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX
+##
+
+Expected "("
+
+expr_eof: FIX LPAREN WITH
+##
+## Ends in an error in state: 39.
+##
+## expr -> FIX LPAREN . IDR COLON typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN . IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN
+##
+
+Expected recursive function name
+
+expr_eof: FIX LPAREN IDR WITH
+##
+## Ends in an error in state: 40.
+##
+## expr -> FIX LPAREN IDR . COLON typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR . COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR
+##
+
+Expected ":"
+
+expr_eof: FIX LPAREN IDR COLON WITH
+##
+## Ends in an error in state: 41.
+##
+## expr -> FIX LPAREN IDR COLON . typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON . typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON
+##
+
+Expected type
+
+expr_eof: FIX LPAREN IDR COLON IDT IDR
+##
+## Ends in an error in state: 42.
+##
+## expr -> FIX LPAREN IDR COLON typ . RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ . RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ
+##
+
+Expected ")"
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN WITH
+##
+## Ends in an error in state: 43.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN . IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN . LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN
+##
+
+Expected "=" or arguments
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN WITH
+##
+## Ends in an error in state: 44.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN . IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN LPAREN
+##
+
+Expected argument name
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR WITH
+##
+## Ends in an error in state: 45.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR . COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR
+##
+
+Expected ":"
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON WITH
+##
+## Ends in an error in state: 46.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON . typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON
+##
+
+Expected argument type
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT IDR
+##
+## Ends in an error in state: 47.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ . RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
+## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ
+##
+
+Expected ")"
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT RPAREN WITH
+##
+## Ends in an error in state: 48.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN
+##
+
+Expected "=>"
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT RPAREN DARROW WITH
+##
+## Ends in an error in state: 49.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW
+##
+
+Expected expression
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT RPAREN DARROW MATCH IDM WITH END UNIT
+##
+## Ends in an error in state: 54.
+##
+## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr
+##
+
+Unexpected token
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR WITH
+##
+## Ends in an error in state: 66.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR
+##
+
+Expected ":"
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON WITH
+##
+## Ends in an error in state: 67.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR COLON
+##
+
+Expected argument type
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON IDT RPAREN
+##
+## Ends in an error in state: 68.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
+## typ -> typ . ARROW typ [ DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR COLON typ
+##
+
+Expected "=>"
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON IDT DARROW WITH
+##
+## Ends in an error in state: 69.
+##
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW
+##
+
+Expected expression
+
+expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON IDT DARROW MATCH IDM WITH END UNIT
+##
+## Ends in an error in state: 70.
+##
+## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW expr
+##
+
+Unexpected token
+
+expr_eof: FIX IDR WITH
+##
+## Ends in an error in state: 71.
+##
+## expr -> FIX IDR . COLON typ IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR
+##
+
+Expected ":" because recursive function must be explicitly given a type
+
+expr_eof: FIX IDR COLON WITH
+##
+## Ends in an error in state: 72.
+##
+## expr -> FIX IDR COLON . typ IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON
+##
+
+Expected type of recursive function
+
+expr_eof: FIX IDR COLON IDT RPAREN
+##
+## Ends in an error in state: 73.
+##
+## expr -> FIX IDR COLON typ . IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ IDR CROSS ARROW ]
+## typ -> typ . ARROW typ [ IDR CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ
+##
+
+Expected argument name
+
+expr_eof: FIX IDR COLON IDT IDR WITH
+##
+## Ends in an error in state: 74.
+##
+## expr -> FIX IDR COLON typ IDR . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR
+##
+
+Expected ":"
+
+expr_eof: FIX IDR COLON IDT IDR COLON WITH
+##
+## Ends in an error in state: 75.
+##
+## expr -> FIX IDR COLON typ IDR COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR COLON
+##
+
+Expected argument type
+
+expr_eof: FIX IDR COLON IDT IDR COLON IDT RPAREN
+##
+## Ends in an error in state: 76.
+##
+## expr -> FIX IDR COLON typ IDR COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
+## typ -> typ . ARROW typ [ DARROW CROSS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR COLON typ
+##
+
+Expected "=>"
+
+expr_eof: FIX IDR COLON IDT IDR COLON IDT DARROW WITH
+##
+## Ends in an error in state: 77.
+##
+## expr -> FIX IDR COLON typ IDR COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR COLON typ DARROW
+##
+
+Expected expression
+
+expr_eof: FIX IDR COLON IDT IDR COLON IDT DARROW MATCH IDM WITH END UNIT
+##
+## Ends in an error in state: 78.
+##
+## arith -> expr . PLUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON typ IDR COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FIX IDR COLON typ IDR COLON typ DARROW expr
+##
+
+Unexpected token

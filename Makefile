@@ -23,7 +23,7 @@ gold:
 fmt:
 	dune build @fmt --auto-promote
 
-# Update src/ParserErrors.messages
+# Update core/ParserErrors.messages
 update-messages:
 	menhir --list-errors core/Parser.mly >core/NewParserErrorsStubs.messages
 	menhir --merge-errors core/ParserErrors.messages \

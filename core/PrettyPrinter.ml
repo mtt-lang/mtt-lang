@@ -26,6 +26,7 @@ module Doc : DOC = struct
   let snd_kwd = !^"π₂"
   let box_kwd = !^"box"
   let fun_kwd = !^"λ"
+  let fix_kwd = !^"fix"
   let let_kwd = !^"let"
   let letbox_kwd = !^"letbox"
   let in_kwd = !^"in"
@@ -99,6 +100,13 @@ module Doc : DOC = struct
             (fun_kwd
             ^^ !^(Id.R.to_string idr)
             ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body)
+      | Fix { self; ty_id; idr; idr_ty; body } ->
+          (parens_if (p > 1))
+            (fix_kwd
+            ^^^ !^(Id.R.to_string self)
+            ^^^ colon ^^^ of_type ty_id
+            ^^^ !^(Id.R.to_string idr)
+            ^^^ colon ^^^ of_type idr_ty ^^ dot ^^ space ^^ walk 1 body)
       | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
       | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
@@ -135,15 +143,17 @@ module Doc : DOC = struct
       | Val.Unit -> unit_term
       | Val.Nat { n } -> !^(Nat.to_string n)
       | Val.Pair { v1; v2 } -> group (angles (walk 0 v1 ^^ comma ^/^ walk 0 v2))
-      | Val.Clos { idr; body; env } ->
+      | Val.RecClos { self; idr; body; env } ->
+          let kwd e =
+            if String.equal (Id.R.to_string self) "" then fun_kwd ^^ e
+            else fix_kwd ^^^ !^(Id.R.to_string self) ^^^ e
+          in
           let narrowed_env = Env.R.narrow env idr in
-          (parens_if (p > 0))
-            (fun_kwd
-            ^^ !^(Id.R.to_string idr)
-            ^^ dot
-            ^^^ (* when print out closures, substitute the free vars in its body with
-                   the corresponding values from the closures' regular environment *)
-            of_expr_with_free_vars narrowed_env body)
+          parens_if (p > 0)
+          @@ kwd
+               (!^(Id.R.to_string idr)
+               ^^ dot
+               ^^^ of_expr_with_free_vars narrowed_env body)
       | Val.Box { e } -> (parens_if (p > 0)) box_kwd ^^^ of_expr e
       | Val.DCtor { idd; args } ->
           let f doc arg = doc ^/^ walk 1 arg in

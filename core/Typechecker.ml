@@ -216,6 +216,18 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
           let envs_ext = Envs.extend_regular envs idr dom in
           check_expr_open envs_ext body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
+  | Fix { self; ty_id; idr = _; idr_ty; body } -> (
+      let self_ty = Type.arr idr_ty typ in
+      match typ' with
+      | Type.Arr { dom = _; cod } ->
+          let%bind () =
+            with_error_location loc
+            @@ check_equal self_ty ty_id
+                 "Domain of arrow type is not the same as type of function \
+                  parameter"
+          in
+          check_expr_open (Envs.extend_regular envs self self_ty) body cod
+      | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
       let%bind Location.{ data = ty; _ } = infer_expr_open envs fe in
       match ty with
@@ -290,6 +302,12 @@ and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
         infer_expr_open envs_ext body
       in
       Type.arr ty_id ty_body
+  | Fix { self; ty_id; idr; idr_ty; body } ->
+      let fix_gamma = Envs.extend_regular envs self ty_id in
+      let%map ty_body =
+        infer_expr_open (Envs.extend_regular fix_gamma idr idr_ty) body
+      in
+      Type.arr idr_ty ty_body
   | App { fe; arge } -> (
       let%bind Location.{ data = ty; _ } = infer_expr_open envs fe in
       match ty with

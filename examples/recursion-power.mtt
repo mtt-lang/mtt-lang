@@ -1,0 +1,7 @@
+let power = fix (f : Nat -> Nat -> Nat) a : Nat .
+  λb : Nat.
+    match b with
+    | zero => 1
+    | succ sb => ((f a) sb) * a
+    end
+in (power 3) 4
