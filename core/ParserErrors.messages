@@ -686,7 +686,7 @@ expr_eof: SND IDM UNDERSCORE
 ## app
 ##
 
-Patterns can't be used here
+Missing or unexpected lexeme
 
 expr_eof: IDM PLUS WITH
 ##
@@ -698,7 +698,7 @@ expr_eof: IDM PLUS WITH
 ## expr PLUS
 ##
 
-Unexpected "with" keyword
+Expected expression
 
 expr_eof: IDM PLUS MATCH IDM WITH END UNIT
 ##

@@ -120,8 +120,8 @@ Evaluator for Nat
   $ mtt infer <<EOF
   > let predpred = fun n: Nat.
   >   match n with
-  >   | zero => 0
-  >   | succ m => m - 1
+  >   | 0 => 0
+  >   | m => m - 2
   >   end
   > in predpred 4
   > EOF
@@ -130,8 +130,8 @@ Evaluator for Nat
   $ mtt infer <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => <0, 0>
-  >   | succ m => <m, n>
+  >   | 0 => <0, 0>
+  >   | m => <m, n>
   >   end
   > in f 0
   > EOF
@@ -140,8 +140,8 @@ Evaluator for Nat
   $ mtt infer <<EOF
   > let f = fun x:(). 10 in
   > match f () with
-  > | zero => 1
-  > | succ m => 2
+  > | 0 => 1
+  > | _ => 2
   > end
   > EOF
   ℕ

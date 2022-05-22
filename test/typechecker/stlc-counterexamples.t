@@ -35,23 +35,23 @@ Pattern matching for Nat
   $ mtt infer <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => <0, 0>
-  >   | succ m => ()
+  >   | 0 => <0, 0>
+  >   | m => ()
   >   end
   > in f 0
   > EOF
-  mtt: Type inference error: All branches of pattern matching must have the same type
-       file name :  Not a file, lines :  2 - 5, column :  2 - 5
+  mtt: Type inference error: Expected ℕ×ℕ, but found Unit type
+       file name :  Not a file, lines :  4 - 4, column :  9 - 11
   [124]
 
   $ mtt infer <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => <0, 0>
-  >   | succ m => ()
+  >   | 0 => <0, 0>
+  >   | m => ()
   >   end
   > in f 42
   > EOF
-  mtt: Type inference error: All branches of pattern matching must have the same type
-       file name :  Not a file, lines :  2 - 5, column :  2 - 5
+  mtt: Type inference error: Expected ℕ×ℕ, but found Unit type
+       file name :  Not a file, lines :  4 - 4, column :  9 - 11
   [124]

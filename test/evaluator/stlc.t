@@ -109,8 +109,8 @@ test for Nat
   $ mtt eval <<EOF
   > let pred = fun n: Nat. 
   >   match n with
-  >   | zero => 0
-  >   | succ m => m
+  >   | 0 => 0
+  >   | m => m - 1
   >   end
   > in pred 0
   > EOF
@@ -119,8 +119,8 @@ test for Nat
   $ mtt eval <<EOF
   > let pred = fun n: Nat. 
   >   match n with
-  >   | zero => 0
-  >   | succ m => m
+  >   | 0 => 0
+  >   | m => m - 1
   >   end
   > in pred 1
   > EOF
@@ -129,8 +129,8 @@ test for Nat
   $ mtt eval <<EOF
   > let pred = fun n: Nat. 
   >   match n with
-  >   | zero => 0
-  >   | succ m => n - 1
+  >   | 0 => 0
+  >   | _ => n - 1
   >   end
   > in pred 43
   > EOF
@@ -139,18 +139,18 @@ test for Nat
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => 1
-  >   | succ m => m + n
+  >   | 0 => 1
+  >   | m => m + n
   >   end
   > in f 42
   > EOF
-  83
+  84
 
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => <0, 0>
-  >   | succ m => <m, n>
+  >   | 0 => <0, 0>
+  >   | m => <m, n>
   >   end
   > in f 0
   > EOF
@@ -159,8 +159,8 @@ test for Nat
   $ mtt eval <<EOF
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => <0, 0>
-  >   | succ m => <m, n>
+  >   | 0 => <0, 0>
+  >   | m => <m - 1, n>
   >   end
   > in f 42
   > EOF
@@ -173,8 +173,8 @@ test for Nat
   > let next = fun n: Nat. n + 1 in
   > let f = fun n: Nat.
   >   match n with
-  >   | zero => ((mkpair 0) (next 1))
-  >   | succ m => ((mkpair n) (next n))
+  >   | 0 => ((mkpair 0) (next 1))
+  >   | _ => ((mkpair n) (next n))
   >   end
   > in f 100
   > EOF
@@ -185,16 +185,51 @@ test for Nat
   > 
   > let f = fun x: A. 10 in
   > match f () with
-  > | zero => 1
-  > | succ m => 2
+  > | 0 => 1
+  > | _ => 2
+  > end
+  > EOF
+  2
+
+  $ mtt eval <<EOF
+  > type A;
+  > 
+  > let f = fun x: A. 0 in
+  > match f () with
+  > | _ => 2
+  > | 0 => 1
+  > end
+  > EOF
+  2
+
+  $ mtt eval <<EOF
+  > type A;
+  > 
+  > let f = fun x: A. 5 in
+  > match f () with
+  > | 3 => 0
+  > | x => x
+  > | 5 => 2
+  > end
+  > EOF
+  5
+
+  $ mtt eval <<EOF
+  > type A;
+  > 
+  > let f = fun x: A. 5 in
+  > match f () with
+  > | 3 => 0
+  > | 5 => 2
+  > | x => x
   > end
   > EOF
   2
 
   $ mtt eval <<EOF
   > match 1 - 1 with
-  > | zero => 1
-  > | succ m => 2
+  > | 0 => 1
+  > | _ => 2
   > end
   > EOF
   1
@@ -272,7 +307,8 @@ Bad examples
   >   end
   > in f 0
   > EOF
-  <0, 0>
+  mtt: Parse error: Expected "=>"
+  [124]
 
   $ mtt eval <<EOF
   > let f = fun n: Nat.
@@ -282,4 +318,5 @@ Bad examples
   >   end
   > in f 42
   > EOF
-  ()
+  mtt: Parse error: Expected "=>"
+  [124]
