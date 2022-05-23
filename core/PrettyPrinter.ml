@@ -95,18 +95,16 @@ module Doc : DOC = struct
           | Error _ -> !^(Id.R.to_string idr))
       | VarM { idm } -> !^(Id.M.to_string idm)
       | VarD { idd } -> !^(Id.D.to_string idd)
-      | Fun { idr; ty_id; body } ->
+      | Fun { arg_pttrn; arg_ty; body } ->
           (parens_if (p > 1))
-            (fun_kwd
-            ^^ !^(Id.R.to_string idr)
-            ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body)
-      | Fix { self; ty_id; idr; idr_ty; body } ->
+            (fun_kwd ^^ of_pattern arg_pttrn ^^^ colon ^^^ of_type arg_ty ^^ dot
+           ^^ space ^^ walk 1 body)
+      | Fix { self; ty_id; arg_pttrn; arg_ty; body } ->
           (parens_if (p > 1))
             (fix_kwd
             ^^^ !^(Id.R.to_string self)
-            ^^^ colon ^^^ of_type ty_id
-            ^^^ !^(Id.R.to_string idr)
-            ^^^ colon ^^^ of_type idr_ty ^^ dot ^^ space ^^ walk 1 body)
+            ^^^ colon ^^^ of_type ty_id ^^^ of_pattern arg_pttrn ^^^ colon
+            ^^^ of_type arg_ty ^^ dot ^^ space ^^ walk 1 body)
       | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
       | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
@@ -142,16 +140,17 @@ module Doc : DOC = struct
       | Val.Unit -> unit_term
       | Val.Nat { n } -> !^(Nat.to_string n)
       | Val.Pair { v1; v2 } -> group (angles (walk 0 v1 ^^ comma ^/^ walk 0 v2))
-      | Val.RecClos { self; idr; body; env } ->
+      | Val.RecClos { self; arg_pttrn; body; env } ->
           let kwd e =
             if String.equal (Id.R.to_string self) "" then fun_kwd ^^ e
             else fix_kwd ^^^ !^(Id.R.to_string self) ^^^ e
           in
-          let narrowed_env = Env.R.narrow env idr in
+          let narrowed_env =
+            Env.R.narrow_many env (Set.to_list @@ Pattern.free_vars_r arg_pttrn)
+          in
           parens_if (p > 0)
           @@ kwd
-               (!^(Id.R.to_string idr)
-               ^^ dot
+               (of_pattern arg_pttrn ^^ dot
                ^^^ of_expr_with_free_vars narrowed_env body)
       | Val.Box { e } -> (parens_if (p > 0)) box_kwd ^^^ of_expr e
       | Val.DCtor { idd; args } ->

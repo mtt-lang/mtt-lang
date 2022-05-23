@@ -33,7 +33,7 @@ let generator =
                    unary_node snd;
                    binary_node app;
                    map3 func
-                     (map regular_id lowercase_id)
+                     (map (Fn.compose Pattern.var_r regular_id) lowercase_id)
                      (return Type.unit)
                      (self (size - 1));
                    unary_node box;
@@ -52,7 +52,7 @@ let generator =
                    map3 fix
                      (map regular_id lowercase_id)
                      (return (Type.arr Type.nat Type.nat))
-                     (map regular_id lowercase_id)
+                     (map (Fn.compose Pattern.var_r regular_id) lowercase_id)
                    <*> return Type.nat
                    <*> self (size - 1);
                  ]))
@@ -85,9 +85,10 @@ let arbitrary_ast =
       | Expr.Pair { e1; e2 } -> shrink_binary Expr.pair e1 e2
       | Expr.Nat _ -> empty
       | Expr.BinOp { op; e1; e2 } -> shrink_binary (Expr.binop op) e1 e2
-      | Expr.Fun { idr; ty_id; body } -> shrink_unary (Expr.func idr ty_id) body
-      | Expr.Fix { self; ty_id; idr; idr_ty; body } ->
-          shrink_unary (Expr.fix self ty_id idr idr_ty) body
+      | Expr.Fun { arg_pttrn; arg_ty; body } ->
+          shrink_unary (Expr.func arg_pttrn arg_ty) body
+      | Expr.Fix { self; ty_id; arg_pttrn; arg_ty; body } ->
+          shrink_unary (Expr.fix self ty_id arg_pttrn arg_ty) body
       | Expr.App { fe; arge } -> shrink_binary Expr.app fe arge
       | Expr.Box { e } -> shrink_unary Expr.box e
       | Expr.Let { pattern; bound; body } ->

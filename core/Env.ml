@@ -39,6 +39,9 @@ struct
   let extend_many env k_v_pairs = k_v_pairs @ env
   let narrow env k = List.Assoc.remove env ~equal:Key.equal k
 
+  let narrow_many env ks =
+    List.filter ~f:(fun (k, _) -> not @@ List.mem ks k ~equal:Key.equal) env
+
   let make_error_of_abscence k =
     let var_name = Key.to_string k in
     let message =

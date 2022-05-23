@@ -15,8 +15,9 @@ let rec free_vars_m Location.{ data = term; _ } =
   | VarR _ -> Set.empty (module Id.M)
   | VarM { idm } -> Set.singleton (module Id.M) idm
   | VarD _ -> Set.empty (module Id.M)
-  | Fun { idr = _; ty_id = _; body } -> free_vars_m body
-  | Fix { self = _; ty_id = _; idr = _; idr_ty = _; body } -> free_vars_m body
+  | Fun { arg_pttrn = _; arg_ty = _; body } -> free_vars_m body
+  | Fix { self = _; ty_id = _; arg_pttrn = _; arg_ty = _; body } ->
+      free_vars_m body
   | App { fe; arge } -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box { e } -> free_vars_m e
   | Let { pattern = _; bound; body } ->
@@ -50,9 +51,10 @@ let rec subst_m term identm Location.{ data = body; _ } =
   | VarD _i -> Location.locate body
   | VarM { idm } ->
       if [%equal: Id.M.t] identm idm then term else Location.locate body
-  | Fun { idr; ty_id; body } -> func idr ty_id (subst_m term identm body)
-  | Fix { self; ty_id; idr; idr_ty; body } ->
-      fix self ty_id idr idr_ty (subst_m term identm body)
+  | Fun { arg_pttrn; arg_ty; body } ->
+      func arg_pttrn arg_ty (subst_m term identm body)
+  | Fix { self; ty_id; arg_pttrn; arg_ty; body } ->
+      fix self ty_id arg_pttrn arg_ty (subst_m term identm body)
   | App { fe; arge } -> app (subst_m term identm fe) (subst_m term identm arge)
   | Box { e } -> box (subst_m term identm e)
   | Let { pattern; bound; body } ->
@@ -124,6 +126,11 @@ let rec match_pattern gamma Location.{ data = pattern; _ } (v : Val.t) =
       | Unit -> return @@ Some []
       | _ -> Result.fail @@ `EvaluationError "Pattern expected IUnit type")
 
+let match_irrefutable_pattern gamma pattern v =
+  let%bind new_vars_opt = match_pattern gamma pattern v in
+  Result.of_option new_vars_opt
+    ~error:(`EvaluationError "Pattern turned out to be refutable")
+
 module List = struct
   include List
 
@@ -180,17 +187,18 @@ let rec eval_expr_open gamma Location.{ data = expr; _ } =
       @@ `EvaluationError
            "Modal variable access is not possible in a well-typed term"
   | VarD { idd } -> return @@ Val.DCtor { idd; args = [] }
-  | Fun { idr; ty_id = _; body } ->
-      return @@ Val.RecClos { self = Id.R.mk ""; idr; body; env = gamma }
-  | Fix { self; ty_id = _; idr; idr_ty = _; body } ->
-      return @@ Val.RecClos { self; idr; body; env = gamma }
+  | Fun { arg_pttrn; arg_ty = _; body } ->
+      return @@ Val.RecClos { self = Id.R.mk ""; arg_pttrn; body; env = gamma }
+  | Fix { self; ty_id = _; arg_pttrn; arg_ty = _; body } ->
+      return @@ Val.RecClos { self; arg_pttrn; body; env = gamma }
   | App { fe; arge } -> (
       let%bind fv = eval_expr_open gamma fe in
       let%bind argv = eval_expr_open gamma arge in
       match fv with
-      | Val.RecClos { self; idr; body; env } ->
+      | Val.RecClos { self; arg_pttrn; body; env } ->
           let fix_gamma = Env.R.extend env self fv in
-          eval_expr_open (Env.R.extend fix_gamma idr argv) body
+          let%bind new_vars = match_irrefutable_pattern gamma arg_pttrn argv in
+          eval_expr_open (Env.R.extend_many fix_gamma new_vars) body
       | Val.DCtor { idd; args } ->
           return @@ Val.DCtor { idd; args = args @ [ argv ] }
       | _ ->
@@ -199,11 +207,7 @@ let rec eval_expr_open gamma Location.{ data = expr; _ } =
   | Box { e } -> return @@ Val.Box { e }
   | Let { pattern; bound; body } ->
       let%bind bound_v = eval_expr_open gamma bound in
-      let%bind new_vars_opt = match_pattern gamma pattern bound_v in
-      let%bind new_vars =
-        Result.of_option new_vars_opt
-          ~error:(`EvaluationError "Pattern turned out to be refutable")
-      in
+      let%bind new_vars = match_irrefutable_pattern gamma pattern bound_v in
       eval_expr_open (Env.R.extend_many gamma new_vars) body
   | Letbox { idm; boxed; body } -> (
       let%bind boxed_v = eval_expr_open gamma boxed in
@@ -231,11 +235,7 @@ let rec eval_prog_open gamma Location.{ data = prog; _ } =
   match prog with
   | Program.Let { pattern; bound; next } ->
       let%bind bound_v = eval_expr_open gamma bound in
-      let%bind new_vars_opt = match_pattern gamma pattern bound_v in
-      let%bind new_vars =
-        Result.of_option new_vars_opt
-          ~error:(`EvaluationError "Pattern turned out to be refutable")
-      in
+      let%bind new_vars = match_irrefutable_pattern gamma pattern bound_v in
       eval_prog_open (Env.R.extend_many gamma new_vars) next
   | Program.Type { idt = _; decl = _; next } -> eval_prog_open gamma next
   | Program.Last expr -> eval_expr_open gamma expr

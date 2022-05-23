@@ -22,7 +22,7 @@
   mtt: Parse error: An expression after snd is expected. This primitive can be only used fully applied.
   [124]
   $ mtt parse -e "fun box : A. box"
-  mtt: Parse error: A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
+  mtt: Parse error: Expected pattern after "fun" keyword
   [124]
 
 
@@ -85,7 +85,7 @@ mtt: Parse error: Binary application must be parenthesized like so: (f x) y
 
 ### Modal identifier in the wrong context
   $ mtt parse -e "fun x' : A. x"
-  mtt: Parse error: A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
+  mtt: Parse error: Expected pattern after "fun" keyword
   [124]
 
 ### box needs to be applied to an expression

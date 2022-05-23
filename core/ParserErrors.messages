@@ -2,7 +2,7 @@ type_eof: LPAREN SND
 ##
 ## Ends in an error in state: 41.
 ##
-## typ -> LPAREN . typ RPAREN [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> LPAREN . typ RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -16,7 +16,7 @@ type_eof: LPAREN UNIT UNIT
 ##
 ## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
 ## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
-## typ -> LPAREN typ . RPAREN [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> LPAREN typ . RPAREN [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN typ
@@ -40,7 +40,7 @@ type_eof: TBOX SND
 ##
 ## Ends in an error in state: 40.
 ##
-## typ -> TBOX . typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> TBOX . typ [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## TBOX
@@ -52,7 +52,7 @@ type_eof: UNIT ARROW SND
 ##
 ## Ends in an error in state: 47.
 ##
-## typ -> typ ARROW . typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ ARROW . typ [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## typ ARROW
@@ -61,32 +61,6 @@ type_eof: UNIT ARROW SND
 Valid codomain type is expected. Sometimes this happens if -> is used instead of =>
 
 type_eof: UNIT ARROW UNIT UNIT
-##
-## Ends in an error in state: 48.
-##
-## typ -> typ . CROSS typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
-## typ -> typ . ARROW typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
-## typ -> typ ARROW typ . [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ ARROW typ
-##
-
-Please report your example, producing this parsing error
-
-type_eof: UNIT CROSS SND
-##
-## Ends in an error in state: 45.
-##
-## typ -> typ CROSS . typ [ RPAREN IDR EOF DARROW CROSS COMMA ARROW ]
-##
-## The known suffix of the stack is as follows:
-## typ CROSS
-##
-
-"snd" is not type expression
-
-type_eof: UNIT UNIT
 ##
 ## Ends in an error in state: 163.
 ##
@@ -97,8 +71,26 @@ type_eof: UNIT UNIT
 ## The known suffix of the stack is as follows:
 ## typ
 ##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 48, spurious reduction of production typ -> typ ARROW typ
+##
 
 Please report your example, producing this parsing error
+
+type_eof: UNIT CROSS SND
+##
+## Ends in an error in state: 45.
+##
+## typ -> typ CROSS . typ [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ CROSS
+##
+
+"snd" is not type expression
 
 expr_eof: BOX TBOX
 ##
@@ -128,10 +120,10 @@ expr_eof: FUN IDR COLON SND
 ##
 ## Ends in an error in state: 99.
 ##
-## expr -> FUN IDR COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN pattern COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDR COLON
+## FUN pattern COLON
 ##
 
 Valid type expected. Make sure uninterpreted type identifiers are capitalized and there are no unbalanced parentheses
@@ -140,10 +132,10 @@ expr_eof: FUN IDR COLON UNIT DARROW TBOX
 ##
 ## Ends in an error in state: 101.
 ##
-## expr -> FUN IDR COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN pattern COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDR COLON typ DARROW
+## FUN pattern COLON typ DARROW
 ##
 
 Error when parsing lambda function body: missing body or unexpected lexeme
@@ -152,12 +144,12 @@ expr_eof: FUN IDR COLON UNIT UNIT
 ##
 ## Ends in an error in state: 100.
 ##
-## expr -> FUN IDR COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN pattern COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
 ## typ -> typ . ARROW typ [ DARROW CROSS ARROW ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDR COLON typ
+## FUN pattern COLON typ
 ##
 
 Separator between bound variable and lambda body is missing. Use e.g. => or . Also, make sure parentheses are balanced
@@ -166,10 +158,10 @@ expr_eof: FUN IDR UNIT
 ##
 ## Ends in an error in state: 98.
 ##
-## expr -> FUN IDR . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN pattern . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDR
+## FUN pattern
 ##
 
 Function parameter is missing type annotation
@@ -178,10 +170,10 @@ expr_eof: FUN LPAREN IDR COLON SND
 ##
 ## Ends in an error in state: 37.
 ##
-## expr -> FUN LPAREN IDR COLON . typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN LPAREN pattern COLON . typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON
+## FUN LPAREN pattern COLON
 ##
 
 Unrecognized syntax error. Please report your example
@@ -190,10 +182,10 @@ expr_eof: FUN LPAREN IDR COLON UNIT RPAREN DARROW TBOX
 ##
 ## Ends in an error in state: 52.
 ##
-## expr -> FUN LPAREN IDR COLON typ RPAREN DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN LPAREN pattern COLON typ RPAREN DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON typ RPAREN DARROW
+## FUN LPAREN pattern COLON typ RPAREN DARROW
 ##
 
 Unrecognized syntax error. Please report your example
@@ -202,10 +194,10 @@ expr_eof: FUN LPAREN IDR COLON UNIT RPAREN UNIT
 ##
 ## Ends in an error in state: 51.
 ##
-## expr -> FUN LPAREN IDR COLON typ RPAREN . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN LPAREN pattern COLON typ RPAREN . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON typ RPAREN
+## FUN LPAREN pattern COLON typ RPAREN
 ##
 
 Unrecognized syntax error. Please report your example
@@ -214,12 +206,12 @@ expr_eof: FUN LPAREN IDR COLON UNIT UNIT
 ##
 ## Ends in an error in state: 50.
 ##
-## expr -> FUN LPAREN IDR COLON typ . RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN LPAREN pattern COLON typ . RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
 ## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON typ
+## FUN LPAREN pattern COLON typ
 ##
 
 Missing closed parenthesis
@@ -228,38 +220,14 @@ expr_eof: FUN LPAREN IDR UNIT
 ##
 ## Ends in an error in state: 36.
 ##
-## expr -> FUN LPAREN IDR . COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## atom_pattern -> LPAREN pattern . RPAREN [ COLON ]
+## expr -> FUN LPAREN pattern . COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN LPAREN IDR
+## FUN LPAREN pattern
 ##
 
 Missing closed parenthesis
-
-expr_eof: FUN LPAREN UNIT
-##
-## Ends in an error in state: 35.
-##
-## expr -> FUN LPAREN . IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-##
-## The known suffix of the stack is as follows:
-## FUN LPAREN
-##
-
-Missing closed parenthesis
-
-expr_eof: FUN UNIT
-##
-## Ends in an error in state: 34.
-##
-## expr -> FUN . IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FUN . LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-##
-## The known suffix of the stack is as follows:
-## FUN
-##
-
-A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
 
 expr_eof: LANGLE TBOX
 ##
@@ -643,10 +611,10 @@ expr_eof: FUN LPAREN IDR COLON IDT RPAREN DARROW MATCH IDM WITH END UNIT
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FUN LPAREN IDR COLON typ RPAREN DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN LPAREN pattern COLON typ RPAREN DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN LPAREN IDR COLON typ RPAREN DARROW expr
+## FUN LPAREN pattern COLON typ RPAREN DARROW expr
 ##
 
 Unexpected token
@@ -752,10 +720,10 @@ expr_eof: FUN IDR COLON IDT DARROW MATCH IDM WITH END UNIT
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FUN IDR COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN pattern COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN IDR COLON typ DARROW expr
+## FUN pattern COLON typ DARROW expr
 ##
 
 Unexpected token
@@ -842,7 +810,7 @@ expr_eof: MATCH IDM WITH PIPE LPAREN WITH
 ##
 ## Ends in an error in state: 13.
 ##
-## atom_pattern -> LPAREN . pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA ]
+## atom_pattern -> LPAREN . pattern RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -854,8 +822,8 @@ expr_eof: MATCH IDM WITH PIPE IDT WITH
 ##
 ## Ends in an error in state: 15.
 ##
-## atom_pattern -> IDT . [ RPAREN RANGLE EQ DARROW COMMA ]
-## pattern -> IDT . nonempty_list(atom_pattern) [ RPAREN RANGLE EQ DARROW COMMA ]
+## atom_pattern -> IDT . [ RPAREN RANGLE EQ DARROW COMMA COLON ]
+## pattern -> IDT . nonempty_list(atom_pattern) [ RPAREN RANGLE EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## IDT
@@ -867,8 +835,8 @@ expr_eof: MATCH IDM WITH PIPE IDT IDR WITH
 ##
 ## Ends in an error in state: 19.
 ##
-## nonempty_list(atom_pattern) -> atom_pattern . [ RPAREN RANGLE EQ DARROW COMMA ]
-## nonempty_list(atom_pattern) -> atom_pattern . nonempty_list(atom_pattern) [ RPAREN RANGLE EQ DARROW COMMA ]
+## nonempty_list(atom_pattern) -> atom_pattern . [ RPAREN RANGLE EQ DARROW COMMA COLON ]
+## nonempty_list(atom_pattern) -> atom_pattern . nonempty_list(atom_pattern) [ RPAREN RANGLE EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## atom_pattern
@@ -880,7 +848,7 @@ expr_eof: MATCH IDM WITH PIPE LPAREN IDR WITH
 ##
 ## Ends in an error in state: 26.
 ##
-## atom_pattern -> LPAREN pattern . RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA ]
+## atom_pattern -> LPAREN pattern . RPAREN [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN pattern
@@ -1136,7 +1104,7 @@ expr_eof: MATCH IDM WITH PIPE LANGLE WITH
 ##
 ## Ends in an error in state: 14.
 ##
-## atom_pattern -> LANGLE . pattern COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA ]
+## atom_pattern -> LANGLE . pattern COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE
@@ -1148,7 +1116,7 @@ expr_eof: MATCH IDM WITH PIPE LANGLE IDR WITH
 ##
 ## Ends in an error in state: 21.
 ##
-## atom_pattern -> LANGLE pattern . COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA ]
+## atom_pattern -> LANGLE pattern . COMMA pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE pattern
@@ -1160,7 +1128,7 @@ expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA WITH
 ##
 ## Ends in an error in state: 22.
 ##
-## atom_pattern -> LANGLE pattern COMMA . pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA ]
+## atom_pattern -> LANGLE pattern COMMA . pattern RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE pattern COMMA
@@ -1172,7 +1140,7 @@ expr_eof: MATCH IDM WITH PIPE LANGLE IDR COMMA IDR WITH
 ##
 ## Ends in an error in state: 23.
 ##
-## atom_pattern -> LANGLE pattern COMMA pattern . RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA ]
+## atom_pattern -> LANGLE pattern COMMA pattern . RANGLE [ UNIT UNDERSCORE UINTZ RPAREN RANGLE LPAREN LANGLE IDT IDR EQ DARROW COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
 ## LANGLE pattern COMMA pattern
@@ -1184,9 +1152,9 @@ expr_eof: FIX WITH
 ##
 ## Ends in an error in state: 56.
 ##
-## expr -> FIX . IDR COLON typ IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX . LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX . LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX . IDR COLON typ pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX . LPAREN IDR COLON typ RPAREN pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX . LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX
@@ -1198,8 +1166,8 @@ expr_eof: FIX LPAREN WITH
 ##
 ## Ends in an error in state: 57.
 ##
-## expr -> FIX LPAREN . IDR COLON typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX LPAREN . IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN . IDR COLON typ RPAREN pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN . IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX LPAREN
@@ -1211,8 +1179,8 @@ expr_eof: FIX LPAREN IDR WITH
 ##
 ## Ends in an error in state: 58.
 ##
-## expr -> FIX LPAREN IDR . COLON typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX LPAREN IDR . COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR . COLON typ RPAREN pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR . COLON typ RPAREN LPAREN pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX LPAREN IDR
@@ -1224,8 +1192,8 @@ expr_eof: FIX LPAREN IDR COLON WITH
 ##
 ## Ends in an error in state: 59.
 ##
-## expr -> FIX LPAREN IDR COLON . typ RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX LPAREN IDR COLON . typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON . typ RPAREN pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON . typ RPAREN LPAREN pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX LPAREN IDR COLON
@@ -1237,8 +1205,8 @@ expr_eof: FIX LPAREN IDR COLON IDT IDR
 ##
 ## Ends in an error in state: 60.
 ##
-## expr -> FIX LPAREN IDR COLON typ . RPAREN IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX LPAREN IDR COLON typ . RPAREN LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ . RPAREN pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ . RPAREN LPAREN pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
 ## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
 ##
@@ -1252,8 +1220,8 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN WITH
 ##
 ## Ends in an error in state: 61.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN . IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX LPAREN IDR COLON typ RPAREN . LPAREN IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN . pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN . LPAREN pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX LPAREN IDR COLON typ RPAREN
@@ -1265,7 +1233,8 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN WITH
 ##
 ## Ends in an error in state: 62.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN . IDR COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## atom_pattern -> LPAREN . pattern RPAREN [ COLON ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN . pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX LPAREN IDR COLON typ RPAREN LPAREN
@@ -1277,10 +1246,11 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR WITH
 ##
 ## Ends in an error in state: 63.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR . COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## atom_pattern -> LPAREN pattern . RPAREN [ COLON ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN pattern . COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR
+## FIX LPAREN IDR COLON typ RPAREN LPAREN pattern
 ##
 
 Expected ":"
@@ -1289,10 +1259,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON WITH
 ##
 ## Ends in an error in state: 64.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON . typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON . typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON
+## FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON
 ##
 
 Expected argument type
@@ -1301,12 +1271,12 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT IDR
 ##
 ## Ends in an error in state: 65.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ . RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ . RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ RPAREN CROSS ARROW ]
 ## typ -> typ . ARROW typ [ RPAREN CROSS ARROW ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ
+## FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ
 ##
 
 Expected ")"
@@ -1315,10 +1285,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT RPAREN WITH
 ##
 ## Ends in an error in state: 66.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN
+## FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN
 ##
 
 Expected "=>"
@@ -1327,10 +1297,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT RPAREN DARROW WIT
 ##
 ## Ends in an error in state: 67.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW
+## FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN DARROW
 ##
 
 Expected expression
@@ -1343,10 +1313,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN LPAREN IDR COLON IDT RPAREN DARROW MAT
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN LPAREN IDR COLON typ RPAREN DARROW expr
+## FIX LPAREN IDR COLON typ RPAREN LPAREN pattern COLON typ RPAREN DARROW expr
 ##
 
 Unexpected token
@@ -1355,10 +1325,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR WITH
 ##
 ## Ends in an error in state: 84.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN IDR . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN pattern . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN IDR
+## FIX LPAREN IDR COLON typ RPAREN pattern
 ##
 
 Expected ":"
@@ -1367,10 +1337,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON WITH
 ##
 ## Ends in an error in state: 85.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN pattern COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN IDR COLON
+## FIX LPAREN IDR COLON typ RPAREN pattern COLON
 ##
 
 Expected argument type
@@ -1379,12 +1349,12 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON IDT RPAREN
 ##
 ## Ends in an error in state: 86.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN pattern COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
 ## typ -> typ . ARROW typ [ DARROW CROSS ARROW ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN IDR COLON typ
+## FIX LPAREN IDR COLON typ RPAREN pattern COLON typ
 ##
 
 Expected "=>"
@@ -1393,10 +1363,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON IDT DARROW WITH
 ##
 ## Ends in an error in state: 87.
 ##
-## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN pattern COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW
+## FIX LPAREN IDR COLON typ RPAREN pattern COLON typ DARROW
 ##
 
 Expected expression
@@ -1409,10 +1379,10 @@ expr_eof: FIX LPAREN IDR COLON IDT RPAREN IDR COLON IDT DARROW MATCH IDM WITH EN
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX LPAREN IDR COLON typ RPAREN pattern COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX LPAREN IDR COLON typ RPAREN IDR COLON typ DARROW expr
+## FIX LPAREN IDR COLON typ RPAREN pattern COLON typ DARROW expr
 ##
 
 Unexpected token
@@ -1421,7 +1391,7 @@ expr_eof: FIX IDR WITH
 ##
 ## Ends in an error in state: 89.
 ##
-## expr -> FIX IDR . COLON typ IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR . COLON typ pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX IDR
@@ -1433,7 +1403,7 @@ expr_eof: FIX IDR COLON WITH
 ##
 ## Ends in an error in state: 90.
 ##
-## expr -> FIX IDR COLON . typ IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON . typ pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX IDR COLON
@@ -1445,9 +1415,9 @@ expr_eof: FIX IDR COLON IDT RPAREN
 ##
 ## Ends in an error in state: 91.
 ##
-## expr -> FIX IDR COLON typ . IDR COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## typ -> typ . CROSS typ [ IDR CROSS ARROW ]
-## typ -> typ . ARROW typ [ IDR CROSS ARROW ]
+## expr -> FIX IDR COLON typ . pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## typ -> typ . CROSS typ [ UNIT UNDERSCORE UINTZ LPAREN LANGLE IDT IDR CROSS ARROW ]
+## typ -> typ . ARROW typ [ UNIT UNDERSCORE UINTZ LPAREN LANGLE IDT IDR CROSS ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## FIX IDR COLON typ
@@ -1459,10 +1429,10 @@ expr_eof: FIX IDR COLON IDT IDR WITH
 ##
 ## Ends in an error in state: 92.
 ##
-## expr -> FIX IDR COLON typ IDR . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON typ pattern . COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX IDR COLON typ IDR
+## FIX IDR COLON typ pattern
 ##
 
 Expected ":"
@@ -1471,10 +1441,10 @@ expr_eof: FIX IDR COLON IDT IDR COLON WITH
 ##
 ## Ends in an error in state: 93.
 ##
-## expr -> FIX IDR COLON typ IDR COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON typ pattern COLON . typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX IDR COLON typ IDR COLON
+## FIX IDR COLON typ pattern COLON
 ##
 
 Expected argument type
@@ -1483,12 +1453,12 @@ expr_eof: FIX IDR COLON IDT IDR COLON IDT RPAREN
 ##
 ## Ends in an error in state: 94.
 ##
-## expr -> FIX IDR COLON typ IDR COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON typ pattern COLON typ . DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## typ -> typ . CROSS typ [ DARROW CROSS ARROW ]
 ## typ -> typ . ARROW typ [ DARROW CROSS ARROW ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX IDR COLON typ IDR COLON typ
+## FIX IDR COLON typ pattern COLON typ
 ##
 
 Expected "=>"
@@ -1497,10 +1467,10 @@ expr_eof: FIX IDR COLON IDT IDR COLON IDT DARROW WITH
 ##
 ## Ends in an error in state: 95.
 ##
-## expr -> FIX IDR COLON typ IDR COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON typ pattern COLON typ DARROW . expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX IDR COLON typ IDR COLON typ DARROW
+## FIX IDR COLON typ pattern COLON typ DARROW
 ##
 
 Expected expression
@@ -1513,10 +1483,10 @@ expr_eof: FIX IDR COLON IDT IDR COLON IDT DARROW MATCH IDM WITH END UNIT
 ## arith -> expr . MINUS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . CROSS expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ## arith -> expr . SLASH expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
-## expr -> FIX IDR COLON typ IDR COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FIX IDR COLON typ pattern COLON typ DARROW expr . [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## FIX IDR COLON typ IDR COLON typ DARROW expr
+## FIX IDR COLON typ pattern COLON typ DARROW expr
 ##
 
 Unexpected token
@@ -1532,3 +1502,43 @@ expr_eof: LET WITH
 ##
 
 Expected pattern after "let" keyword
+
+expr_eof: FUN WITH
+##
+## Ends in an error in state: 34.
+##
+## expr -> FUN . pattern COLON typ DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+## expr -> FUN . LPAREN pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN
+##
+
+Expected pattern after "fun" keyword
+
+expr_eof: FUN LPAREN WITH
+##
+## Ends in an error in state: 35.
+##
+## atom_pattern -> LPAREN . pattern RPAREN [ COLON ]
+## expr -> FUN LPAREN . pattern COLON typ RPAREN DARROW expr [ WITH SLASH SEMICOLON RPAREN RANGLE PLUS PIPE MINUS IN EOF END CROSS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN
+##
+
+Expected pattern after "fun ("
+
+type_eof: IDT ARROW IDT WITH
+##
+## Ends in an error in state: 48.
+##
+## typ -> typ . CROSS typ [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ . ARROW typ [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
+## typ -> typ ARROW typ . [ UNIT UNDERSCORE UINTZ RPAREN LPAREN LANGLE IDT IDR EOF DARROW CROSS COMMA ARROW ]
+##
+## The known suffix of the stack is as follows:
+## typ ARROW typ
+##
+
+Unexpected token in type

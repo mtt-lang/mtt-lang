@@ -33,17 +33,29 @@ module Pattern = struct
 
   and t' =
     | Ignore
+    | Unit
+    | Nat of { n : Nat.t }
     | VarR of { idr : Id.R.t }
     | DCtor of { idd : Id.D.t; subs : t list }
     | Pair of { sub1 : t; sub2 : t }
-    | Nat of { n : Nat.t }
-    | Unit
   [@@deriving equal, sexp]
 
   let ignore = Location.locate Ignore
   let var_r idr = Location.locate @@ VarR { idr }
   let d_ctor idd subs = Location.locate @@ DCtor { idd; subs }
   let pair sub1 sub2 = Location.locate @@ Pair { sub1; sub2 }
+
+  let rec free_vars_r Location.{ data = pattern; loc = _ } =
+    let empty_set = Set.empty (module Id.R) in
+    match pattern with
+    | Ignore -> empty_set
+    | Nat { n = _ } -> empty_set
+    | Unit -> empty_set
+    | VarR { idr } -> Set.of_list (module Id.R) [ idr ]
+    | Pair { sub1; sub2 } -> Set.union (free_vars_r sub1) (free_vars_r sub2)
+    | DCtor { idd = _; subs } ->
+        List.fold_right ~init:empty_set ~f:Set.union
+        @@ List.map ~f:free_vars_r subs
 end
 
 (* Type declaration *)
@@ -72,13 +84,13 @@ module Expr = struct
         these are syntactically distinct from the regular (ordinary) variables *)
     | VarD of { idd : Id.D.t }
         (** using type identifier (starting with a capital letter) means calling data constructor **)
-    | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
+    | Fun of { arg_pttrn : Pattern.t; arg_ty : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
     | Fix of {
         self : Id.R.t;
         ty_id : Type.t;
-        idr : Id.R.t;
-        idr_ty : Type.t;
+        arg_pttrn : Pattern.t;
+        arg_ty : Type.t;
         body : t;
       }  (** Fix combinator: fix f x = f (fix x) f *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
@@ -105,10 +117,12 @@ module Expr = struct
   let var_r idr = Location.locate @@ VarR { idr }
   let var_m idm = Location.locate @@ VarM { idm }
   let var_d idd = Location.locate @@ VarD { idd }
-  let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
 
-  let fix self ty_id idr idr_ty body =
-    Location.locate @@ Fix { self; ty_id; idr; idr_ty; body }
+  let func arg_pttrn arg_ty body =
+    Location.locate @@ Fun { arg_pttrn; arg_ty; body }
+
+  let fix self ty_id arg_pttrn arg_ty body =
+    Location.locate @@ Fix { self; ty_id; arg_pttrn; arg_ty; body }
 
   let app fe arge = Location.locate @@ App { fe; arge }
   let box e = Location.locate @@ Box { e }
@@ -138,8 +152,12 @@ module Val = struct
     | Nat of { n : Nat.t }  (** nat *)
     | Pair of { v1 : t; v2 : t }
         (** [(lit1, lit2)] -- a pair of values is a value *)
-    | RecClos of { self : Id.R.t; idr : Id.R.t; body : Expr.t; env : t Env.R.t }
-        (** Recursion closures *)
+    | RecClos of {
+        self : Id.R.t;
+        arg_pttrn : Pattern.t;
+        body : Expr.t;
+        env : t Env.R.t;
+      }  (** Recursion closures *)
     | Box of { e : Expr.t }
         (** [box] value, basically it's an unevaluated expression *)
     | DCtor of { idd : Id.D.t; args : t list }  (** data constructor **)

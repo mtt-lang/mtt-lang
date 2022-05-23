@@ -225,7 +225,7 @@ let rec extend_envs_with_pattern envs pattern ty =
         visit_d_ctor;
       }
 
-let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
+let rec check_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
     Location.{ data = expr; loc } (Location.{ data = typ'; _ } as typ) =
   match expr with
   | Unit ->
@@ -285,20 +285,24 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
       let%bind ty = with_error_location loc @@ Env.D.lookup d_ctors idd in
       with_error_location loc
       @@ check_equal typ ty "Unexpected data constructor type"
-  | Fun { idr; ty_id; body } -> (
+  | Fun { arg_pttrn; arg_ty; body } -> (
+      let%bind () = check_type types arg_ty in
       match typ' with
       | Type.Arr { dom; cod } ->
           let%bind () =
             with_error_location loc
-            @@ check_equal dom ty_id
+            @@ check_equal dom arg_ty
                  "Domain of arrow type is not the same as type of function \
                   parameter"
           in
-          let envs_ext = Envs.extend_regular envs idr dom in
+          let%bind () = ensure_pattern_irrefutable envs arg_pttrn arg_ty in
+          let%bind envs_ext = extend_envs_with_pattern envs arg_pttrn arg_ty in
           check_expr_open envs_ext body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
-  | Fix { self; ty_id; idr = _; idr_ty; body } -> (
-      let self_ty = Type.arr idr_ty typ in
+  | Fix { self; ty_id; arg_pttrn; arg_ty; body } -> (
+      let%bind () = check_type types arg_ty in
+      let%bind () = check_type types ty_id in
+      let self_ty = Type.arr arg_ty typ in
       match typ' with
       | Type.Arr { dom = _; cod } ->
           let%bind () =
@@ -307,7 +311,9 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
                  "Domain of arrow type is not the same as type of function \
                   parameter"
           in
-          check_expr_open (Envs.extend_regular envs self self_ty) body cod
+          let%bind () = ensure_pattern_irrefutable envs arg_pttrn arg_ty in
+          let%bind envs_ext = extend_envs_with_pattern envs arg_pttrn arg_ty in
+          check_expr_open (Envs.extend_regular envs_ext self self_ty) body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
       let%bind Location.{ data = ty; _ } = infer_expr_open envs fe in
@@ -377,19 +383,15 @@ and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
   | VarR { idr } -> with_error_location loc @@ Env.R.lookup regular idr
   | VarM { idm } -> with_error_location loc @@ Env.M.lookup modal idm
   | VarD { idd } -> with_error_location loc @@ Env.D.lookup d_ctors idd
-  | Fun { idr; ty_id; body } ->
-      let%bind () = check_type types ty_id in
-      let%map ty_body =
-        let envs_ext = Envs.extend_regular envs idr ty_id in
-        infer_expr_open envs_ext body
-      in
-      Type.arr ty_id ty_body
-  | Fix { self; ty_id; idr; idr_ty; body } ->
-      let fix_gamma = Envs.extend_regular envs self ty_id in
-      let%map ty_body =
-        infer_expr_open (Envs.extend_regular fix_gamma idr idr_ty) body
-      in
-      Type.arr idr_ty ty_body
+  | Fun { arg_pttrn; arg_ty; body } ->
+      let%bind () = check_type types arg_ty in
+      let%bind () = ensure_pattern_irrefutable envs arg_pttrn arg_ty in
+      let%bind envs_ext = extend_envs_with_pattern envs arg_pttrn arg_ty in
+      let%map ty_body = infer_expr_open envs_ext body in
+      Type.arr arg_ty ty_body
+  | Fix { self = _; ty_id; arg_pttrn = _; arg_ty = _; body = _ } ->
+      let%bind () = check_expr_open envs Location.{ data = expr; loc } ty_id in
+      return ty_id
   | App { fe; arge } -> (
       let%bind Location.{ data = ty; _ } = infer_expr_open envs fe in
       match ty with
