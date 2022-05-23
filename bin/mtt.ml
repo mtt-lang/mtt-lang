@@ -1,6 +1,6 @@
 open Base
 open Stdio
-open Mtt
+open Mtt_lib
 open ParserInterface
 
 let osource source_file source_arg =

@@ -1,5 +1,5 @@
 open Base
-open Mtt
+open Mtt_lib
 open ParserInterface
 
 let eval_web term =

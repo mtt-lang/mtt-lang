@@ -19,7 +19,7 @@
    (run %{bin:menhir} --compile-errors ParserErrors.messages Parser.mly))))
 
 (library
- (name mtt)
+ (name mtt_lib)
  (modes byte native)
  (public_name mtt)
  (wrapped true)
