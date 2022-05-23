@@ -62,3 +62,21 @@ Unbound type
   mtt: Type inference error: "A" is not found in the type environment!
        file name :  Not a file, lines :  0 - 0, column :  8 - 9
   [124]
+
+Recursive functions
+
+  $ mtt infer <<EOF
+  > let fib = fix (f : () -> Nat) n : Nat .
+  > match n with 
+  > | 0 => 0
+  > | n => 
+  >   match n - 1 with
+  >   | 0 => 1
+  >   | pn => (f pn) + (f (pn - 1))
+  >   end
+  > end
+  > in fib 12
+  > EOF
+  mtt: Type inference error: Domain of arrow type is not the same as type of function parameter
+       file name :  Not a file, lines :  1 - 1, column :  34 - 37
+  [124]

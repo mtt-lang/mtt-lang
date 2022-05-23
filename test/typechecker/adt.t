@@ -62,3 +62,32 @@ Pattern-matching
   > end
   > EOF
   ℕ
+
+Pattern-matching in let and fun expressions
+
+  $ mtt infer <<EOF
+  > type A = B;
+  > let B = B in B
+  > EOF
+  A
+
+  $ mtt infer <<EOF
+  > let <x, _> = <5, 3> in x
+  > EOF
+  ℕ
+
+  $ mtt infer <<EOF
+  > type Endo = Endo of (Nat * Nat);
+  > let f = fun Endo <x, y> : Endo =>
+  >   x + y;
+  > f
+  > EOF
+  Endo → ℕ
+
+  $ mtt infer <<EOF
+  > type Endo = Endo of (Nat * Nat);
+  > let f = fix (f : Nat * Nat -> Nat) (<x, y> : Nat * Nat) =>
+  >   f <y, x>;
+  > f
+  > EOF
+  ℕ×ℕ → ℕ

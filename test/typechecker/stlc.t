@@ -145,3 +145,19 @@ Evaluator for Nat
   > end
   > EOF
   ℕ
+
+Recursive functions
+
+  $ mtt infer <<EOF
+  > let fib = fix (f : Nat -> Nat ) n : Nat .
+  > match n with 
+  > | 0 => 0
+  > | n => 
+  >   match n - 1 with
+  >   | 0 => 1
+  >   | pn => (f pn) + (f (pn - 1))
+  >   end
+  > end
+  > in fib 12
+  > EOF
+  ℕ

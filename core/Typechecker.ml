@@ -302,18 +302,22 @@ let rec check_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
   | Fix { self; ty_id; arg_pttrn; arg_ty; body } -> (
       let%bind () = check_type types arg_ty in
       let%bind () = check_type types ty_id in
-      let self_ty = Type.arr arg_ty typ in
+      let%bind () =
+        with_error_location ty_id.loc
+        @@ check_equal ty_id typ
+             "Expected type is not the same as function type"
+      in
       match typ' with
-      | Type.Arr { dom = _; cod } ->
+      | Type.Arr { dom; cod } ->
           let%bind () =
-            with_error_location loc
-            @@ check_equal self_ty ty_id
+            with_error_location arg_ty.loc
+            @@ check_equal dom arg_ty
                  "Domain of arrow type is not the same as type of function \
                   parameter"
           in
           let%bind () = ensure_pattern_irrefutable envs arg_pttrn arg_ty in
           let%bind envs_ext = extend_envs_with_pattern envs arg_pttrn arg_ty in
-          check_expr_open (Envs.extend_regular envs_ext self self_ty) body cod
+          check_expr_open (Envs.extend_regular envs_ext self ty_id) body cod
       | _ -> fail_in loc @@ `TypeMismatchError "Arrow type expected")
   | App { fe; arge } -> (
       let%bind Location.{ data = ty; _ } = infer_expr_open envs fe in
