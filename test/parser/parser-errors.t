@@ -95,7 +95,7 @@ mtt: Parse error: Boxed expression is expected
 
 ### letbox is one single keyword, not two
   $ mtt parse -e "let box x' = box () in x'"
-  mtt: Parse error: Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+  mtt: Parse error: Expected pattern after "let" keyword
   [124]
 
 ### letbox needs its bound var to end with apostrophy
@@ -107,12 +107,12 @@ mtt: Parse error: Boxed expression is expected
 
 ### Bound variable in "let" expression must be term, not type
   $ mtt parse -e "let x = []"
-  mtt: Parse error: Variable in "let" expression must be term, not type
+  mtt: Parse error: Expected bound expression
   [124]
 
 ### After "in" must term must follow, not type
   $ mtt parse -e "let x = () in []"
-  mtt: Parse error: Expected term after "in"-keyword, not type
+  mtt: Parse error: Expected term after "in"-keyword
   [124]
 
 ### Extra closed parenthesis

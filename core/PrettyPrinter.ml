@@ -110,12 +110,11 @@ module Doc : DOC = struct
       | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
       | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
-      | Let { idr; bound; body } ->
+      | Let { pattern; bound; body } ->
           (parens_if (p > 1))
             (group
-               (let_kwd
-               ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body))
+               (let_kwd ^^^ of_pattern pattern ^^^ equals ^^^ walk 2 bound
+              ^^^ in_kwd ^/^ walk 1 body))
       | Letbox { idm; boxed; body } ->
           (parens_if (p > 1))
             (group

@@ -159,7 +159,7 @@ module PatternVisitor = struct
         | _ -> fail_cause_type_mismatch "base type")
 end
 
-let rec _ensure_pattern_irrefutable envs pattern ty =
+let rec ensure_pattern_irrefutable envs pattern ty =
   let visit_ignore _ = return () in
   let visit_var_r _ _ = return () in
   let visit_nat loc n =
@@ -171,7 +171,7 @@ let rec _ensure_pattern_irrefutable envs pattern ty =
   in
   let visit_unit _ = return () in
   let visit_pair _ sub_ty_1 sub_ty_2 =
-    _ensure_patterns_irrefutable envs [ sub_ty_1; sub_ty_2 ]
+    ensure_patterns_irrefutable envs [ sub_ty_1; sub_ty_2 ]
   in
   let visit_d_ctor loc decl idt _ sub_ty_pairs =
     if List.length decl > 1 then
@@ -181,7 +181,7 @@ let rec _ensure_pattern_irrefutable envs pattern ty =
            [%string
              "Type $idt_str has more than one branch. Thus, the pattern is not \
               irrefutable"]
-    else _ensure_patterns_irrefutable envs sub_ty_pairs
+    else ensure_patterns_irrefutable envs sub_ty_pairs
   in
   PatternVisitor.visit_pattern envs pattern ty
     PatternVisitor.
@@ -194,8 +194,8 @@ let rec _ensure_pattern_irrefutable envs pattern ty =
         visit_d_ctor;
       }
 
-and _ensure_patterns_irrefutable envs p_ty_pairs =
-  let f (pattern, ty) = _ensure_pattern_irrefutable envs pattern ty in
+and ensure_patterns_irrefutable envs p_ty_pairs =
+  let f (pattern, ty) = ensure_pattern_irrefutable envs pattern ty in
   Result.all_unit @@ List.map p_ty_pairs ~f
 
 let rec extend_envs_with_pattern envs pattern ty =
@@ -328,9 +328,10 @@ let rec check_expr_open Envs.({ modal; regular; types = _; d_ctors } as envs)
               mk_unbound_regular_var_inside_box_error loc var_loc var
           | x -> x)
       | _ -> fail_in loc @@ `TypeMismatchError "Error: unboxed type")
-  | Let { idr; bound; body } ->
+  | Let { pattern; bound; body } ->
       let%bind ty = infer_expr_open envs bound in
-      let envs_ext = Envs.extend_regular envs idr ty in
+      let%bind () = ensure_pattern_irrefutable envs pattern ty in
+      let%bind envs_ext = extend_envs_with_pattern envs pattern ty in
       check_expr_open envs_ext body typ
   | Letbox { idm; boxed; body } -> (
       let%bind Location.{ data = ty; _ } = infer_expr_open envs boxed in
@@ -407,9 +408,10 @@ and infer_expr_open Envs.({ modal; regular; types; d_ctors } as envs)
         | x -> x
       in
       Type.box ty
-  | Let { idr; bound; body } ->
+  | Let { pattern; bound; body } ->
       let%bind ty = infer_expr_open envs bound in
-      let envs_ext = Envs.extend_regular envs idr ty in
+      let%bind () = ensure_pattern_irrefutable envs pattern ty in
+      let%bind envs_ext = extend_envs_with_pattern envs pattern ty in
       infer_expr_open envs_ext body
   | Letbox { idm; boxed; body } -> (
       let%bind Location.{ data = tyb; _ } = infer_expr_open envs boxed in
@@ -461,9 +463,10 @@ let decl_type idt decl envs =
 
 let rec check_prog_open envs Location.{ data = prog; _ } typ =
   match prog with
-  | Program.Let { idr; bound; next } ->
-      let%bind inferred = infer_expr_open envs bound in
-      let envs_ext = Envs.extend_regular envs idr inferred in
+  | Program.Let { pattern; bound; next } ->
+      let%bind ty = infer_expr_open envs bound in
+      let%bind () = ensure_pattern_irrefutable envs pattern ty in
+      let%bind envs_ext = extend_envs_with_pattern envs pattern ty in
       check_prog_open envs_ext next typ
   | Program.Last expr -> check_expr_open envs expr typ
   | Program.Type { idt; decl; next } ->
@@ -472,9 +475,10 @@ let rec check_prog_open envs Location.{ data = prog; _ } typ =
 
 let rec infer_prog_open envs Location.{ data = prog; _ } =
   match prog with
-  | Program.Let { idr; bound; next } ->
-      let%bind inferred = infer_expr_open envs bound in
-      let envs_ext = Envs.extend_regular envs idr inferred in
+  | Program.Let { pattern; bound; next } ->
+      let%bind ty = infer_expr_open envs bound in
+      let%bind () = ensure_pattern_irrefutable envs pattern ty in
+      let%bind envs_ext = extend_envs_with_pattern envs pattern ty in
       infer_prog_open envs_ext next
   | Program.Last expr -> infer_expr_open envs expr
   | Program.Type { idt; decl; next } ->

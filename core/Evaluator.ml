@@ -19,7 +19,7 @@ let rec free_vars_m Location.{ data = term; _ } =
   | Fix { self = _; ty_id = _; idr = _; idr_ty = _; body } -> free_vars_m body
   | App { fe; arge } -> Set.union (free_vars_m fe) (free_vars_m arge)
   | Box { e } -> free_vars_m e
-  | Let { idr = _; bound; body } ->
+  | Let { pattern = _; bound; body } ->
       Set.union (free_vars_m bound) (free_vars_m body)
   | Letbox { idm; boxed; body } ->
       Set.union (free_vars_m boxed)
@@ -55,8 +55,8 @@ let rec subst_m term identm Location.{ data = body; _ } =
       fix self ty_id idr idr_ty (subst_m term identm body)
   | App { fe; arge } -> app (subst_m term identm fe) (subst_m term identm arge)
   | Box { e } -> box (subst_m term identm e)
-  | Let { idr; bound; body } ->
-      letc idr (subst_m term identm bound) (subst_m term identm body)
+  | Let { pattern; bound; body } ->
+      letc pattern (subst_m term identm bound) (subst_m term identm body)
   | Letbox { idm; boxed; body } ->
       Location.locate
         (if [%equal: Id.M.t] identm idm then
@@ -197,9 +197,14 @@ let rec eval_expr_open gamma Location.{ data = expr; _ } =
           Result.fail
           @@ `EvaluationError "Trying to apply an argument to a non-function")
   | Box { e } -> return @@ Val.Box { e }
-  | Let { idr; bound; body } ->
+  | Let { pattern; bound; body } ->
       let%bind bound_v = eval_expr_open gamma bound in
-      eval_expr_open (Env.R.extend gamma idr bound_v) body
+      let%bind new_vars_opt = match_pattern gamma pattern bound_v in
+      let%bind new_vars =
+        Result.of_option new_vars_opt
+          ~error:(`EvaluationError "Pattern turned out to be refutable")
+      in
+      eval_expr_open (Env.R.extend_many gamma new_vars) body
   | Letbox { idm; boxed; body } -> (
       let%bind boxed_v = eval_expr_open gamma boxed in
       match boxed_v with
@@ -224,10 +229,14 @@ let rec eval_expr_open gamma Location.{ data = expr; _ } =
 
 let rec eval_prog_open gamma Location.{ data = prog; _ } =
   match prog with
-  | Program.Let { idr; bound; next } ->
-      let%bind bv = eval_expr_open gamma bound in
-      let gamma_ext = Env.R.extend gamma idr bv in
-      eval_prog_open gamma_ext next
+  | Program.Let { pattern; bound; next } ->
+      let%bind bound_v = eval_expr_open gamma bound in
+      let%bind new_vars_opt = match_pattern gamma pattern bound_v in
+      let%bind new_vars =
+        Result.of_option new_vars_opt
+          ~error:(`EvaluationError "Pattern turned out to be refutable")
+      in
+      eval_prog_open (Env.R.extend_many gamma new_vars) next
   | Program.Type { idt = _; decl = _; next } -> eval_prog_open gamma next
   | Program.Last expr -> eval_expr_open gamma expr
 

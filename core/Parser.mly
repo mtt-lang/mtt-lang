@@ -145,8 +145,8 @@ expr:
     { Location.locate_start_end (Fix {self = Id.R.mk self; ty_id; idr = Id.R.mk idr; idr_ty; body}) $symbolstartpos $endpos }
     
     (* let idr = expr in expr *)
-  | LET; idr = IDR; EQ; bound = expr; IN; body = expr
-    { Location.locate_start_end (Let {idr = Id.R.mk idr; bound; body}) $symbolstartpos $endpos }
+  | LET; pattern = pattern; EQ; bound = expr; IN; body = expr
+    { Location.locate_start_end (Let {pattern; bound; body}) $symbolstartpos $endpos }
 
     (* letbox idm = expr in expr *)
   | LETBOX; idm = IDM; EQ; boxed = expr; IN; body = expr
@@ -257,8 +257,8 @@ prog:
     { Location.locate_start_end (Program.Last (e)) $symbolstartpos $endpos }
 
     (* let idr = expr; prog *)
-  | LET; idr = IDR; EQ; bound = expr; SEMICOLON; p = prog
-    { Location.locate_start_end (Program.Let {idr = Id.R.mk idr; bound; next = p}) $symbolstartpos $endpos }
+  | LET; pattern = pattern; EQ; bound = expr; SEMICOLON; p = prog
+    { Location.locate_start_end (Program.Let {pattern; bound; next = p}) $symbolstartpos $endpos }
 
   | TYPE; idt = IDT; EQ; option(PIPE); decl = separated_nonempty_list(PIPE, data_ctor); SEMICOLON; p = prog
     { 

@@ -83,7 +83,7 @@ module Expr = struct
       }  (** Fix combinator: fix f x = f (fix x) f *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
     | Box of { e : t }  (** term-level box: [box expr1] *)
-    | Let of { idr : Id.R.t; bound : t; body : t }
+    | Let of { pattern : Pattern.t; bound : t; body : t }
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
@@ -112,7 +112,7 @@ module Expr = struct
 
   let app fe arge = Location.locate @@ App { fe; arge }
   let box e = Location.locate @@ Box { e }
-  let letc idr bound body = Location.locate @@ Let { idr; bound; body }
+  let letc pattern bound body = Location.locate @@ Let { pattern; bound; body }
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 
   let match_with matched branches =
@@ -125,7 +125,7 @@ module Program = struct
   type t = t' Location.located
 
   and t' =
-    | Let of { idr : Id.R.t; bound : Expr.t; next : t }
+    | Let of { pattern : Pattern.t; bound : Expr.t; next : t }
     | Type of { idt : Id.T.t; decl : TypeDecl.t; next : t }
     | Last of Expr.t
   [@@deriving sexp]

@@ -42,7 +42,7 @@ let generator =
                    binary_node (binop Mul);
                    binary_node (binop Div);
                    map3 letc
-                     (map regular_id lowercase_id)
+                     (map (Fn.compose Pattern.var_r regular_id) lowercase_id)
                      (self (size / 2))
                      (self (size / 2));
                    map3 letbox
@@ -90,8 +90,8 @@ let arbitrary_ast =
           shrink_unary (Expr.fix self ty_id idr idr_ty) body
       | Expr.App { fe; arge } -> shrink_binary Expr.app fe arge
       | Expr.Box { e } -> shrink_unary Expr.box e
-      | Expr.Let { idr; bound; body } ->
-          shrink_binary (Expr.letc idr) bound body
+      | Expr.Let { pattern; bound; body } ->
+          shrink_binary (Expr.letc pattern) bound body
       | Expr.Letbox { idm; boxed; body } ->
           shrink_binary (Expr.letbox idm) boxed body
       | Expr.Match { matched; branches } ->
