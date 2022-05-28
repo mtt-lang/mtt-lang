@@ -1,4 +1,4 @@
-open Mtt
+open Mtt_lib
 
 (* Util functions *)
 let doc2string document =

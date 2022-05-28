@@ -1,7 +1,7 @@
 open Base
-open Mtt
-open Mtt.Ast
-module MttPP = Mtt.PrettyPrinter
+open Mtt_lib
+open Mtt_lib.Ast
+module MttPP = Mtt_lib.PrettyPrinter
 
 (* QCheck generator for the arbitrary (and most likely invalid) expressions *)
 let generator =
@@ -74,7 +74,7 @@ let arbitrary_ast =
       <+> (shrink_ast arg2 >|= fun arg2' -> cons arg1 arg2' arg3)
       <+> (shrink_ast arg3 >|= fun arg3' -> cons arg1 arg2 arg3')
     in
-    fun Mtt.Location.{ data = expr; _ } ->
+    fun Mtt_lib.Location.{ data = expr; _ } ->
       match expr with
       | Expr.Unit | Expr.VarR _ | Expr.VarM _ -> empty
       | Expr.Fst { e } -> shrink_unary Expr.fst e
@@ -108,7 +108,7 @@ let test =
       let ast_string = Stdlib.Buffer.contents buffer in
       let _ = Stdlib.Buffer.clear buffer in
       let parsed_ast =
-        match Mtt.ParserInterface.parse_from_string Term ast_string with
+        match Mtt_lib.ParserInterface.parse_from_string Term ast_string with
         | Ok ast -> ast
         | Error err_msg ->
             QCheck.Test.fail_reportf "Parse error: %s\nParser input: %s" err_msg
