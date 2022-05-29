@@ -1,0 +1,6 @@
+(library
+ (name repl)
+ (libraries base pprint lambda-term mtt_lib str)
+ (preprocess
+  (pps ppx_let))
+ (flags :standard -safe-string))

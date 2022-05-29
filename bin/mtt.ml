@@ -237,7 +237,24 @@ let eval_cmd =
   let info = Cmd.info "eval" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
   Cmd.v info Term.(ret (const eval_expr $ source_file $ source_arg))
 
-let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; help_cmd ]
+let repl_cmd =
+  let repl () =
+    Repl.run ();
+    `Ok ()
+  in
+  let doc = "run MTT REPL" in
+  let exits = Cmd.Exit.defaults in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P "Runs an interactive shell of mtt language.";
+      `Blocks help_secs;
+    ]
+  in
+  let info = Cmd.info "repl" ~doc ~sdocs:Manpage.s_common_options ~exits ~man in
+  Cmd.v info Term.(ret (const repl $ const ()))
+
+let cmds = [ parse_cmd; check_cmd; infer_cmd; eval_cmd; repl_cmd; help_cmd ]
 
 let default_cmd =
   let doc = "a modal type theory implementation" in

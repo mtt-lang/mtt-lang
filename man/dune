@@ -25,10 +25,22 @@
 
 (rule
  (with-stdout-to
+  mtt-repl.1
+  (run %{bin:mtt} repl --help=groff)))
+
+(rule
+ (with-stdout-to
   mtt-help.1
   (run %{bin:mtt} help --help=groff)))
 
 (install
  (section man)
  (package mtt)
- (files mtt.1 mtt-parse.1 mtt-check.1 mtt-infer.1 mtt-eval.1 mtt-help.1))
+ (files
+  mtt.1
+  mtt-parse.1
+  mtt-check.1
+  mtt-infer.1
+  mtt-eval.1
+  mtt-repl.1
+  mtt-help.1))

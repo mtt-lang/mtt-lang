@@ -31,7 +31,7 @@ that.
 ## How to use
 
 You can try out the typechecker and evaluator online: https://mtt-lang.github.io/mtt-web or
-install `mtt` locally using the [build instructions](./HACKING.md).
+install `mtt` locally using the [build instructions](./HACKING.md). After installing you can run `mtt` directly.
 
 Here is how you can use a local `mtt` setup. Use `mtt --help` to list all
 the subcommands `mtt` supports. Each of those subcommands also supports `--help`
@@ -89,6 +89,8 @@ flag. Here are some examples:
   (box (λx : (). x)))
   (box ((λx : (). x) ())))
   ```
+
+- Running REPL: `mtt repl`. See [following README](./repl/README.md) about REPL features.
 
 ## Language Syntax
 
