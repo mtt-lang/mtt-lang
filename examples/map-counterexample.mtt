@@ -1,3 +1,5 @@
+type A; type B;
+
 fun f : A -> B. fun x : []A.
   letbox x' = x in
   box (f x')

@@ -26,22 +26,22 @@ module Doc : DOC = struct
   let snd_kwd = !^"π₂"
   let box_kwd = !^"box"
   let fun_kwd = !^"λ"
+  let fix_kwd = !^"fix"
   let let_kwd = !^"let"
   let letbox_kwd = !^"letbox"
   let in_kwd = !^"in"
   let match_kwd = !^"match"
   let with_kwd = !^"with"
   let end_kwd = !^"end"
-  let zero_kwd = !^"zero" (* A temporary token for pattern matching on Nat *)
-  let succ_kwd = !^"succ" (* A temporary token for pattern matching on Nat *)
   let parens_if b = if b then parens else fun x -> x
 
   let of_type =
     let open Type in
-    let rec walk p = function
+    let rec walk p Location.{ data = ty; _ } =
+      match ty with
       | Unit -> unit_type
       | Nat -> nat_type
-      | Base { idt } -> !^idt
+      | Base { idt } -> !^(Id.T.to_string idt)
       | Prod { ty1; ty2 } ->
           parens_if (p > 1) (walk 1 ty1 ^^ cross ^^ walk 2 ty2)
       | Arr { dom; cod } ->
@@ -53,6 +53,26 @@ module Doc : DOC = struct
   let of_binop op =
     let open Expr in
     match op with Add -> plus | Sub -> minus | Mul -> star | Div -> slash
+
+  let of_pattern pttrn =
+    let rec walk p Location.{ data = pattern; loc = _ } =
+      let open Pattern in
+      match pattern with
+      | Ignore -> !^"_"
+      | Pair { sub1; sub2 } ->
+          group @@ angles @@ walk 0 sub1 ^^ comma ^/^ walk 0 sub2
+      | DCtor { idd; subs } ->
+          group
+          @@ parens_if (p > 0)
+          @@
+          let subs = List.map subs ~f:(walk 1) in
+          let init = !^(Id.D.to_string idd) in
+          List.fold_left ~init ~f:( ^/^ ) subs
+      | VarR { idr } -> !^(Id.R.to_string idr)
+      | Unit -> unit_term
+      | Nat { n } -> !^(Nat.to_string n)
+    in
+    walk 0 pttrn
 
   (** Pretty-print expressions with free vars substituited with
     their corresponding values from a regular environment *)
@@ -74,40 +94,39 @@ module Doc : DOC = struct
           | Ok v -> parens (of_val v)
           | Error _ -> !^(Id.R.to_string idr))
       | VarM { idm } -> !^(Id.M.to_string idm)
-      | Fun { idr; ty_id; body } ->
+      | VarD { idd } -> !^(Id.D.to_string idd)
+      | Fun { arg_pttrn; arg_ty; body } ->
           (parens_if (p > 1))
-            (fun_kwd
-            ^^ !^(Id.R.to_string idr)
-            ^^^ colon ^^^ of_type ty_id ^^ dot ^^ space ^^ walk 1 body)
+            (fun_kwd ^^ of_pattern arg_pttrn ^^^ colon ^^^ of_type arg_ty ^^ dot
+           ^^ space ^^ walk 1 body)
+      | Fix { self; ty_id; arg_pttrn; arg_ty; body } ->
+          (parens_if (p > 1))
+            (fix_kwd
+            ^^^ !^(Id.R.to_string self)
+            ^^^ colon ^^^ of_type ty_id ^^^ of_pattern arg_pttrn ^^^ colon
+            ^^^ of_type arg_ty ^^ dot ^^ space ^^ walk 1 body)
       | App { fe; arge } ->
           group ((parens_if (p >= 2)) (walk 2 fe ^/^ walk 2 arge))
       | Box { e } -> group ((parens_if (p >= 2)) (box_kwd ^^ space ^^ walk 2 e))
-      | Let { idr; bound; body } ->
+      | Let { pattern; bound; body } ->
           (parens_if (p > 1))
             (group
-               (let_kwd
-               ^^^ !^(Id.R.to_string idr)
-               ^^^ equals ^^^ walk 2 bound ^^^ in_kwd ^/^ walk 1 body))
+               (let_kwd ^^^ of_pattern pattern ^^^ equals ^^^ walk 2 bound
+              ^^^ in_kwd ^/^ walk 1 body))
       | Letbox { idm; boxed; body } ->
           (parens_if (p > 1))
             (group
                (letbox_kwd
                ^^^ !^(Id.M.to_string idm)
                ^^^ equals ^^^ walk 2 boxed ^^^ in_kwd ^/^ walk 1 body))
-      | Match { matched; zbranch; pred; sbranch } ->
-          let indentz = String.length (String.concat [ "| zero "; "=> " ]) in
-          let indents =
-            String.length
-              (String.concat [ "| succ "; Id.R.to_string pred; " => " ])
+      | Match { matched; branches } ->
+          let of_branch (pattern, body) =
+            let doc_case = bar ^^^ of_pattern pattern ^^^ darrow in
+            break 1 ^^ doc_case ^^^ align (walk 1 body)
           in
           (parens_if (p > 1))
-            (match_kwd ^^^ walk 1 matched ^^^ with_kwd ^/^ bar ^^^ zero_kwd
-           ^^^ darrow
-            ^^^ nest indentz (walk 1 zbranch)
-            ^/^ bar ^^^ succ_kwd
-            ^^^ !^(Id.R.to_string pred)
-            ^^^ darrow
-            ^^^ nest indents (walk 1 sbranch)
+            (match_kwd ^^^ walk 1 matched ^^^ with_kwd
+            ^^^ concat_map of_branch branches
             ^/^ end_kwd)
     in
     walk 0 expr
@@ -115,18 +134,33 @@ module Doc : DOC = struct
   (* This prints an expression as-is, i.e. no substitutions for free vars *)
   and of_expr e = of_expr_with_free_vars Env.R.emp e
 
-  and of_val = function
-    | Val.Unit -> unit_term
-    | Val.Nat { n } -> !^(Nat.to_string n)
-    | Val.Pair { v1; v2 } -> group (angles (of_val v1 ^^ comma ^/^ of_val v2))
-    | Val.Clos { idr; body; env } ->
-        fun_kwd
-        ^^ !^(Id.R.to_string idr)
-        ^^ dot
-        ^^^ (* when print out closures, substitute the free vars in its body with
-               the corresponding values from the closures' regular environment *)
-        of_expr_with_free_vars env body
-    | Val.Box { e } -> box_kwd ^^^ of_expr e
+  and of_val value =
+    let rec walk p v =
+      match v with
+      | Val.Unit -> unit_term
+      | Val.Nat { n } -> !^(Nat.to_string n)
+      | Val.Pair { v1; v2 } -> group (angles (walk 0 v1 ^^ comma ^/^ walk 0 v2))
+      | Val.RecClos { self; arg_pttrn; body; env } ->
+          let kwd e =
+            if String.equal (Id.R.to_string self) "" then fun_kwd ^^ e
+            else fix_kwd ^^^ !^(Id.R.to_string self) ^^^ e
+          in
+          let narrowed_env =
+            Env.R.narrow_many env (Set.to_list @@ Pattern.free_vars_r arg_pttrn)
+          in
+          parens_if (p > 0)
+          @@ kwd
+               (of_pattern arg_pttrn ^^ dot
+               ^^^ of_expr_with_free_vars narrowed_env body)
+      | Val.Box { e } -> (parens_if (p > 0)) box_kwd ^^^ of_expr e
+      | Val.DCtor { idd; args } ->
+          let f doc arg = doc ^/^ walk 1 arg in
+          let init = !^(Id.D.to_string idd) in
+          group
+          @@ parens_if (p > 0 && not (List.is_empty args))
+          @@ List.fold_left ~init ~f args
+    in
+    walk 0 value
 end
 
 module type STR = sig

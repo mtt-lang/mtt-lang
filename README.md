@@ -40,14 +40,14 @@ flag. Here are some examples:
 - Typechecking a term:
 
   ```
-  $ mtt check "[]A -> A" -e "λx : []A. letbox u' = x in u'" --verbose
+  $ mtt check "[]A -> A" -e "type A; λx : []A. letbox u' = x in u'" --verbose
   OK. Expression typechecks.
   ```
 
 - Inferring the type of a term:
 
   ```
-  $ mtt infer -e "λx : []A. letbox u' = x in u'"
+  $ mtt infer -e "type A; λx : []A. letbox u' = x in u'"
   (□A → A)
   ```
   Yes, Unicode is allowed (The `□` symbol is the *box* type constructor).
@@ -56,13 +56,14 @@ flag. Here are some examples:
   regular variable:
 
   ```
-  $ mtt infer -e "λf:B -> []A. λy:B. (λx:[]A. box x) (f y)"
+  $ mtt infer -e "type A; type B; λf:B -> []A. λy:B. (λx:[]A. box x) (f y)"
   mtt: Type inference error: Variable x is not found in the regular context!
   ```
 
 - Inferring the type of a term from `stdin` using [heredoc](https://en.wikipedia.org/wiki/Here_document) syntax:
   ```
   mtt infer << EOF
+  type A; type B;
   fun x:[]A. fun y:[]B.
     letbox x' = x in
     letbox y' = y in
@@ -105,13 +106,13 @@ Unsigned decimal numerals are supported.
   underscores (`_`).
 - The valid, or *modal*, identifiers (*Gid*) are syntactically the same as the
   regular ones except that they *must* end with an apostrophe (`'`).
-- *Uninterpreted type* identifiers (*Tid*) start with a capital letter followed
+- Type identifiers (*Tid*) start with a capital letter followed
   by any number of alphanumeric characters or underscores (`_`).
 
 ### Keywords
 
 Here are the keywords `fun`, `in`, `let`, `box`, `letbox`, `fst`, `snd`,
-`match`, `with`, `end`, `zero`, `succ`. The keywords *cannot* be used as
+`match`, `with`, `end`, `zero`, `succ`, `fix`, `type`, `of`. The keywords *cannot* be used as
 identifiers.
 
 ### Other lexemes
@@ -123,7 +124,8 @@ variables and their type annotations. The unit type and its only value are both
 denoted with `()`. The dot (`.`) or the double arrow (`=>`) is used to separate
 bound variables from abstractions' bodies. The equals sign (`=`) is used as a
 separator in `letbox`- expressions. The pipe symbol (`|`) is used to separate
-the branches of the pattern-matching expression.
+the branches of the pattern-matching expression. The semicolon (`;`) is used to
+separate top-level statements.
 
 ### Unicode 
 
@@ -149,10 +151,21 @@ the Unicode ones.
 | :-------: | :-----------: | :--------------------------: |
 |           | `()`          | Unit type                    |
 |           | `ℕ`           | Natural numbers type         |
-|           | *Tid*         | Uninterpreted types          |
+|           | *Tid*         | Types                        |
 |           | `□` *T*       | Type of staged expressions   |
 |           | *T* `×` *T*   | Type of pairs                |
 |           | *T* `→` *T*   | Type of functions            |
+
+#### Patterns
+
+| *p* ::=   |                      | Meaning                      |
+| :-------: | :------------------: | :--------------------------: |
+|           | `()`                 | Unit type                    |
+|           | numeral              | Match against concrete value |
+|           | `_`                  | Wildcard (accepts anything)  |
+|           | *Lid*                | Regular variable binder      |
+|           | *Tid* [*p* ]*         | Data constructor             |
+|           | `<` *p* `,` *p* `>`  | Destruct pair                |
 
 #### Terms (expressions)
 
@@ -165,17 +178,18 @@ the Unicode ones.
 |           | `<` *t* `,` *t* `>`                                              | Pair expression                                           |
 |           | `π₁` *t*                                                         | First projection from a pair                              |
 |           | `π₂` *t*                                                         | Second projection from a pair                             |
-|           | `λ` *Lid* `:` *T* `.` *t*                                        | Lambda abstraction with explicitly typed variable         |
-|           | `λ` `(` *Lid* `:` *T* `)` `.` *t*                                | Lambda abstraction with explicitly typed modal variable   |
+|           | `λ` *p* `:` *T* `.` *t*                                          | Lambda abstraction with explicitly typed argument         |
+|           | `fix` (*Lid* : T) (*p* `:` *T*) `.` *t*                          | Recursive lambda abstraction with explicit name and type  |
 |           | *t* *t*                                                          | Function application                                      |
 |           | `box` *t*                                                        | Staged computations                                       |
-|           | `let` *Lid* `=` *t* `in` *t*                                     | Let-expression                                            |
+|           | *Tid*                                                            | Data constructor                                          |
+|           | `let` *p* `=` *t* `in` *t*                                       | Let-expression                                            |
 |           | `letbox` *Gid* `=` *t* `in` *t*                                  | Running staged computations                               |
 |           | *t* `+` *t*                                                      | Addition                                                  |
 |           | *t* `-` *t*                                                      | Truncation substraction (`0 - n` evaluates to `0`)        |
 |           | *t* `*` *t*                                                      | Multiplication                                            |
 |           | *t* `/` *t*                                                      | Division (`n / 0` throws run-time error)                  |
-|           | `match` *t* `with \| zero =>` *t* `\| succ` *Lid* `=>` *t* `end` | Pattern-matching on natural numbers                       |
+|           | `match` *t* `with` [`\|` *p* `=>` *t*]* `end`                    | Pattern-matching                                          |
 
 #### Values
 
@@ -186,3 +200,20 @@ the Unicode ones.
 |           | `<` *v* `,` *v* `>`               | Pair value                             |
 |           | `λ` *Lid* `.` *t*                 | Lambda abstraction value               |
 |           | `box` *t*                         | Staged computation                     |
+|           | *Tid* [*v* ]*                      | Data constructor                       |
+
+
+#### Data constructor declaration
+| *d* ::=   |                                  | Meaning                                   |
+| :-------: | :------------------------------: | :---------------------------------------: |
+|           | *Tid* `of` `(` [*Tid* `,`]* `)`  | Data constructor with data                |
+|           | *Tid*                            | Data constructor with no data             |
+
+#### Programs (computations)
+
+| *c* ::=   |                                                                  | Meaning                                                   |
+| :-------: | :--------------------------------------------------------------: | :-------------------------------------------------------: |
+|           | *c*                                                              | Expression                                                |
+|           | `let` *p* `=` *t*`;` *c*                                         | Let-expression                                            |
+|           | `type` *Tid* `=` [`\|` *d* ]*`;` *c*                             | Algebraic data type declaration                           |
+|           | `type` *Tid*`;` *c*                                              | Empty type declaration                                    |

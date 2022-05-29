@@ -1,18 +1,66 @@
 open Base
 
-type idT = string [@@deriving equal, sexp]
-
 (** Types *)
 module Type = struct
-  type t =
+  type t = t' Location.located
+
+  and t' =
     | Unit  (** Unit type *)
     | Nat  (** Type for numbers *)
-    | Base of { idt : idT }
+    | Base of { idt : Id.T.t }
         (** Base uninterpreted types, meaning there are no canonical terms inhabiting these types *)
     | Prod of { ty1 : t; ty2 : t }  (** Type of pairs *)
     | Arr of { dom : t; cod : t }  (** Type of functions *)
     | Box of { ty : t }  (** Type-level box *)
   [@@deriving equal, sexp]
+
+  let unit = Location.locate Unit
+  let nat = Location.locate Nat
+  let base idt = Location.locate @@ Base { idt }
+  let prod ty1 ty2 = Location.locate @@ Prod { ty1; ty2 }
+  let arr dom cod = Location.locate @@ Arr { dom; cod }
+  let box ty = Location.locate @@ Box { ty }
+end
+
+(* Data constructor *)
+module DataCtor = struct
+  type t = { idd : Id.D.t; fields : Type.t list } [@@deriving sexp]
+end
+
+(* Pattern for pattern-matching *)
+module Pattern = struct
+  type t = t' Location.located
+
+  and t' =
+    | Ignore
+    | Unit
+    | Nat of { n : Nat.t }
+    | VarR of { idr : Id.R.t }
+    | DCtor of { idd : Id.D.t; subs : t list }
+    | Pair of { sub1 : t; sub2 : t }
+  [@@deriving equal, sexp]
+
+  let ignore = Location.locate Ignore
+  let var_r idr = Location.locate @@ VarR { idr }
+  let d_ctor idd subs = Location.locate @@ DCtor { idd; subs }
+  let pair sub1 sub2 = Location.locate @@ Pair { sub1; sub2 }
+
+  let rec free_vars_r Location.{ data = pattern; loc = _ } =
+    let empty_set = Set.empty (module Id.R) in
+    match pattern with
+    | Ignore -> empty_set
+    | Nat { n = _ } -> empty_set
+    | Unit -> empty_set
+    | VarR { idr } -> Set.of_list (module Id.R) [ idr ]
+    | Pair { sub1; sub2 } -> Set.union (free_vars_r sub1) (free_vars_r sub2)
+    | DCtor { idd = _; subs } ->
+        List.fold_right ~init:empty_set ~f:Set.union
+        @@ List.map ~f:free_vars_r subs
+end
+
+(* Type declaration *)
+module TypeDecl = struct
+  type t = DataCtor.t list [@@deriving sexp]
 end
 
 (** Expressions *)
@@ -34,19 +82,28 @@ module Expr = struct
     | VarM of { idm : Id.M.t }
         (** variables of the modal context (or "valid variables"),
         these are syntactically distinct from the regular (ordinary) variables *)
-    | Fun of { idr : Id.R.t; ty_id : Type.t; body : t }
+    | VarD of { idd : Id.D.t }
+        (** using type identifier (starting with a capital letter) means calling data constructor **)
+    | Fun of { arg_pttrn : Pattern.t; arg_ty : Type.t; body : t }
         (** anonymous functions: [fun (x : T) => expr] *)
+    | Fix of {
+        self : Id.R.t;
+        ty_id : Type.t;
+        arg_pttrn : Pattern.t;
+        arg_ty : Type.t;
+        body : t;
+      }  (** Fix combinator: fix f x = f (fix x) f *)
     | App of { fe : t; arge : t }  (** function application: [f x] *)
     | Box of { e : t }  (** term-level box: [box expr1] *)
-    | Let of { idr : Id.R.t; bound : t; body : t }
+    | Let of { pattern : Pattern.t; bound : t; body : t }
         (** [let u = expr1 in expr2] *)
     | Letbox of { idm : Id.M.t; boxed : t; body : t }
         (** [letbox u = expr1 in expr2] *)
-    | Match of { matched : t; zbranch : t; pred : Id.R.t; sbranch : t }
-        (** FOR NAT ONLY
-          [match matched with 
-              | zero => <zbranch>
-              | succ pred => <sbranch>
+    | Match of { matched : t; branches : (Pattern.t * t) list }
+        (** Pattern-matching of general form:
+            [match matched with 
+              | pattern => branch_body
+              | ...
             end] *)
   [@@deriving equal, sexp]
 
@@ -59,14 +116,33 @@ module Expr = struct
   let binop op e1 e2 = Location.locate @@ BinOp { op; e1; e2 }
   let var_r idr = Location.locate @@ VarR { idr }
   let var_m idm = Location.locate @@ VarM { idm }
-  let func idr ty_id body = Location.locate @@ Fun { idr; ty_id; body }
+  let var_d idd = Location.locate @@ VarD { idd }
+
+  let func arg_pttrn arg_ty body =
+    Location.locate @@ Fun { arg_pttrn; arg_ty; body }
+
+  let fix self ty_id arg_pttrn arg_ty body =
+    Location.locate @@ Fix { self; ty_id; arg_pttrn; arg_ty; body }
+
   let app fe arge = Location.locate @@ App { fe; arge }
   let box e = Location.locate @@ Box { e }
-  let letc idr bound body = Location.locate @@ Let { idr; bound; body }
+  let letc pattern bound body = Location.locate @@ Let { pattern; bound; body }
   let letbox idm boxed body = Location.locate @@ Letbox { idm; boxed; body }
 
-  let match_with matched zbranch pred sbranch =
-    Location.locate @@ Match { matched; zbranch; pred; sbranch }
+  let match_with matched branches =
+    Location.locate @@ Match { matched; branches }
+end
+
+(* Program is a sequence of top-level declarations which must end with an expression.
+   Type and value of a program is determined by the expression. *)
+module Program = struct
+  type t = t' Location.located
+
+  and t' =
+    | Let of { pattern : Pattern.t; bound : Expr.t; next : t }
+    | Type of { idt : Id.T.t; decl : TypeDecl.t; next : t }
+    | Last of Expr.t
+  [@@deriving sexp]
 end
 
 (** Values *)
@@ -76,9 +152,14 @@ module Val = struct
     | Nat of { n : Nat.t }  (** nat *)
     | Pair of { v1 : t; v2 : t }
         (** [(lit1, lit2)] -- a pair of values is a value *)
-    | Clos of { idr : Id.R.t; body : Expr.t; env : t Env.R.t }
-        (** Deeply embedded closures *)
+    | RecClos of {
+        self : Id.R.t;
+        arg_pttrn : Pattern.t;
+        body : Expr.t;
+        env : t Env.R.t;
+      }  (** Recursion closures *)
     | Box of { e : Expr.t }
         (** [box] value, basically it's an unevaluated expression *)
+    | DCtor of { idd : Id.D.t; args : t list }  (** data constructor **)
   [@@deriving sexp]
 end

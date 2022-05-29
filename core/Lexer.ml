@@ -14,20 +14,23 @@ let unsigned_integer = [%sedlex.regexp? digit, Star digit]
 let lower_case_letter = [%sedlex.regexp? 'a' .. 'z']
 let upper_case_letter = [%sedlex.regexp? 'A' .. 'Z']
 let letter = [%sedlex.regexp? lower_case_letter | upper_case_letter]
-let alphanum = [%sedlex.regexp? lower_case_letter | digit | '_']
+let alphanum = [%sedlex.regexp? letter | digit | '_']
 let regular_ident = [%sedlex.regexp? lower_case_letter, Star alphanum]
 let modal_ident = [%sedlex.regexp? lower_case_letter, Star alphanum, '\'']
-let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum | '_']
-let rec nom buf = match%sedlex buf with Plus any_blank -> nom buf | _ -> ()
+let type_ident = [%sedlex.regexp? upper_case_letter, Star alphanum]
+
+let rec skip_blank buf =
+  match%sedlex buf with Plus any_blank -> skip_blank buf | _ -> ()
 
 let token buf =
-  nom buf;
+  skip_blank buf;
   match%sedlex buf with
   | eof -> EOF
   | "" -> EOF
   | "[]" | 0x25A1 -> TBOX
   | "->" | 0x2192 -> ARROW
   | "=>" | 0x21D2 | '.' -> DARROW
+  | "_" -> UNDERSCORE
   | "=" -> EQ
   | "()" -> UNIT
   | "Nat" | 0x2115 -> TNAT
@@ -36,6 +39,7 @@ let token buf =
   | '<' -> LANGLE
   | '>' -> RANGLE
   | ':' -> COLON
+  | ';' -> SEMICOLON
   | ',' -> COMMA
   | '*' | 0x00D7 -> CROSS
   | '+' -> PLUS
@@ -47,13 +51,14 @@ let token buf =
   | "in" -> IN
   | "fun" | 0x03BB -> FUN
   | "let" -> LET
+  | "type" -> TYPE
+  | "of" -> OF
   | "box" -> BOX
   | "letbox" -> LETBOX
+  | "fix" -> FIX
   | "match" -> MATCH
   | "with" -> WITH
   | "end" -> END
-  | "zero" -> ZERO
-  | "succ" -> SUCC
   | unsigned_integer -> UINTZ (Nat.of_string (Utf8.lexeme buf))
   | regular_ident -> IDR (Utf8.lexeme buf)
   | modal_ident -> IDM (Utf8.lexeme buf)

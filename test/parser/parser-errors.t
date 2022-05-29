@@ -22,7 +22,7 @@
   mtt: Parse error: An expression after snd is expected. This primitive can be only used fully applied.
   [124]
   $ mtt parse -e "fun box : A. box"
-  mtt: Parse error: A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
+  mtt: Parse error: Expected pattern after "fun" keyword
   [124]
 
 
@@ -85,7 +85,7 @@ mtt: Parse error: Binary application must be parenthesized like so: (f x) y
 
 ### Modal identifier in the wrong context
   $ mtt parse -e "fun x' : A. x"
-  mtt: Parse error: A regular identifier expected. This happens, when e.g. a modal identifier is used fun x' : T. ...
+  mtt: Parse error: Expected pattern after "fun" keyword
   [124]
 
 ### box needs to be applied to an expression
@@ -95,7 +95,7 @@ mtt: Parse error: Boxed expression is expected
 
 ### letbox is one single keyword, not two
   $ mtt parse -e "let box x' = box () in x'"
-  mtt: Parse error: Sometimes this happens when you say "let box" instead of "letbox" or try to apply a function to "box"
+  mtt: Parse error: Expected pattern after "let" keyword
   [124]
 
 ### letbox needs its bound var to end with apostrophy
@@ -107,12 +107,12 @@ mtt: Parse error: Boxed expression is expected
 
 ### Bound variable in "let" expression must be term, not type
   $ mtt parse -e "let x = []"
-  mtt: Parse error: Variable in "let" expression must be term, not type
+  mtt: Parse error: Expected bound expression
   [124]
 
 ### After "in" must term must follow, not type
   $ mtt parse -e "let x = () in []"
-  mtt: Parse error: Expected term after "in"-keyword, not type
+  mtt: Parse error: Expected term after "in"-keyword
   [124]
 
 ### Extra closed parenthesis
@@ -130,11 +130,11 @@ mtt: Parse error: Boxed expression is expected
   [124]
 
   $ mtt parse -e "let x = () y = x"
-  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  mtt: Parse error: Missing or unexpected lexeme
   [124]
 
   $ mtt parse -e "let x = (fun z: A. z) y = () in x y"
-  mtt: Parse error: Missing or unexpected lexeme in parenthesized expression
+  mtt: Parse error: Missing or unexpected lexeme
   [124]
 
 ### Match-expression
@@ -142,49 +142,43 @@ mtt: Parse error: Boxed expression is expected
   > match () with
   > end
   > EOF
-  mtt: Parse error: Empty branch in match-expression
-  [124]
+  match () with
+  end
 
   $ mtt parse <<EOF
   > match x with
-  > | zero
+  > | 0
   > end
   > EOF
-  mtt: Parse error: Empty branch in match-expression
+  mtt: Parse error: Expected "=>"
   [124]
 
   $ mtt parse <<EOF
   > match x
-  > | zero
+  > | 0
   > end
   > EOF
-  mtt: Parse error: Missing "with" keyword
+  mtt: Parse error: Expected "with" keyword
   [124]
 
   $ mtt parse <<EOF
   > match x with
-  > | zero => ()
+  > | 0 => ()
+  > | n => ()
   > EOF
-  mtt: Parse error: Empty branch in match-expression
+  mtt: Parse error: Expected "end" keyword
+  [124]
+
+  $ mtt parse -e "() + _"
+  mtt: Parse error: Expected expression
   [124]
 
   $ mtt parse <<EOF
-  > match x with
-  > | zero => ()
-  > | succ n => ()
-  > EOF
-  mtt: Parse error: END token wasn't found in the end of the match-expression
-  [124]
-
-  $ mtt parse <<EOF
-  > match x with
-  > | succ n => ()
-  > | zero => ()
+  > type List = Nil | Cons of (Nat * Nat, List);
+  > match Cons <5, 5> Nil with
+  > | Cons (_, 4) _ => 1
+  > | _ => 0
   > end
   > EOF
-  mtt: Parse error: Incorrect match-expression
-  [124]
-
-  $ mtt parse -e "() + zero"
-  mtt: Parse error: ZERO token can be used in match-expression only
+  mtt: Parse error: An expression is expected. This may result from a missing or unexpected lexeme or an attempt to parse a type-level expression
   [124]

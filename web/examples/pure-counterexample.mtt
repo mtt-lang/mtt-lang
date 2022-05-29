@@ -1,1 +1,3 @@
+type A;
+
 fun x:A. box x

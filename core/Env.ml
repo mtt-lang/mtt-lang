@@ -3,7 +3,9 @@ open Result.Let_syntax
 
 type error =
   [ `EnvUnboundRegularVarError of Id.R.t * string  (** variable id, message *)
-  | `EnvUnboundModalVarError of Id.M.t * string  (** variable id, message *) ]
+  | `EnvUnboundModalVarError of Id.M.t * string  (** variable id, message *)
+  | `EnvUnboundTypeVarError of Id.T.t * string  (** variable id, message *)
+  | `EnvUnboundDCtorVarError of Id.D.t * string  (** variable id, message *) ]
 
 module Make (Key : sig
   type t [@@deriving_inline sexp]
@@ -34,6 +36,20 @@ struct
   (** Extend environment with a key and the corresponding value *)
   let extend env k v = (k, v) :: env
 
+  let extend_many env k_v_pairs = k_v_pairs @ env
+  let narrow env k = List.Assoc.remove env ~equal:Key.equal k
+
+  let narrow_many env ks =
+    List.filter ~f:(fun (k, _) -> not @@ List.mem ks k ~equal:Key.equal) env
+
+  let make_error_of_abscence k =
+    let var_name = Key.to_string k in
+    let message =
+      [%string
+        "\"$(var_name)\" is not found in the $(Key.context_kind) environment!"]
+    in
+    Error.makeError (k, message)
+
   (** Find the value corresponding to a key identifier
       NOTE: effectively type of error (EnvUnboundRegularVarError or
             EnvUnboundModalVariableError) depends on type of ID, but ocaml can't check it.
@@ -42,15 +58,7 @@ struct
     let typ_o = List.Assoc.find env k ~equal:Key.equal in
     match typ_o with
     | Some t -> return t
-    | None ->
-        let var_name = Key.to_string k in
-        let message =
-          [%string
-            "\"$(var_name)\" is not found in the $(Key.context_kind) \
-             environment!"]
-        in
-        let error = Error.makeError (k, message) in
-        Result.fail error
+    | None -> Result.fail @@ make_error_of_abscence k
 end
 
 (** Regular environment *)
@@ -67,4 +75,20 @@ module M =
     (Id.M)
     (struct
       let makeError p = `EnvUnboundModalVarError p
+    end)
+
+(** Data constructors environment *)
+module D =
+  Make
+    (Id.D)
+    (struct
+      let makeError p = `EnvUnboundDCtorVarError p
+    end)
+
+(** Types environment *)
+module T =
+  Make
+    (Id.T)
+    (struct
+      let makeError p = `EnvUnboundTypeVarError p
     end)

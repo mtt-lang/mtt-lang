@@ -33,8 +33,8 @@ let generator =
                    unary_node snd;
                    binary_node app;
                    map3 func
-                     (map regular_id lowercase_id)
-                     (return Type.Unit)
+                     (map (Fn.compose Pattern.var_r regular_id) lowercase_id)
+                     (return Type.unit)
                      (self (size - 1));
                    unary_node box;
                    binary_node (binop Add);
@@ -42,18 +42,19 @@ let generator =
                    binary_node (binop Mul);
                    binary_node (binop Div);
                    map3 letc
-                     (map regular_id lowercase_id)
+                     (map (Fn.compose Pattern.var_r regular_id) lowercase_id)
                      (self (size / 2))
                      (self (size / 2));
                    map3 letbox
                      (map modal_id lowercase_id)
                      (self (size / 2))
                      (self (size / 2));
-                   map3 match_with
-                     (self (size / 3))
-                     (self (size / 3))
+                   map3 fix
                      (map regular_id lowercase_id)
-                   <*> self (size / 3);
+                     (return (Type.arr Type.nat Type.nat))
+                     (map (Fn.compose Pattern.var_r regular_id) lowercase_id)
+                   <*> return Type.nat
+                   <*> self (size - 1);
                  ]))
 
 let arbitrary_ast =
@@ -68,31 +69,39 @@ let arbitrary_ast =
       <+> (shrink_ast arg1 >|= fun arg1' -> cons arg1' arg2)
       <+> (shrink_ast arg2 >|= fun arg2' -> cons arg1 arg2')
     in
-    let shrink_ternary cons arg1 arg2 arg3 =
-      of_list [ arg1; arg2; arg3 ]
-      <+> (shrink_ast arg1 >|= fun arg1' -> cons arg1' arg2 arg3)
-      <+> (shrink_ast arg2 >|= fun arg2' -> cons arg1 arg2' arg3)
-      <+> (shrink_ast arg3 >|= fun arg3' -> cons arg1 arg2 arg3')
+    let shrink_many cons args =
+      let replace l pos a =
+        List.mapi ~f:(fun i x -> if i = pos then a else x) l
+      in
+      let f i arg = shrink_ast arg >|= fun arg' -> cons (replace args i arg') in
+      let handlers = List.mapi ~f args in
+      List.fold_left ~init:(of_list args) ~f:( <+> ) handlers
     in
     fun Mtt_lib.Location.{ data = expr; _ } ->
       match expr with
-      | Expr.Unit | Expr.VarR _ | Expr.VarM _ -> empty
+      | Expr.Unit | Expr.VarR _ | Expr.VarM _ | Expr.VarD _ -> empty
       | Expr.Fst { e } -> shrink_unary Expr.fst e
       | Expr.Snd { e } -> shrink_unary Expr.snd e
       | Expr.Pair { e1; e2 } -> shrink_binary Expr.pair e1 e2
       | Expr.Nat _ -> empty
       | Expr.BinOp { op; e1; e2 } -> shrink_binary (Expr.binop op) e1 e2
-      | Expr.Fun { idr; ty_id; body } -> shrink_unary (Expr.func idr ty_id) body
+      | Expr.Fun { arg_pttrn; arg_ty; body } ->
+          shrink_unary (Expr.func arg_pttrn arg_ty) body
+      | Expr.Fix { self; ty_id; arg_pttrn; arg_ty; body } ->
+          shrink_unary (Expr.fix self ty_id arg_pttrn arg_ty) body
       | Expr.App { fe; arge } -> shrink_binary Expr.app fe arge
       | Expr.Box { e } -> shrink_unary Expr.box e
-      | Expr.Let { idr; bound; body } ->
-          shrink_binary (Expr.letc idr) bound body
+      | Expr.Let { pattern; bound; body } ->
+          shrink_binary (Expr.letc pattern) bound body
       | Expr.Letbox { idm; boxed; body } ->
           shrink_binary (Expr.letbox idm) boxed body
-      | Expr.Match { matched; zbranch; pred; sbranch } ->
-          shrink_ternary
-            (fun m z s -> Expr.match_with m z pred s)
-            matched zbranch sbranch
+      | Expr.Match { matched; branches } ->
+          let patterns, args = Caml.List.split branches in
+          shrink_many
+            (fun args' ->
+              Expr.match_with (List.hd_exn args')
+              @@ Caml.List.combine patterns @@ List.tl_exn args')
+            (matched :: args)
   in
   QCheck.make generator ~print:print_ast ~shrink:shrink_ast
 

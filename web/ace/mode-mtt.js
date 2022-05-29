@@ -9,11 +9,11 @@ ace.define("ace/mode/mtt_highlighting_rules", ["require", "exports", "module", "
             "start": [
                 {
                     token: "keyword",
-                    regex: "let|letbox|in|fst|snd|box|fun"
+                    regex: "let|letbox|in|fst|snd|box|fun|type|of|match|with|end|fix"
                 },
                 {
                     token: "keyword.operator",
-                    regex: "\\[\\]|=>|->|\\*|<|>|λ"
+                    regex: "\\[\\]|=>|->|\\*|<|>|λ|=|,|\\||;"
                 }
             ]
         

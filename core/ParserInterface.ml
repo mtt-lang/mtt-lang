@@ -6,13 +6,19 @@ open Ast
 
 type error = string
 type filename = string
-type _ ast_kind = Type : Type.t ast_kind | Term : Expr.t ast_kind
+
+type _ ast_kind =
+  | Type : Type.t ast_kind
+  | Term : Expr.t ast_kind
+  | Prog : Program.t ast_kind
+
 type input_kind = Stdin | String of string | File of filename
 
 let parser_driver : type a. a ast_kind -> Lexing.position -> a MI.checkpoint =
   function
   | Type -> Parser.Incremental.type_eof
   | Term -> Parser.Incremental.expr_eof
+  | Prog -> Parser.Incremental.prog_eof
 
 let state checkpoint : int =
   match Lazy.force (MI.stack checkpoint) with
